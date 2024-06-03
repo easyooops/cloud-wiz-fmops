@@ -13,4 +13,4 @@ def get_database(service_type: ServiceType) -> Generator[Session, None, None]:
     try:
         yield db
     finally:
-        db.close()    
+        db.close()

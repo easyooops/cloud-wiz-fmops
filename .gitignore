@@ -107,5 +107,5 @@ venv.bak/
 settings.json
 
 # frontend
-src/frontend
+# src/frontend
 node_modules
