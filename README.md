@@ -2,31 +2,48 @@
 cloud-wiz-fmops
 
 # Install & Start
+```
 sudo npm install && sudo npm start
-
+```
 # Fast API Docs
+
 http://localhost:8000/docs#/
 
 # Database Session
 ### SQLALCHEMY
+```python
 db: Session = Depends(lambda: get_database(ServiceType.SQLALCHEMY))
-
+```
 ### MYSQL
+```python
 db: Session = Depends(lambda: get_database(ServiceType.MYSQL))
-
+```
 ### SQLITE
+```python
 db: Session = Depends(lambda: get_database(ServiceType.SQLITE))
+```
 
 # GIT
-##### connection
+### connection
+```
 git remote add origin https://github.com/easyooops/cloud-wiz-fmops.git
+
 git remote -v
-
-##### create breanch
+```
+### create breanch
+```
+# git checkout -b [new branch]
 git checkout -b feature-suyeong
-git branch
 
-##### push
+git branch
+```
+### Pull Request
+```
 git add .
+
+# git commit -m "[comment]"
 git commit -m "add frontend"
+
+# git push origin [new branch]
 git push origin feature-suyeong
+```
