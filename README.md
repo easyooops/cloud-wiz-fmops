@@ -17,3 +17,16 @@ db: Session = Depends(lambda: get_database(ServiceType.MYSQL))
 ### SQLITE
 db: Session = Depends(lambda: get_database(ServiceType.SQLITE))
 
+# GIT
+##### connection
+git remote add origin https://github.com/easyooops/cloud-wiz-fmops.git
+git remote -v
+
+##### create breanch
+git checkout -b feature-suyeong
+git branch
+
+##### push
+git add .
+git commit -m "add frontend"
+git push origin feature-suyeong
