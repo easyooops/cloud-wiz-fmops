@@ -1,0 +1,26 @@
+# defaul
+redis
+types-redis
+uvicorn 
+pytest
+httpx
+
+# env
+pydantic-settings
+
+# uvicorn
+multiprocess
+
+# Fastapi
+fastapi
+python-socketio
+
+# database
+sqlmodel
+sqlalchemy
+mysql-connector-python
+
+alembic
+
+# logger
+loguru
