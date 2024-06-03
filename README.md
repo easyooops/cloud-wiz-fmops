@@ -1,5 +1,5 @@
 # cloud-wiz-fmops
-cloud-wiz-fmops
+FMOops platform that can be used in real life through generative AI
 
 # Install & Start
 ```
