@@ -12,6 +12,6 @@ class Settings(BaseSettings):
     MYSQL_DB: str = ""
 
     class Config:
-        env_file = ".env"
+        env_file = ".app.env"
 
 settings = Settings()
