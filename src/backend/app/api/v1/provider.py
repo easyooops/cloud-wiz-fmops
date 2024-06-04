@@ -4,10 +4,10 @@ from sqlmodel import Session
 
 from app.core.interface.service import ServiceType
 from app.core.factories import get_database
-from app.core.util import internal_server_error
 from app.service.provider.service import ProviderService
 from app.service.provider.model import Provider
 from app.api.v1.schemas.provider import ProviderCreate, ProviderUpdate
+from app.core.exception import internal_server_error
 
 router = APIRouter()
 

@@ -4,7 +4,7 @@ from sqlmodel import Session
 
 from app.core.interface.service import ServiceType
 from app.core.factories import get_database
-from app.core.util import internal_server_error
+from app.core.exception import internal_server_error
 from app.service.inquiry.service import InquiryService
 from app.service.inquiry.model import Inquiry
 from app.api.v1.schemas.inquiry import InquiryCreate, InquiryUpdate

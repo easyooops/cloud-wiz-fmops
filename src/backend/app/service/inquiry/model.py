@@ -12,8 +12,8 @@ class Inquiry(SQLModel, table=True):
     response_content: Optional[str] = Field(default=None)
     processing_type: str
     creator_id: int
-    created_at: datetime = Field(default_factory=datetime.timestamp)
+    created_at: datetime = Field(default_factory=datetime.now)
     updater_id: Optional[int] = Field(default=None)
-    updated_at: Optional[datetime] = Field(default_factory=datetime.timestamp)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
 
     __tablename__ = 'inquiry'
