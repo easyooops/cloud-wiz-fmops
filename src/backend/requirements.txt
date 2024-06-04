@@ -5,6 +5,7 @@ uvicorn
 pytest
 httpx
 python-jose
+python-dotenv
 
 # env
 pydantic-settings
@@ -29,8 +30,10 @@ loguru
 # AWS
 boto3
 
-# langchain
+# llm
 langchain
 langchain_community
 langchain_openai
 llama-cpp-python
+
+openai

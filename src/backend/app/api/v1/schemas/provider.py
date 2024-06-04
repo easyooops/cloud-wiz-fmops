@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
-# PROVIDER
 class ProviderCreate(BaseModel):
     name: str
     description: str
