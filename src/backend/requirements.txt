@@ -28,3 +28,9 @@ loguru
 
 # AWS
 boto3
+
+# langchain
+langchain
+langchain_community
+langchain_openai
+llama-cpp-python
