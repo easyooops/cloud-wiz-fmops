@@ -112,3 +112,5 @@ node_modules
 
 # backend
 src/backend/cloud-wiz-fmops.db
+
+.aws
