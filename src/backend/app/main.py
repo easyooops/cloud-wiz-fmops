@@ -4,8 +4,10 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 from multiprocess import cpu_count
+from sqlalchemy import create_engine
+from sqlmodel import SQLModel
 
-from app.core.config import Settings, settings
+from app.core.config import settings
 from app.api import api_router
 
 class AuthenticationMiddleware(TrustedHostMiddleware):
@@ -44,6 +46,10 @@ def get_workers(workers=None):
         workers = (cpu_count() * 2) + 1
     return workers
 
+def create_db_and_tables():
+    engine = create_engine(settings.SQLALCHEMY_DATABASE_URL, echo=True)
+    SQLModel.metadata.create_all(engine)
+
 def create_app():
     app = FastAPI()
     sio = socketio.AsyncServer(
@@ -66,7 +72,11 @@ def create_app():
     app.add_middleware(AuthenticationMiddleware)
     app.add_middleware(AddHeaderMiddleware)    
     app.add_middleware(CustomErrorHandlerMiddleware)
-    
+
+    @app.on_event("startup")
+    def on_startup():
+        create_db_and_tables()  # 애플리케이션 시작 시 데이터베이스 테이블 생성
+
     app.include_router(api_router, prefix=settings.API_V1_STR)
 
     @app.get("/")

@@ -82,7 +82,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
-.env
+#.env
 .venv
 env/
 venv/
@@ -107,5 +107,8 @@ venv.bak/
 settings.json
 
 # frontend
-src/frontend
+# src/frontend
 node_modules
+
+# backend
+src/backend/cloud-wiz-fmops.db
