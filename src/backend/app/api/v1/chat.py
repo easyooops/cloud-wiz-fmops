@@ -1,7 +1,7 @@
 import os
+from dotenv import load_dotenv
 from typing import Optional
 from fastapi import APIRouter
-from getpass import getpass
 
 from app.core.exception import internal_server_error
 from app.api.v1.schemas.chat import ChatResponse
@@ -10,13 +10,14 @@ from app.components.LLM.Ollama import OllamaLLMComponent
 from app.components.LLM.Bedrock import BedrockLLMComponent
 
 router = APIRouter()
+load_dotenv()
 
 @router.get("/llms-openai", response_model=ChatResponse)
 def get_llm_openai_answer(
     query: Optional[str] = None
 ):
     try:
-        openai_api_key = "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"
+        openai_api_key = os.getenv("OPENAI_API_KEY")
         openai_component = OpenAILLMComponent(openai_api_key)
         openai_component.build(temperature=0.5)
 
