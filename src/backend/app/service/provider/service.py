@@ -32,7 +32,7 @@ class ProviderService:
             provider = self.session.get(Provider, provider_id)
             if not provider:
                 raise HTTPException(status_code=404, detail="Provider not found")
-            for key, value in provider_update.dict().items():
+            for key, value in provider_update.model_dump().items():
                 setattr(provider, key, value)
             self.session.add(provider)
             self.session.commit()
@@ -50,4 +50,3 @@ class ProviderService:
             self.session.commit()
         except Exception as e:
             raise e
-

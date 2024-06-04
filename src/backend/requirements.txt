@@ -1,9 +1,10 @@
-# defaul
+# default
 redis
 types-redis
 uvicorn 
 pytest
 httpx
+python-jose
 
 # env
 pydantic-settings
@@ -24,3 +25,6 @@ alembic
 
 # logger
 loguru
+
+# AWS
+boto3
