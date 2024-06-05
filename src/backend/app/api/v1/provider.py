@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
@@ -39,7 +40,7 @@ def create_provider(
 # UPDATE
 @router.put("/{provider_id}", response_model=Provider)
 def update_provider(
-    provider_id: int,
+    provider_id: UUID,
     provider_update: ProviderUpdate,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
@@ -52,7 +53,7 @@ def update_provider(
 # DELETE
 @router.delete("/{provider_id}")
 def delete_provider(
-    provider_id: int,
+    provider_id: UUID,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
     try:

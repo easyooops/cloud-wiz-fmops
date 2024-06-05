@@ -1,10 +1,10 @@
-from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import datetime
+from uuid import UUID, uuid4
 
 class Provider(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    provider_id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     name: str = Field(index=True)
     description: Optional[str] = Field(default=None, index=True)
     logo: Optional[str] = Field(default=None)
