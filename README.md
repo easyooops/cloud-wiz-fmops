@@ -50,3 +50,7 @@ git commit -m "add frontend"
 # git push origin [new branch]
 git push origin feature-suyeong
 ```
+### Pull Main
+```
+git pull origin main
+```
