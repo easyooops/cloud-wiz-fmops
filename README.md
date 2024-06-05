@@ -11,15 +11,18 @@ http://localhost:8000/docs#/
 
 # Database Session
 ### SQLALCHEMY
-```python
+```
+python
 db: Session = Depends(lambda: get_database(ServiceType.SQLALCHEMY))
 ```
 ### MYSQL
-```python
+```
+python
 db: Session = Depends(lambda: get_database(ServiceType.MYSQL))
 ```
 ### SQLITE
-```python
+```
+python
 db: Session = Depends(lambda: get_database(ServiceType.SQLITE))
 ```
 
@@ -30,7 +33,7 @@ git remote add origin https://github.com/easyooops/cloud-wiz-fmops.git
 
 git remote -v
 ```
-### create breanch
+### create branch
 ```
 # git checkout -b [new branch]
 git checkout -b feature-suyeong

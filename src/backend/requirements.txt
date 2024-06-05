@@ -38,3 +38,6 @@ llama-cpp-python
 langchain_aws
 
 openai
+
+# chat
+langchain-openai
