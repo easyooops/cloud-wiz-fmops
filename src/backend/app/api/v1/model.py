@@ -1,5 +1,4 @@
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from app.service.model.service import (
     OpenAIService, OllamaService, AnthropicService,
     AL21LabsService, CohereService, TitanService

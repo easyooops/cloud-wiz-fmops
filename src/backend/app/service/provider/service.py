@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -27,12 +28,12 @@ class ProviderService:
         except Exception as e:
             raise e
         
-    def update_provider(self, provider_id: int, provider_update: ProviderUpdate):
+    def update_provider(self, provider_id: UUID, provider_update: ProviderUpdate):
         try:
             provider = self.session.get(Provider, provider_id)
             if not provider:
                 raise HTTPException(status_code=404, detail="Provider not found")
-            for key, value in provider_update.model_dump().items():
+            for key, value in provider_update.model_dump(exclude_unset=True).items():
                 setattr(provider, key, value)
             self.session.add(provider)
             self.session.commit()
@@ -41,7 +42,7 @@ class ProviderService:
         except Exception as e:
             raise e
 
-    def delete_provider(self, provider_id: int):
+    def delete_provider(self, provider_id: UUID):
         try:
             provider = self.session.get(Provider, provider_id)
             if not provider:
