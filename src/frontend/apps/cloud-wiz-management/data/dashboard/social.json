@@ -1,0 +1,79 @@
+{
+      "campaigns" : [{
+        "tdBorderIcon": "border-icon facebook",
+        "platformIcon": "fa fa-facebook",
+        "campaign": "Jane Cooper",
+        "geo": "UK",
+        "profitabilityIcon": "font-success me-1",
+        "type": "trending-up",
+        "profitability": "45.6%",
+        "maxParticipation": "$9,786",
+        "status": "Active",
+        "statusClass": "btn badge-light-primary"
+    },
+    {
+        "tdBorderIcon": "border-icon instagram",
+        "platformIcon": "fa fa-instagram",
+        "campaign": "Floyd Miles",
+        "geo": "DE",
+        "profitabilityIcon": "font-danger me-1",
+        "type": "trending-down",
+        "profitability": "12.3%",
+        "maxParticipation": "$19,7098",
+        "status": "Active",
+        "statusClass": "btn badge-light-primary"
+    },
+    {
+        "tdBorderIcon": "border-icon pinterest",
+        "platformIcon": "fa fa-pinterest",
+        "campaign": "Guy Hawkins",
+        "geo": "ES",
+        "profitabilityIcon": "font-success me-1",
+        "type": "trending-up",
+        "profitability": "65.6%",
+        "maxParticipation": "$90,986",
+        "status": "Active",
+        "statusClass": "btn badge-light-primary"
+    },
+    {
+        "tdBorderIcon": "border-icon twitter",
+        "platformIcon": "fa fa-twitter",
+        "campaign": "Travis Wright",
+        "geo": "ES",
+        "profitabilityIcon": "font-danger me-1",
+        "type": "trending-down",
+        "profitability": "35.6%",
+        "maxParticipation": "$23,654",
+        "status": "Inactive",
+        "statusClass": "btn badge-light-light disabled"
+    },
+    {
+        "tdBorderIcon": "border-icon you-tube",
+        "platformIcon": "fa fa-youtube-play",
+        "campaign": "Mark Green",
+        "geo": "UK",
+        "profitabilityIcon": "font-success me-1",
+        "type": "trending-up",
+        "profitability": "45.6%",
+        "maxParticipation": "$12,796",
+        "status": "Inactive",
+        "statusClass": "btn badge-light-light disabled"
+    }
+    ],
+    "users": [{
+        "image": "user/1.jpg"
+    },
+    {
+        "image": "user/6.jpg"
+    },
+    {
+        "image": "user/7.jpg"
+    },
+    {
+        "image": "user/3.jpg"
+    },
+    {
+        "image": "user/8.jpg"
+    }
+]
+}

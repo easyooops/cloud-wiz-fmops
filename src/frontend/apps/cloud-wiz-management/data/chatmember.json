@@ -1,0 +1,273 @@
+{
+    "data": [
+        {
+            "id": 0,
+            "name": "Mark Jenco",
+            "thumb": "user/12.png",
+            "status": "Status...",
+            "lastSeenDate": "0",
+            "online": true,
+            "typing": true,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-danger"
+           
+        },
+        {
+            "id": 1,
+            "name": "Vincent Porter",
+            "thumb": "user/1.jpg",
+            "status": "  Hello Name",
+            "lastSeenDate": "Last seen today 15:24",
+            "online": false,
+            "typing": false,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-success",
+            "class":"away",
+            "active": "active"
+
+        },
+        {
+            "id": 2,
+            "name": "Aiden Chavez",
+            "thumb": "user/2.png",
+            "status": "  Out is my favorite.",
+            "lastSeenDate": "Last seen today 13:24",
+            "online": true,
+            "typing": false,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-success",
+            "class":"online",
+            "active": "active"
+
+        },
+        {
+            "id": 3,
+            "name": "Prasanth Anand",
+            "thumb": "user/8.jpg",
+            "status": "Change for anyone.",
+            "lastSeenDate": "Last seen today 13:24",
+            "online": true,
+            "typing": false,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-success",
+            "class":"online",
+            "active": "active"
+
+        },
+        
+        {
+            "id": 4,
+            "name": "Venkata Satyamu",
+            "thumb": "user/4.jpg",
+            "status": "  First bun like a sun.",
+            "lastSeenDate": "Last seen today 12:10",
+            "online": false,
+            "typing": false,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-success",
+            "class":"ofline",
+            "active": "active"
+
+        },
+        {
+            "id": 5,
+            "name": "Ginger Johnston",
+            "thumb": "user/5.jpg",
+            "status": "  it's my life. Mind it.",
+            "lastSeenDate": "Last seen today 22:24",
+            "online": true,
+            "typing": false,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-danger",
+            "class":"online",
+            "active": "active"
+
+
+        },
+        {
+            "id": 6,
+            "name": "Kori Thomas",
+            "thumb": "user/8.jpg",
+            "status": "  Change for anyone.",
+            "lastSeenDate": "Last seen today 00:24",
+            "online": false,
+            "typing": true,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-success",
+            "class":"ofline"
+},
+        {
+            "id": 7,
+            "name": "Vincent Porter",
+            "thumb": "user/1.jpg",
+            "status": "  Hello Name",
+            "lastSeenDate": "Last seen yesterday 06:47",
+            "online": true,
+            "typing": false,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-danger",
+            "class":"online",
+            "active": "active"
+
+
+        },
+        {
+            "id": 8,
+            "name": "Kori Thomas",
+            "thumb": "user/8.jpg",
+            "status": "  Change for anyone.",
+            "lastSeenDate": "Last seen yesterday 20:07",
+            "online": true,
+            "typing": true,
+            "time": "5 May, 5:30 PM",
+            "reply": "fa fa-reply font-danger",
+            "class":"online",
+            "active": "active"
+
+        }    
+    ],
+    "chat": [
+        {
+          "id": 1,
+          "users": [
+            0,
+            1
+          ],
+          "lastMessageTime":"Last seen yesterday 05:14",
+          "messages": [
+            {
+              "sender": 0,
+              "time": "10:12 am",
+              "text": "Are we meeting today? Project has been already finished and I have results to show you."
+            },
+            { 
+              "sender": 1,
+              "time": "10:14 am",
+              "text": "Well I am not sure. The rest of the team is not here yet. Maybe in an hour or so?."
+            },
+            {
+              "sender": 1,
+              "time": "10:14 am",
+              "text": "Well I am not sure. The rest of the team."
+            },
+            {
+              "sender": 0,
+              "time": "10:20 am",
+              "text": "Actually everything was fine. I'm very excited to show this to our team."
+            }
+          ],
+          "video":[
+            {
+              "sender":0,
+              "time":"36:56",
+              "thumb":"other-images/receiver-img.jpg"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "users": [
+            0,
+            4
+          ],
+          "lastMessageTime":"Last seen yesterday 14:14",
+          "messages": [
+            {
+              "sender": 0,
+              "time": "09:25",
+              "text": "Hello. How are you today?"
+            },
+            {
+              "sender": 4,
+              "time": "09:29",
+              "text": "Hey! I'm fine. Thanks for asking!"
+            },
+            {
+              "sender": 4,
+              "time": "09:36",
+              "text": "Sweet! So, what do you wanna do today?"
+            },
+            {
+              "sender": 0,
+              "time": "10:12",
+              "text": "Nah, I dunno. Play soccer.. or learn more coding perhaps?"
+            },
+            {
+              "sender": 4,
+              "time": "10:30",
+              "text": "I am very busy at the moment."
+            }
+          ],
+          "video":[
+            {
+              "sender":0,
+              "time":"36:56",
+              "thumb":"other-images/receiver-img.jpg"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "users": [
+            0,
+            4
+          ],
+          "lastMessageTime":"Last seen yesterday 11:14",
+          "messages": [
+            {
+              "sender": 0,
+              "time": "09:25",
+              "text": "Hello. How are you today?"
+            },
+            {
+              "sender": 4,
+              "time": "09:29",
+              "text": "Hey! I'm fine. Thanks for asking!"
+            },
+            {
+              "sender": 4,
+              "time": "09:36",
+              "text": "Sweet! So, what do you wanna do today?"
+            },
+            {
+              "sender": 0,
+              "time": "10:12",
+              "text": "Nah, I dunno. Play soccer.. or learn more coding perhaps?"
+            },
+            {
+              "sender": 4,
+              "time": "10:30",
+              "text": "I am very busy at the moment."
+            }
+          ],
+          "video":[
+            {
+              "sender":0,
+              "time":"36:56",
+              "thumb":"other-images/receiver-img.jpg"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "users": [],
+          "lastMessageTime":"",
+          "messages": [],
+          "video":[]
+        },
+        {
+          "id": 5,
+          "users": [],
+          "lastMessageTime":"",
+          "messages": [],
+          "video":[]
+        },
+        {
+          "id": 6,
+          "users": [],
+          "lastMessageTime":"",
+          "messages": [],
+          "video":[]
+        }
+      ]
+}

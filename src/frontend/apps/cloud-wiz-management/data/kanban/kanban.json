@@ -1,0 +1,65 @@
+{
+  "columns" : [{
+        "title": "Todo",
+        "tasks": [{
+                "id": 1,
+                "title": "Design Dashboard",
+                "date": "23/07/20",
+                "badge": "medium",
+                "badgetype": "badge-primary",
+                "location": "Themeforest, australia"
+            },
+            {
+                "id": 2,
+                "title": "Test Sidebar",
+                "date": "24/7/20",
+               " badge": "Urgent",
+                "badgetype": "badge-danger",
+                "location": "Themeforest, australia"
+            }
+    
+        ]
+    },
+    {
+        "title": "Doing",
+        "tasks": [{
+                "id": 1,
+                "title": "Design Dashboard",
+                "date": "23/07/20",
+                "badge": "medium",
+                "badgetype": "badge-primary",
+                "location": "Themeforest, australia"
+            },
+            {
+                "id": 2,
+                "title": "Test Sidebar",
+                "date": "24/7/20",
+                "badge": "Low",
+                "badgetype": "badge-success",
+                "location": "Themeforest, australia"
+            }
+        ]
+    },
+    {
+        "title": "Done",
+        "tasks": [{
+                "id": 1,
+                "title": "Design Dashboard",
+                "date": "23/07/20",
+                "badge": "medium",
+                "badgetype": "badge-danger",
+                "location": "Themeforest, australia"
+            },
+            {
+                "id": 2,
+    
+                "title": "Test Sidebar",
+                "date": "24/7/20",
+                "badge": "Low",
+                "badgetype": "badge-success",
+                "location": "Themeforest, australia"
+            }
+        ]
+    }
+    ]
+}

@@ -1,0 +1,63 @@
+
+{
+"activirtyHours" : [{
+    "title": "Time Spent",
+    "inNumber": "30",
+    "inPercentage": "140%"
+},
+{
+    "title": "Lessons taken",
+    "inNumber": "45",
+    "inPercentage": "86%"
+},
+{
+    "title": "Exams passed",
+    "inNumber": "12",
+    "inPercentage": "120%"
+}
+],
+
+"courses" :[{
+    "iconWrap": "course/1.svg",
+    "backArrow": "course/back-arrow/1.png",
+    "title": "Management"
+},
+{
+    "iconWrap": "course/2.svg",
+    "backArrow": "course/back-arrow/2.png",
+    "title": "Web Devlopment"
+},
+{
+    "iconWrap": "course/3.svg",
+    "backArrow": "course/back-arrow/1.png",
+    "title": "Business Analytics"
+},
+{
+    "iconWrap": "course/4.svg",
+    "backArrow": "course/back-arrow/3.png",
+    "title": "Marketing"
+}
+],
+
+  "upcomingSchedule" :[{
+    "iconWrap": "course/1.svg",
+    "backArrow": "course/back-arrow/1.png",
+    "title": "Management"
+},
+{
+    "iconWrap": "course/2.svg",
+    "backArrow": "course/back-arrow/2.png",
+    "title": "Web Devlopment"
+},
+{
+    "iconWrap": "course/3.svg",
+    "backArrow": "course/back-arrow/1.png",
+    "title": "Business Analytics"
+},
+{
+    "iconWrap": "course/4.svg",
+    "backArrow": "course/back-arrow/3.png",
+    "title": "Marketing"
+}
+]
+}

@@ -1,0 +1,90 @@
+<template>
+  <div class="col-sm-12 col-xxl-6 box-col-12">
+    <div class="card height-equal">
+      <div class="card-header">
+        <h3>Horizontal Style</h3><span>For Create inline megaoption add <code>.mega-horizontal</code> class in form tag</span>
+      </div>
+      <div class="card-body">
+        <form class="mega-horizontal">
+          <div class="row">
+            <div class="col-sm-3">
+              <p class="mega-title">Delivery Option</p>
+            </div>
+            <div class="col-sm-9">
+              <div class="card">
+                <div class="d-flex p-20">
+                  <div class="form-check radio radio-primary me-3">
+                    <input class="form-check-input" id="radio30" type="radio" name="radio1" value="option1">
+                    <label class="form-check-label" for="radio30"></label>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mt-0 mega-title-badge">COD<span class="badge badge-primary pull-right digits">50 INR</span></h6>
+                    <p>Estimated 5 Day Shipping ( Duties end tax may be due delivery )</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-9 offset-sm-3">
+              <div class="card">
+                <div class="d-flex p-20">
+                  <div class="form-check radio radio-secondary me-3">
+                    <input class="form-check-input" id="radio31" type="radio" name="radio1" value="option1">
+                    <label class="form-check-label" for="radio31"></label>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mt-0 mega-title-badge">Fast <span class="badge badge-secondary pull-right digits">100 INR</span></h6>
+                    <p>Estimated 1 Day Shipping ( Duties end tax may be due delivery )</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <p class="mega-title">Buying Option</p>
+            </div>
+            <div class="col-sm-9">
+              <div class="card">
+                <div class="d-flex p-20">
+                  <div class="form-check radio radio-success me-3">
+                    <input class="form-check-input" id="radio32" type="radio" name="radio1" value="option1">
+                    <label class="form-check-label" for="radio32"></label>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mt-0 mega-title-badge">XYZ Seller<span class="badge badge-success pull-right digits">250 INR</span></h6>
+                    <p class="rating-star-wrapper"><i class="icofont icofont-star txt-warning"></i><i class="icofont icofont-star txt-warning"></i><i class="icofont icofont-star txt-warning"></i><i class="icofont icofont-star txt-warning"></i><i class="icofont icofont-star txt-warning m-r-5"></i>5 start rating</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-9 offset-sm-3">
+              <div class="card mb-0">
+                <div class="d-flex p-20">
+                  <div class="form-check radio radio-info me-3">
+                    <input class="form-check-input" id="radio33" type="radio" name="radio1" value="option1">
+                    <label class="form-check-label" for="radio33"></label>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mt-0 mega-title-badge">ABC Seller<span class="badge badge-info pull-right digits">150 INR</span></h6>
+                    <p class="rating-star-wrapper"><i class="icofont icofont-star txt-warning"></i><i class="icofont icofont-star"></i><i class="icofont icofont-star"></i><i class="icofont icofont-star"></i><i class="icofont icofont-star m-r-5"></i>1 start rating</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer text-end">
+        <button class="btn btn-primary m-r-15" type="submit">Submit</button>
+        <button class="btn btn-light" type="submit">Cancel</button>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+export default {
+    data(){
+        return{
+            horizontalStyle:1
+        }
+    }
+}
+</script>

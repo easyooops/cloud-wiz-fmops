@@ -1,0 +1,38 @@
+<template>
+    <div class="col-xxl-8 box-col-12">
+        <div class="card">
+            <div class="card-header py-4">
+                <h5>Credit card </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-7 order-md-0 order-1">
+                        <form class="theme-form mega-form">
+                            <div class="mb-3">
+                                <input class="form-control" type="text" placeholder="Card number">
+                            </div>
+                            <div class="mb-3">
+                                <input class="form-control" type="text" placeholder="First Name">
+                            </div>
+                            <div class="mb-3">
+                                <input class="form-control" type="date">
+                            </div>
+                            <div class="mb-3">
+                                <input class="form-control" type="text" placeholder="Name on card">
+                            </div>
+                            <div class="mb-3">
+                                <select class="form-select" size="1">
+                                    <option>Select Type</option>
+                                    <option>Master</option>
+                                    <option>Visa</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-5 text-center"><img class="img-fluid" src="/images/ecommerce/card.png" alt=""></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+    

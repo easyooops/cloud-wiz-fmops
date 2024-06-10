@@ -1,0 +1,9 @@
+{
+  "_hash": "XM8Cm0pKLg",
+  "project": {
+    "rootDir": "/home/suyeong/projects/cloud-wiz-fmops/src/frontend/apps/cloud-wiz-management"
+  },
+  "versions": {
+    "nuxt": "3.10.1"
+  }
+}

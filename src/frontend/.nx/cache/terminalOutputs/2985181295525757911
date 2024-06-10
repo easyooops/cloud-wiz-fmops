@@ -1,0 +1,59 @@
+[90m[32mNuxt [1m3.10.1[22m[90m with Nitro [1m2.8.1[22m[39m
+
+[32m  ➜ Local:   [39m [36m[4mhttp://localhost:[1m3005[22m/[24m[39m
+[90m  ➜ Network:  use [37m--host[90m to expose[39m
+
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v1.0.0)[22m
+
+[36mℹ[39m Vite client warmed up in 25462ms
+[90m[[90mnitro[90m][39m [32m✔[39m Nitro built in 1974 ms
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m (x2)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m (x3)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m (x4)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m (x5)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m (x6)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m (x7)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/main/Section1.vue[22m (x8)
+[36mℹ[39m [32mhmr update [39m[2m/pages/index.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/components/header/menu.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/components/header/menu.vue[22m (x2)
+[36mℹ[39m [32mhmr update [39m[2m/components/header/menu.vue[22m (x3)
+[36mℹ[39m [32mhmr update [39m[2m/components/header/menu.vue[22m (x4)
+[36mℹ[39m [32mhmr update [39m[2m/components/header/menu.vue[22m (x5)
+[36mℹ[39m [32mhmr update [39m[2m/components/header/menu.vue[22m (x6)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x2)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x3)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x4)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x5)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x6)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x7)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x8)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x9)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x10)
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x11)
+
+[41m[30m ERROR [39m[49m [31mInternal server error: Failed to resolve import "/assets/images/logo-pin-2.png" from "components/sections/login/Section1.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36m/home/suyeong/projects/cloud-wiz-fmops/src/frontend/apps/cloud-wiz-base/components/sections/login/Section1.vue[39m:13:94
+[33m  48 |  }
+  49 |  import { createCommentVNode as _createCommentVNode,  createTextVNode as _createTextVNode, createStaticVNode as _createStaticVNode, openBlock as _openBlock,  } from "vue"
+  50 |  import _imports_0 from '/assets/images/logo-pin-2.png'
+     |                          ^
+  51 |  import _imports_1 from '/assets/images/png_icons/google.png'
+  52 |  [39m
+      at formatError (file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:63768:46)
+      at TransformContext.error (file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:63762:19)
+      at normalizeUrl (file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:62037:33)
+      at async file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:62191:47
+      at async Promise.all (index 5)
+      at async TransformContext.transform (file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:62112:13)
+      at async file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite-plugin-inspect/dist/index.mjs:372:17
+      at async Object.transform (file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:64063:30)
+      at async loadAndTransform (file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:49741:29)
+      at async viteTransformMiddleware (file:///home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/vite/dist/node/chunks/dep-9A4-l-43.js:59342:32)
+
+[36mℹ[39m [32mhmr update [39m[2m/pages/login/index.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/components/sections/login/Section1.vue[22m (x2)

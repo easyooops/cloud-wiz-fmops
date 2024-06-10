@@ -1,0 +1,36 @@
+{
+  "swiper": [
+    {
+      "image": "ecommerce/01.jpg",
+      "title": "Woman T-shirt",
+      "price": "100.00"
+    },
+    {
+      "image": "ecommerce/02.jpg",
+      "title": "Dream Beauty Fashion",
+      "price": "150.00"
+    },
+    {
+      "image": "ecommerce/03.jpg",
+      "title": "Voxati",
+      "price": "200.00"
+    }
+  ],
+  "swiper1": [
+    {
+      "image": "ecommerce/01.jpg",
+      "title": "Fancy Shirt",
+      "price": "100.00"
+    },
+    {
+      "image": "ecommerce/02.jpg",
+      "title": "Fancy Shirt",
+      "price": "100.00"
+    },
+    {
+      "image": "ecommerce/03.jpg",
+      "title": "Fancy Shirt",
+      "price": "100.00"
+    }
+  ]
+}

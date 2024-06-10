@@ -1,0 +1,33 @@
+[90m[32mNuxt [1m3.10.1[22m[90m with Nitro [1m2.8.1[22m[39m
+
+[32m  ➜ Local:   [39m [36m[4mhttp://localhost:[1m3006[22m/[24m[39m
+[90m  ➜ Network:  use [37m--host[90m to expose[39m
+
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v1.0.0)[22m
+
+[36mℹ[39m Vite client warmed up in 51339ms
+[90m[[90mnitro[90m][39m [32m✔[39m Nitro built in 1097 ms
+[36mℹ[39m [32mhmr update [39m[2m/components/agent/list/agentHeader.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/pages/index.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/pages/index.vue[22m (x2)
+[36mℹ[39m [32mhmr update [39m[2m/pages/index.vue[22m (x3)
+[36mℹ[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /layouts/default.vue, /components/header/index.vue, /components/sidebar/index.vue, /components/customizer/index.vue, /components/sidebar/index_dashboard.vue, /components/bookmark.vue, /components/header/logo.vue, /components/header/search.vue, /components/sidebar/nav.vue, /components/customizer/customizertool.vue, /components/customizer/customizersetting.vue, /components/customizer/customizerconfiguration.vue, /components/customizer/customlayout.vue, /components/customizer/customsetting.vue, /components/sidebar/navmenu.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/pages/index.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /layouts/default.vue, /components/header/index.vue, /components/sidebar/index.vue, /components/customizer/index.vue, /components/sidebar/index_dashboard.vue, /components/bookmark.vue, /components/header/logo.vue, /components/header/search.vue, /components/sidebar/nav.vue, /components/customizer/customizertool.vue, /components/customizer/customizersetting.vue, /components/customizer/customizerconfiguration.vue, /components/customizer/customlayout.vue, /components/customizer/customsetting.vue, /components/sidebar/navmenu.vue[22m
+
+[41m[30m ERROR [39m[49m [uncaughtException] Invalid URL
+
+  [90mat [39mnew NodeError ([36mnode:internal/errors:405:5[39m)
+  [90mat [39mnew URL ([36mnode:internal/url:676:13[39m)
+  [90mat [39msetupOutgoing ([36m/home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/nuxi/dist/chunks/index4.mjs:47:18[39m)
+  [90mat [39m/home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/nuxi/dist/chunks/index4.mjs:253:84
+  [90mat [39mProxyServer.web ([36m/home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/nuxi/dist/chunks/index4.mjs:537:20[39m)
+  [90mat [39mServer.handler ([36m/home/suyeong/projects/cloud-wiz-fmops/src/frontend/node_modules/nuxi/dist/chunks/dev.mjs:219:18[39m)
+  [90mat [39mServer.emit ([36mnode:events:529:35[39m)
+  [90mat [39mparserOnIncoming ([36mnode:_http_server:1131:12[39m)
+  [90mat [39mHTTPParser.parserOnHeadersComplete ([36mnode:_http_common:119:17[39m)
+
+[36mℹ[39m [32mhmr update [39m[2m/pages/index.vue[22m
+[36mℹ[39m [32mhmr update [39m[2m/pages/index.vue[22m (x2)
+[36mℹ[39m changed tsconfig file detected: /home/suyeong/projects/cloud-wiz-fmops/src/frontend/apps/cloud-wiz-management/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[36mℹ[39m changed tsconfig file detected: /home/suyeong/projects/cloud-wiz-fmops/src/frontend/apps/cloud-wiz-management/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values. (x2)
