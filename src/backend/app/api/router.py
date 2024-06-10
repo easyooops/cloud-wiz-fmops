@@ -10,6 +10,6 @@ api_router.include_router(provider.router, tags=["provider"], prefix="/provider"
 api_router.include_router(credential.router, tags=["credential"], prefix="/credential")
 api_router.include_router(inquiry.router, tags=["inquiry"], prefix="/inquiry")
 api_router.include_router(store.router, tags=["store"], prefix="/store")
-api_router.include_router(chat_model.router, tags=["chat_model"], prefix="/chat_model")
 api_router.include_router(chat.router, tags=["chat"], prefix="/chat")
+api_router.include_router(chat_model.router, tags=["chat_model"], prefix="/chat_model")
 api_router.include_router(model.router, tags=["model"], prefix="/model")
