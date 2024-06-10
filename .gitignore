@@ -115,3 +115,15 @@ src/backend/cloud-wiz-fmops.db
 
 .aws
 .nx
+
+!.env.example
+!.env.development
+!.env.production
+
+# Nuxt dev/build outputs
+.nx/cache
+.output
+.data
+.nuxt
+.nitro
+.cache
