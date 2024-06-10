@@ -1,0 +1,377 @@
+{
+    "activities": [
+        {
+            "image": "user/3.jpg",
+            "name": "Anna K.",
+            "to": "0x187...12bb",
+            "bnb": "+0.3BNB",
+            "bnbClass": "font-success",
+            "number": "29.09.22"
+        },
+        {
+            "image": "user/12.jpg",
+            "name": "Guy Hawkins",
+            "to": "0x187...12bb",
+            "bnb": "+0.3BNB",
+            "bnbClass": "font-success",
+            "number": "29.09.22"
+        },
+        {
+            "image": "user/10.jpg",
+            "name": "Jenny Wilson",
+            "to": "0x187...12bb",
+            "bnb": "-0.1BNB",
+            "bnbClass": "font-danger",
+            "number": "29.09.22"
+        },
+        {
+            "image": "user/11.jpg",
+            "name": "Jacob B.",
+            " to": "0x187...12bb",
+            "bnb": "+0.3BNB",
+            "bnbClass": "font-success",
+            "number": "29.09.22"
+        },
+        {
+            "image": "user/13.jpg",
+            "name": "Esther Howard",
+            "to": "0x187...12bb",
+            "bnb": "-0.2BNB",
+            "bnbClass": "font-danger",
+            "number": "29.09.22"
+        },
+        {
+            "image":"user/5.jpg",
+            "name": "Leslie Alexander",
+            "to": "0x187...12bb",
+            "bnb": "+0.3BNB",
+            "bnbClass": "font-success",
+            "number": "29.09.22"
+        }
+    ],
+    
+  "markets" : [
+        {
+        "name": "Coinmarketcap",
+       " balance": "+11.67%",
+        "balanceClass": "badge badge-light-success rounded-pill"
+        },
+        {
+        "name": "Binance",
+        "balance": "+11.67%",
+        "balanceClass": "badge badge-light-success rounded-pill"
+        },
+        {
+        "name": "Coinbase",
+        "balance": "+11.67%",
+        "balanceClass": "badge badge-light-secondary rounded-pill"
+        },
+        {
+        "name": "Yobit",
+       " balance": "+13.67%",
+        "balanceClass": "badge badge-light-success rounded-pill"
+        }
+    ],
+    
+   "alls" : [
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Buy BTC",
+        "date": "14 Mar, 2022",
+        "number": "0.018 BTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-danger me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell ETH",
+        "date": "25 Mar, 2022",
+        "number": "0.089 ETH",
+        "amount": "$116.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Buy LTC",
+        "date": "28 Mar, 2022",
+        "number": "0.018 LTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Buy LTC",
+        "date": "05 Apr, 2022",
+        "number": "0.089 LTC",
+        "amount": "$29.89"
+        },
+        {
+        "iconClass": "font-danger me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell BTC",
+        "date": "16 Apr, 2022",
+        "number": "0.012 BTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Buy BTC",
+        "date": "14 Mar, 2022",
+        "number": "0.018 BTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-danger me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell ETH",
+        "date": "25 Mar, 2022",
+        "number": "0.089 ETH",
+        "amount": "$116.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Buy LTC",
+        "date": "28 Mar, 2022",
+        "number": "0.018 LTC",
+        "amount": "$236.89"
+        }
+    ],
+    
+ "buys" : [
+        {
+            "iconClass": "font-success me-2",
+            "trandingClass": "trending-up",
+            "companyStatus": "Buy LTC",
+            "date": "30 Mar, 2022",
+            "number": "0.010 LTC",
+            "amount": "$105.00"
+        },
+        {
+            "iconClass": "font-danger me-2",
+            "trandingClass": "trending-down",
+            "companyStatus": "Buy ETH",
+            "date": "05 Apr, 2022",
+            "number": "0.089 ETH",
+            "amount": "$120.74"
+        },
+        {
+            "iconClass": "font-success me-2",
+            "trandingClass": "trending-up",
+            "companyStatus": "Buy BTC",
+            "date": "14 Mar, 2022",
+            "number": "0.018 BTC",
+            "amount": "$236.89"
+        },
+        {
+            "iconClass": "font-success me-2",
+            "trandingClass": "trending-up",
+            "companyStatus": "Buy LTC",
+            "date": "05 Apr, 2022",
+            "number": "0.089 LTC",
+            "amount": "$29.89"
+        },
+        {
+            "iconClass": "font-success me-2",
+            "trandingClass": "trending-down",
+            "companyStatus": "Buy BTC",
+            "date": "17 Sep, 2022",
+            "number": "0.08 BTC",
+            "amount": "$380.89"
+        },
+        {
+            "iconClass": "font-success me-2",
+            "trandingClass": "trending-up",
+            "companyStatus": "Buy LTC",
+            "date": "30 Mar, 2022",
+            "number": "0.010 LTC",
+            "amount": "$105.00"
+        },
+        {
+            "iconClass": "font-danger me-2",
+            "trandingClass": "trending-down",
+            "companyStatus": "Buy ETH",
+            "date": "5 Apr, 2022",
+            "number": "0.075 ETH",
+            "amount": "$120.74"
+        },
+        {
+            "iconClass": "font-success me-2",
+            "trandingClass": "trending-up",
+            "companyStatus": "Buy BTC",
+            "date": "14 Mar, 2022",
+            "number": "0.018 BTC",
+            "amount": "$236.89"
+        }
+    ],
+    
+    "sells" :[
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell BTC",
+        "date": "14 Mar, 2022",
+        "number": "0.018 BTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-danger me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell ETH",
+        "date": "25 Mar, 2022",
+        "number": "0.089 ETH",
+        "amount": "$116.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Sell LTC",
+        "date": "28 Mar, 2022",
+        "number": "0.018 LTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Sell LTC",
+        "date": "05 Apr, 2022",
+        "number": "0.089 LTC",
+        "amount": "$29.89"
+        },
+        {
+        "iconClass": "font-danger me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell BTC",
+        "date": "16 Apr, 2022",
+        "number": "0.012 BTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell BTC",
+        "date": "14 Mar, 2022",
+        "number": "0.018 BTC",
+        "amount": "$236.89"
+        },
+        {
+        "iconClass": "font-danger me-2",
+        "trandingClass": "trending-down",
+        "companyStatus": "Sell ETH",
+        "date": "25 Mar, 2022",
+        "number": "0.089 ETH",
+        "amount": "$116.89"
+        },
+        {
+        "iconClass": "font-success me-2",
+        "trandingClass": "trending-up",
+        "companyStatus": "Sell LTC",
+        "date": "28 Mar, 2022",
+        "number": "0.018 LTC",
+        "amount": "$236.89"
+        }
+    ],
+    
+    "currencies" : [
+        {
+        "CurremcyClass": "currency-icon warning",
+        "svgIcon": "beta",
+        "coinName": "Bitcoin",
+        "price": "$13,098.09",
+        "Change": "5.90",
+        "totalBalance": "$74,871.470",
+        "totalCoin": "1.09634721",
+        "changeCurrency": "change-currency font-success",
+        "datafeather": "trending-up"
+        },
+        {
+        "CurremcyClass": "currency-icon success",
+        "svgIcon": "ltc",
+        "coinName": "Litecoin",
+        "price": "$11,098.04",
+        "Change": "2.90",
+        "totalBalance": "$87,897.098",
+        "totalCoin": "1.09675432",
+        "changeCurrency": "change-currency font-secondary",
+        "datafeather": "trending-down"
+        },
+        {
+        "CurremcyClass": "currency-icon primary",
+        "svgIcon": "eth",
+        "coinName": "Eathereum",
+        "price": "$45,198.09",
+        "Change": "0.12",
+        "totalBalance": "$45,178.010",
+        "totalCoin": "1.41557127",
+        "changeCurrency": "change-currency font-success",
+        "datafeather": "trending-up"
+        },
+        {
+        "CurremcyClass": "currency-icon secondary",
+        "svgIcon": "bin",
+        "coinName": "Binance",
+        "price": "$35,098.34",
+        "Change": "3.56",
+        "totalBalance": "$64,100.066",
+        "totalCoin": "1.78142254",
+        "changeCurrency": "change-currency font-success",
+        "datafeather": "trending-up"
+        },
+        {
+        "CurremcyClass": "currency-icon dark-green",
+        "svgIcon": "te",
+        "coinName": "Tether",
+        "price": "$56,898.91",
+        "Change": "1.23",
+        "totalBalance": "$61,574.218",
+        "totalCoin": "1.574215",
+        "changeCurrency": "change-currency font-secondary",
+        "datafeather": "trending-down"
+        }
+    ],
+    
+  "portfolios" :[
+        {
+        "CurremcyClass": "currency-icon warning",
+        "svgIcon": "beta",
+        "coinName": "Bitcoin",
+        "status": "BTC",
+        "statusClass": "status bg-success",
+        "totalCoin": "BTC 0.00876543",
+        "price": "$14,987.13",
+        "priceClass": "font-success"
+        },
+        {
+        "CurremcyClass": "currency-icon success",
+        "svgIcon": "ltc",
+        "coinName": "Ethereum",
+        "status": "ETH",
+        "statusClass": "status bg-danger",
+        "totalCoin": "ETC 1.60876543",
+        "price": "$49,987.13",
+        "priceClass": "font-danger"
+        },
+        {
+        "CurremcyClass": "currency-icon primary",
+        "svgIcon": "eth",
+        "coinName": "Litecoin",
+        "status": "LTC",
+        "statusClass": "status bg-success",
+        "totalCoin": "LTC 1.60876543",
+        "price": "$35,571.25",
+        "priceClass": "font-success"
+        },
+        {
+        "CurremcyClass": "currency-icon light-blue",
+        "svgIcon": "dash",
+        "coinName": "Dash",
+        "status": "DSH",
+        "statusClass": "status bg-success",
+        "totalCoin": "DSH 1.80741510",
+        "price": "$17,047.30",
+        "priceClass": "font-success"
+        }
+    ]
+}

@@ -1,0 +1,34 @@
+{
+    "puechaseSalesDetails": [
+        {
+            "widgetClass": "widget-round secondary",
+            "svgIcon1": "cart",
+            "svgIcon2": "halfcircle",
+            "number": "$ 3,658",
+            "title": "현재 비용",
+            "growthClass": "font-secondary f-w-500",
+            "iconClass": "icon-arrow-up icon-rotate me-1",
+            "growthNumber": "+11%"
+        },
+        {
+            "widgetClass": "widget-round warning",
+            "svgIcon1": "return-box",
+            "svgIcon2": "halfcircle",
+            "number": "$ 5,729",
+            "title": "예상 월말 비용",
+            "growthClass": "font-warning f-w-500",
+            "iconClass": "icon-arrow-up icon-rotate me-1",
+            "growthNumber": "+16%"
+        },
+        {
+            "widgetClass": "widget-round primary",
+            "svgIcon1": "tag",
+            "svgIcon2": "halfcircle",
+            "number": "$ 5,329",
+            "title": "지난 달 비용",
+            "growthClass": "font-primary f-w-500",
+            "iconClass": "icon-arrow-up icon-rotate me-1",
+            "growthNumber": "+3%"
+        }
+    ]
+}

@@ -1,0 +1,1019 @@
+{
+  "data": [
+    {
+      "tags": ["Woman Top", "white", "black", "green", "Levi's"],
+      "id": 1,
+      "images": [
+        "ecommerce/01.jpg",
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg"
+      ],
+      "name": "Woman T-shirt",
+      "note": "Women Full Sleeve Printed Sweatshirt",
+      "discription": "Women's Tank Top High Neck Cotton Top Stylish Women T-shirt..",
+      "discountPrice": "35.00",
+      "status": "none",
+      "price": 26.0,
+      "stock": 30,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["White", "gray"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel", "Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "black",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "tags": ["Man Shirt", "Man T-Shirt", "yellow", "gray", "green", "Diesel"],
+      "sale": true,
+      "id": 2,
+      "images": [
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Dream Beauty Fashion",
+      "note": "Tops for Women Stylish",
+      "discription": "Rock Paper Scissors Womens Tank Top High Neck Cotton Top Stylish Women Skirt..",
+      "discountPrice": "350.00",
+      "status": "sale",
+      "price": 260.0,
+      "stock": 10,
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["green", "gray"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Levis", "Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "tags": [
+        "Woman Top",
+        "Woman Jeans",
+        "yellow",
+        "gray",
+        "green",
+        "Hudson",
+        "Denizen"
+      ],
+      "id": 3,
+      "images": [
+        "ecommerce/03.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "VOXATI",
+      "note": "Men's Denim Jacket",
+      "discription": "Lorate Solid Men's Fashion Full Sleeves Latest Jacket for Men With Button Closure Long Sleeve Casual Torn Lycra Denim Jacket.",
+      "discountPrice": "50.00",
+      "price": "360.00",
+      "status": "none",
+      "stock": 20,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["White", "gray", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel", "Spykar", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "tags": [
+        "Man Shirt",
+        "Man Jeans",
+        "yellow",
+        "gray",
+        "green",
+        "Hudson",
+        "Spykar",
+        "Lee",
+        "Diesel"
+      ],
+      "sale": true,
+      "id": 4,
+      "images": [
+        "ecommerce/04.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Cyclamen",
+      "note": "Stylish co-ord set 2 piece dress for women",
+      "discription": "Glamcci Women's Cotton Blend Printed One Piece Party Dress.",
+      "discountPrice": "40.00",
+      "price": "526.00",
+      "status": "50%",
+      "stock": 30,
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["red", "gray", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Levis", "Lee", "Hudson"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "tags": [
+        "Man Shirt",
+        "Man Jeans",
+        "yellow",
+        "gray",
+        "green",
+        "Hudson",
+        "Spykar",
+        "Lee",
+        "Diesel"
+      ],
+      "sale": true,
+      "id": 5,
+      "images": [
+        "ecommerce/05.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Dream Beauty Fashion",
+      "note": "Tops for Women Stylish",
+      "discription": "Rock Paper Scissors Womens Tank Top High Neck Cotton Top Stylish Women Skirt..",
+      "discountPrice": "70",
+      "price": 206.0,
+      "stock": 8,
+      "status": "none",
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["green", "gray", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Denien", "Diesel", "Spykar"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "images": [
+        "ecommerce/06.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Cyclamen",
+      "note": "Stylish co-ord set 2 piece dress for women",
+      "discription": "Glamcci Women's Cotton Blend Printed One Piece Party Dress.",
+      "discountPrice": "35.00",
+      "price": 926.0,
+      "status": "none",
+      "stock": 40,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["purple", "orange", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Lee", "Lifestyle", "Nike"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "sale": true,
+      "id": 7,
+      "images": [
+        "ecommerce/01.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Woman T-shirt",
+      "note": "Women Full Sleeve Printed Sweatshirt",
+      "discription": "Women's Tank Top High Neck Cotton Top Stylish Women T-shirt..",
+      "discountPrice": "450.00",
+      "price": 1000.0,
+      "status": "sale",
+      "stock": 10,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["orange", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "images": [
+        "ecommerce/03.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "VOXATI",
+      "note": "Men's Denim Jacket",
+      "discription": "Lorate Solid Men's Fashion Full Sleeves Latest Jacket for Men With Button Closure Long Sleeve Casual Torn Lycra Denim Jacket.",
+      "discountPrice": "550.00",
+      "price": 500.0,
+      "status": "none",
+      "stock": 20,
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["purple", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "images": [
+        "ecommerce/04.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Cyclamen",
+      "note": "Stylish co-ord set 2 piece dress for women",
+      "discription": "Glamcci Women's Cotton Blend Printed One Piece Party Dress.",
+      "discountPrice": "100",
+      "price": 826.0,
+      "status": "none",
+      "stock": 30,
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["White", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Spykar"],
+      "variants": [
+        {
+          "color": "purple",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "white",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "sale": true,
+      "id": 10,
+      "images": [
+        "ecommerce/03.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "VOXATI",
+      "note": "Men's Denim Jacket",
+      "discription": "Lorate Solid Men's Fashion Full Sleeves Latest Jacket for Men With Button Closure Long Sleeve Casual Torn Lycra Denim Jacket.",
+      "discountPrice": "425.00",
+      "price": 500.0,
+      "status": "none",
+      "stock": 50,
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["purple", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "img": "ecommerce/02.jpg",
+      "images": [
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Dream Beauty Fashion",
+      "note": "Tops for Women Stylish",
+      "discription": "Rock Paper Scissors Womens Tank Top High Neck Cotton Top Stylish Women Skirt..",
+      "discountPrice": "825.00",
+      "price": 426.0,
+      "status": "none",
+      "stock": 8,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["White", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel", "Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "sale": true,
+      "id": 12,
+      "img": "ecommerce/01.jpg",
+      "images": [
+        "ecommerce/01.jpg",
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg"
+      ],
+      "name": "Woman T-shirt",
+      "note": "Women Full Sleeve Printed Sweatshirt",
+      "discription": "Women's Tank Top High Neck Cotton Top Stylish Women T-shirt..",
+      "discountPrice": "310.00",
+      "price": 626.0,
+      "status": "none",
+      "stock": 100,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["White", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel", "Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "purple",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "sale": true,
+      "id": 13,
+      "img": "ecommerce/01.jpg",
+      "images": [
+        "ecommerce/01.jpg",
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg"
+      ],
+      "name": "Woman T-shirt",
+      "note": "Women Full Sleeve Printed Sweatshirt",
+      "discription": "Women's Tank Top High Neck Cotton Top Stylish Women T-shirt..",
+      "discountPrice": "510.00",
+      "price": 450.0,
+      "status": "none",
+      "stock": 10,
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["White", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel", "Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "black",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "img": "ecommerce/02.jpg",
+      "images": [
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Dream Beauty Fashion",
+      "note": "Tops for Women Stylish",
+      "discription": "Rock Paper Scissors Womens Tank Top High Neck Cotton Top Stylish Women Skirt..",
+      "discountPrice": "380.00",
+      "price": 26.0,
+      "status": "none",
+      "stock": 10,
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["White", "blue", "yellow"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel", "Lee"],
+      "variants": [
+        {
+          "color": "White",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "sale": true,
+      "id": 15,
+      "img": "ecommerce/03.jpg",
+      "images": [
+        "ecommerce/03.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "VOXATI",
+      "note": "Men's Denim Jacket",
+      "discription": "Lorate Solid Men's Fashion Full Sleeves Latest Jacket for Men With Button Closure Long Sleeve Casual Torn Lycra Denim Jacket.",
+      "discountPrice": "80.00",
+      "price": 26.0,
+      "status": "Hot",
+      "stock": 10,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["black", "blue", "yellow"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Lee"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "img": "ecommerce/04.jpg",
+      "images": [
+        "ecommerce/04.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Cyclamen",
+      "note": "Stylish co-ord set 2 piece dress for women",
+      "discription": "Glamcci Women's Cotton Blend Printed One Piece Party Dress.",
+      "discountPrice": "90.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": "Out of stock",
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["black", "pink", "yellow"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Hudson"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/02.jpg"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "img": "ecommerce/03.jpg",
+      "images": [
+        "ecommerce/03.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "VOXATI",
+      "note": "Men's Denim Jacket",
+      "discription": "Lorate Solid Men's Fashion Full Sleeves Latest Jacket for Men With Button Closure Long Sleeve Casual Torn Lycra Denim Jacket.",
+      "discountPrice": "130.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": "Out of stock",
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["black", "pink", "yellow"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Lee"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "red",
+          "images": "ecommerce/02.jpg"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "img": "ecommerce/04.jpg",
+      "images": [
+        "ecommerce/04.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Cyclamen",
+      "note": "Stylish co-ord set 2 piece dress for women",
+      "discription": "Glamcci Women's Cotton Blend Printed One Piece Party Dress.",
+      "discountPrice": "150.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": "Out of stock",
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["black", "pink", "yellow"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel", "Hudson", "Lee"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "purple",
+          "images": "ecommerce/02.jpg"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "img": "ecommerce/01.jpg",
+      "images": [
+        "ecommerce/01.jpg",
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg"
+      ],
+      "name": "Woman T-shirt",
+      "note": "Women Full Sleeve Printed Sweatshirt",
+      "discription": "Women's Tank Top High Neck Cotton Top Stylish Women T-shirt..",
+      "discountPrice": "375.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": 20,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["red", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Denizen", "Levi's"],
+      "variants": [
+        {
+          "color": "red",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "img": "ecommerce/02.jpg",
+      "images": [
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Dream Beauty Fashion",
+      "note": "Tops for Women Stylish",
+      "discription": "Rock Paper Scissors Womens Tank Top High Neck Cotton Top Stylish Women Skirt..",
+      "discountPrice": "555.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": "Out of stock",
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["gray", "pink", "yellow"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Lee"],
+      "variants": [
+        {
+          "color": "gray",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "img": "ecommerce/01.jpg",
+      "images": [
+        "ecommerce/01.jpg",
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg"
+      ],
+      "name": "Woman T-shirt",
+      "note": "Women Full Sleeve Printed Sweatshirt",
+      "discription": "Women's Tank Top High Neck Cotton Top Stylish Women T-shirt..",
+      "discountPrice": "625.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": "Out of stock",
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["black", "pink", "blue"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Lee"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "blue",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "img": "ecommerce/02.jpg",
+      "images": [
+        "ecommerce/02.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Dream Beauty Fashion",
+      "note": "Tops for Women Stylish",
+      "discription": "Rock Paper Scissors Womens Tank Top High Neck Cotton Top Stylish Women Skirt..",
+      "discountPrice": "225.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": "Out of stock",
+      "review": "(250 review)",
+      "category": "Man",
+      "quantity": 3,
+      "colors": ["black", "pink", "red"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Denizen", "Spykar"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "red",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "img": "ecommerce/03.jpg",
+      "images": [
+        "ecommerce/03.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "VOXATI",
+      "note": "Men's Denim Jacket",
+      "discription": "Lorate Solid Men's Fashion Full Sleeves Latest Jacket for Men With Button Closure Long Sleeve Casual Torn Lycra Denim Jacket.",
+      "discountPrice": "285.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": 20,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["black", "pink", "red"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Diesel"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "red",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "yellow",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "img": "ecommerce/04.jpg",
+      "images": [
+        "ecommerce/04.jpg",
+        "ecommerce/03.jpg",
+        "ecommerce/04.jpg",
+        "ecommerce/05.jpg"
+      ],
+      "name": "Cyclamen",
+      "note": "Stylish co-ord set 2 piece dress for women",
+      "discription": "Glamcci Women's Cotton Blend Printed One Piece Party Dress.",
+      "discountPrice": "245.00",
+      "price": 550.0,
+      "status": "none",
+      "stock": 20,
+      "review": "(250 review)",
+      "category": "Woman",
+      "quantity": 3,
+      "colors": ["black", "pink", "red", "gray"],
+      "size": ["M", "L", "XL"],
+      "brands": ["Nike", "Caprese", "Lee"],
+      "variants": [
+        {
+          "color": "black",
+          "images": "ecommerce/01.jpg"
+        },
+        {
+          "color": "pink",
+          "images": "ecommerce/04.jpg"
+        },
+        {
+          "color": "red",
+          "images": "ecommerce/02.jpg"
+        },
+        {
+          "color": "gray",
+          "images": "ecommerce/03.jpg"
+        }
+      ]
+    }
+  ]
+}
