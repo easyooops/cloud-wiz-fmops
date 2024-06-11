@@ -127,3 +127,6 @@ src/backend/cloud-wiz-fmops.db
 .nuxt
 .nitro
 .cache
+
+#DB
+.db

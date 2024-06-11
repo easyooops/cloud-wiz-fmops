@@ -49,7 +49,7 @@ def get_bedrock_chat_answer(
 
 # OpenAI + Bedrock Chaining
 @router.post("/chat-chaining", response_model=ChatResponse)
-def get_chat_response(
+def get_openai_bedrock_chaining(
         query: Optional[str] = None,
         model: str = None,
         service_type: str = "openai",

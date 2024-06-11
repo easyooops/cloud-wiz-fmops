@@ -31,7 +31,7 @@ def create_store(
         service = StoreService(session)
         return service.create_store(store)
     except Exception as e:
-        raise internal_server_error(e)
+        raise HTTPException(status_code=500, detail=f"Error creating store: {str(e)}")
 
 @router.put("/{store_id}", response_model=Store)
 def update_store(

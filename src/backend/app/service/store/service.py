@@ -26,10 +26,11 @@ class StoreService(S3Service):
             self.session.add(new_store)
             self.session.commit()
             self.session.refresh(new_store)
-            self.create_directory(new_store.store_name)
+            print(f"store creating directory: {new_store.store_name}")
+            self.retry(lambda: self.create_directory(new_store.store_name))
             return new_store
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error creating store")
+            raise HTTPException(status_code=500, detail=f"Error creating store: {str(e)}")
 
     def update_store(self, store_id: UUID, store_update: StoreUpdate):
         try:
@@ -42,8 +43,10 @@ class StoreService(S3Service):
             self.session.commit()
             self.session.refresh(store)
             return store
+        except HTTPException as e:
+            raise e  # Re-raise the HTTPException if it was already raised
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error deleting store")
+            raise HTTPException(status_code=500, detail=f"Error updating store: {str(e)}")
 
     def delete_store(self, store_id: UUID):
         try:
@@ -53,21 +56,23 @@ class StoreService(S3Service):
             self.session.delete(store)
             self.session.commit()
             self.delete_directory(store.store_name)
+        except HTTPException as e:
+            raise e  # Re-raise the HTTPException if it was already raised
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error deleting store")
+            raise HTTPException(status_code=500, detail=f"Error deleting store: {str(e)}")
 
     def list_files(self, store_name: str) -> List[str]:
         try:
             objects = self.list_objects(store_name)
             return [obj['Key'] for obj in objects]
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error listing files")
+            raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
 
     def upload_file(self, file, file_location: str):
         try:
             self.s3_client.upload_fileobj(file, self.bucket_name, file_location)
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error uploading file")
+            raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
 
     def delete_directory(self, store_name: str):
         try:
@@ -81,4 +86,4 @@ class StoreService(S3Service):
                 )
             self.s3_client.delete_object(Bucket=self.bucket_name, Key=f"{store_name}/")
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Error deleting directory")
+            raise HTTPException(status_code=500, detail=f"Error deleting directory: {str(e)}")
