@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from boto3.session import Session
 from botocore.exceptions import ClientError
@@ -30,37 +31,54 @@ class S3Service:
 
     def create_bucket_if_not_exists(self):
         try:
-            response = self.s3_client.head_bucket(Bucket=self.bucket_name)
+            self.s3_client.head_bucket(Bucket=self.bucket_name)
         except ClientError as e:
             error_code = e.response['Error']['Code']
             if error_code == '404':
-                self.create_bucket()
+                self.retry(self.create_bucket)
+                print("Bucket created, waiting for stabilization...")
+                time.sleep(10)  # 추가 대기 시간
             else:
-                print(e)
+                print(f"Error while checking if bucket exists: {e}")
+                raise
 
     def create_bucket(self):
         try:
-            response = self.s3_client.create_bucket(
-                Bucket=self.bucket_name,
-                CreateBucketConfiguration={
-                    'LocationConstraint': self.aws_region
-                }
-            )
+            if self.aws_region == 'us-east-1':
+                response = self.s3_client.create_bucket(Bucket=self.bucket_name)
+            else:
+                response = self.s3_client.create_bucket(
+                    Bucket=self.bucket_name,
+                    CreateBucketConfiguration={'LocationConstraint': self.aws_region}
+                )
+            print(f"Bucket creation response: {response}")
             return response
         except ClientError as e:
-            print(e)
-            return None
+            print(f"Error while creating bucket: {e}")
+            raise
+
+    def retry(self, func, retries=5, delay=5, backoff=2):
+        for attempt in range(retries):
+            try:
+                return func()
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {str(e)}")
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                    delay *= backoff
+                else:
+                    raise e
 
     def create_directory(self, directory_name: str):
-        try:
+        def create():
             response = self.s3_client.put_object(
                 Bucket=self.bucket_name,
                 Key=directory_name + '/'
             )
+            print(f"Directory creation response: {response}")
             return response
-        except ClientError as e:
-            print(e)
-            return None
+
+        return self.retry(create)
 
     def list_objects(self, directory_name: str = ''):
         try:
@@ -92,4 +110,4 @@ class S3Service:
             return response
         except ClientError as e:
             print(e)
-            return None            
+            return None
