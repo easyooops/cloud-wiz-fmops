@@ -6,7 +6,7 @@
                     <div class="media"><img class="img-thumbnail rounded-circle me-3" src="/images/user/7.jpg"
                             alt="Generic placeholder image">
                         <div class="media-body align-self-center" id="first-post-tour"><a href="social-app.html">
-                                <h5 class="user-name">Emay Walter</h5>
+                                <h5 class="user-name">Suyeong Yoo</h5>
                             </a>
                             <h6>22 Hours ago</h6>
                         </div>

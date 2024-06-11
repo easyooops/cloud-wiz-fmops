@@ -3,7 +3,7 @@
     <div class="media profile-media">
       <img class="b-r-10" src="/images/dashboard/profile.png" alt="" />
       <div class="media-body">
-        <span>Emay Walter</span>
+        <span>Suyeong Yoo</span>
         <p class="mb-0 font-roboto">
           Admin <i class="middle fa fa-angle-down"></i>
         </p>

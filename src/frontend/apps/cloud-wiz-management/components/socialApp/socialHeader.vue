@@ -9,7 +9,7 @@
         </div>
         <div class="user-designation">
           <div class="title"><a target="_blank" href="">
-              <h4>Emay Walter</h4>
+              <h4>Suyeong Yoo</h4>
               <h6>designer</h6>
             </a></div>
           <div class="social-media">
