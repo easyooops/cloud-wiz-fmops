@@ -54,3 +54,15 @@ git push origin feature-suyeong
 ```
 git pull origin main
 ```
+
+# alembic
+
+### 마이그레이션 생성
+```
+alembic revision --autogenerate -m "Add user table"
+```
+
+### 마이그레이션 적용
+```
+alembic upgrade head
+```

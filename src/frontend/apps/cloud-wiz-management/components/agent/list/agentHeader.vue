@@ -10,10 +10,16 @@
     
                     </ul>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-0 me-0"></div>
+                <div class="col-md-5">
+                    <div class="form-group mb-0 me-0"></div>                    
                     <nuxt-link class="btn btn-primary" to='/agent/create'>
                         <vue-feather class="me-1" type="plus-square"> </vue-feather>Create New Agent
+                    </nuxt-link>
+                </div>                
+                <div class="col-md-1">
+                    <div class="form-group mb-0 me-0"></div>                    
+                    <nuxt-link class="btn btn-primary" to='/chat/chatApp'>
+                        <vue-feather class="me-1" type="plus-square"> </vue-feather>Result
                     </nuxt-link>
                 </div>
             </div>
@@ -61,7 +67,7 @@
                         type: 'llm',
                         name: "LLMs",
                         active: false,
-                        icon: "info",
+                        icon: "cpu",
                         id: 'top-llm',
                         label: 'llm-tab'
                     },
@@ -69,7 +75,7 @@
                         type: 'chat',
                         name: "Chat",
                         active: false,
-                        icon: "check-circle",
+                        icon: "message-square",
                         id: 'top-chat',
                         label: 'chat-tab'
                     },
@@ -77,7 +83,7 @@
                         type: 'embedding',
                         name: "Embedding",
                         active: false,
-                        icon: "info",
+                        icon: "git-merge",
                         id: 'top-embedding',
                         label: 'embedding-tab'
                     },
@@ -85,7 +91,7 @@
                         type: 'image',
                         name: "Image",
                         active: false,
-                        icon: "check-circle",
+                        icon: "image",
                         id: 'top-image',
                         label: 'image-tab'
                     }                    

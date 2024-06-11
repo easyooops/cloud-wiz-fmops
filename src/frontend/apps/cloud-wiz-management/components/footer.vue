@@ -4,7 +4,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-12 footer-copyright text-center">
-                        <p class="mb-0">Copyright 2023 © Cuba theme by pixelstrap dsgdsfgdfg</p>
+                        <p class="mb-0">© 2024 Cloudwiz AI FMOps. All Rights Reserved</p>
                     </div>
                 </div>
             </div>

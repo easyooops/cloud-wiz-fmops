@@ -56,7 +56,7 @@ export const All = [
     {
         id: 4,
         title: 'Default Image',
-        badge: 'Storage',
+        badge: 'Image',
         desc: 'Default Image Type',
         created: 'June 10th, 2024',
         updated: 'June 10th, 2024',

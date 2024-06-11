@@ -39,6 +39,11 @@
                             :style="{ 'width': item.width }" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
+                <div>
+                    <button data-bs-toggle="modal" data-bs-target="#agent-modal" class="btn btn-primary plus-popup mt-3">
+                        API
+                    </button>
+                </div>
             </div>
         </div>
 
