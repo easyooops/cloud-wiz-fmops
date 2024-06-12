@@ -3,17 +3,17 @@
 
     <div class="container-fluid">
         <div class="row project-cards">
-            <providerHeader />
+            <provider />
         </div>
     </div>
 </template>
 
 <script>
-import providerHeader from '../list/providerHeader.vue'
+import provider from './provider.vue'
 export default {
     name: 'indexList',
     components: {
-        providerHeader
+        provider
     },
 
 }

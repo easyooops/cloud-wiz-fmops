@@ -1,26 +1,39 @@
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from app.core.interface.service import ServiceType
 from app.core.factories import get_database
 from app.service.credential.service import CredentialService
 from app.service.credential.model import Credential
-from app.api.v1.schemas.credential import CredentialCreate, CredentialUpdate
+from app.api.v1.schemas.credential import CredentialCreate, CredentialProviderJoin, CredentialUpdate
 from app.core.exception import internal_server_error
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Credential])
+@router.get("/{credential_id}", response_model=CredentialProviderJoin)
+def get_credential_by_id(
+    credential_id: UUID,
+    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+):
+    try:
+        service = CredentialService(session)
+        credential = service.get_all_credentials(None, credential_id, None)
+        return credential[0]
+    except Exception as e:
+        raise internal_server_error(e)
+    
+@router.get("/", response_model=List[CredentialProviderJoin])
 def get_credentials(
     user_id: Optional[UUID] = None,
+    credential_id: Optional[UUID] = None,
     provider_id: Optional[UUID] = None,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
     try:
         service = CredentialService(session)
-        return service.get_all_credentials(user_id, provider_id)
+        return service.get_all_credentials(user_id, credential_id, provider_id)
     except Exception as e:
         raise internal_server_error(e)
 
