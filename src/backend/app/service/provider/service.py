@@ -31,8 +31,6 @@ class ProviderService:
     def update_provider(self, provider_id: UUID, provider_update: ProviderUpdate):
         try:
             provider = self.session.get(Provider, provider_id)
-            if not provider:
-                raise HTTPException(status_code=404, detail="Provider not found")
             for key, value in provider_update.model_dump(exclude_unset=True).items():
                 setattr(provider, key, value)
             self.session.add(provider)
@@ -45,8 +43,6 @@ class ProviderService:
     def delete_provider(self, provider_id: UUID):
         try:
             provider = self.session.get(Provider, provider_id)
-            if not provider:
-                raise HTTPException(status_code=404, detail="Provider not found")
             self.session.delete(provider)
             self.session.commit()
         except Exception as e:

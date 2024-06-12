@@ -1,0 +1,84 @@
+import { defineStore } from 'pinia';
+import restApi from '@/utils/axios';
+
+export const useStorageStore = defineStore({
+  id: 'storage',
+  state: () => ({
+    storages: [],
+    storageDetail: null,
+    loading: false,
+    error: null
+  }),
+  getters: {
+    allStorages: (state) => state.storages,
+    getStorageById: (state) => (id) => state.storages.find(storage => storage.id === id)
+  },
+  actions: {
+    async fetchAllStorages() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { get } = restApi();
+        const response = await get('/store/', { 'accept': 'application/json' });
+        this.storages = response.data;
+      } catch (error) {
+        this.error = error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchStorageById(storageId) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { get } = restApi();
+        const response = await get(`/store/${storageId}`, { 'accept': 'application/json' });
+        this.storageDetail = response.data;
+        if (!this.storageDetail) {
+          throw new Error('Storage not found');
+        }
+      } catch (error) {
+        this.error = error;
+        router.push('/store/list');
+      } finally {
+        this.loading = false;
+      }
+    },
+    async createStorage(storageData) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { post } = restApi();
+        await post('/store/', storageData);
+      } catch (error) {
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async updateStorage(storageData) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { put } = restApi();
+        await put(`/store/${storageData.id}`, storageData);
+      } catch (error) {
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async deleteStorage(storageId) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { del } = restApi();
+        await del(`/store/${storageId}`);
+      } catch (error) {
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+});

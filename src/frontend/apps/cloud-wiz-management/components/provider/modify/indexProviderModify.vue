@@ -1,12 +1,12 @@
 <template>
-    <Breadcrumbs main="Provider" title="Provider Create" />
+    <Breadcrumbs main="Provider" title="Provider Modify" />
 
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-body">
-                        <form @submit.prevent="createCredential">
+                        <form @submit.prevent="updateCredential">
                             <div class="form theme-form">
                                 <div class="row">
                                     <div class="col-sm-4">
@@ -77,7 +77,8 @@
                                 </div>   
                                 <div class="row">
                                     <div class="col">
-                                        <button type="submit" class="btn btn-primary me-2">Submit</button>
+                                        <button type="submit" class="btn btn-primary me-2">Update</button>
+                                        <button @click="deleteCredential" class="btn btn-danger me-2">Delete</button>
                                         <router-link to="/provider/list" class="btn btn-secondary">Back to List</router-link>
                                     </div>
                                 </div>                       
@@ -96,7 +97,7 @@ import { useProviderStore } from '@/store/provider';
 import { useRouter } from 'vue-router';
 
 export default {
-    name: 'createProvider',
+    name: 'ModifyProvider',
     setup() {
         const providerStore = useProviderStore();
         const router = useRouter();        
@@ -115,6 +116,34 @@ export default {
         const errorMessage = ref(null);
         const successMessage = ref(null);
         const userId = ref('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+        const credentialId = ref(null);
+
+        const fetchCredentialData = async () => {
+            isLoading.value = true;
+            try {
+                credentialId.value = String(router.currentRoute.value.query.credentialId);
+                await providerStore.fetchCredentialById(credentialId.value);
+                const credential = providerStore.credential;
+                selectedType.value = credential.provider_type;
+                selectedProvider.value = credential.provider_id;
+                providerName.value = credential.credential_name;
+                accessKey.value = credential.access_key;
+                secretAccessKey.value = credential.secret_key;
+                sessionKey.value = credential.session_key;
+                accessToken.value = credential.access_token;
+                apiKey.value = credential.api_key;
+                apiEndpoint.value = credential.api_endpoint;
+                const selectedProviderObj = providers.value.find(provider => provider.provider_id === credential.provider_id);
+                if (selectedProviderObj) {
+                    selectedCompany.value = selectedProviderObj.company;
+                }
+                successMessage.value = 'Credential data fetched successfully.';
+            } catch (error) {
+                errorMessage.value = 'An error occurred while fetching the credential data.';
+            } finally {
+                isLoading.value = false;
+            }
+        };        
 
         const fetchProvidersByType = async (type) => {
             await providerStore.fetchProvidersByType(type);
@@ -129,15 +158,14 @@ export default {
         const isAmazonWebServices = computed(() => selectedCompany.value && selectedCompany.value.includes('Amazon'));
         const isGitOrNotion = computed(() => selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion')));
 
-        const createCredential = async () => {
+        const updateCredential = async () => {
             isLoading.value = true;
             errorMessage.value = null;
             successMessage.value = null;
 
             try {
-                await providerStore.createCredential({
-                    user_id: userId.value,
-                    provider_id: selectedProvider.value,
+                await providerStore.updateCredential({
+                    credential_id: credentialId.value,
                     credential_name: providerName.value,
                     access_key: accessKey.value,
                     secret_key: secretAccessKey.value,
@@ -145,7 +173,6 @@ export default {
                     access_token: accessToken.value,
                     api_key: apiKey.value,
                     api_endpoint: apiEndpoint.value,
-                    creator_id: userId.value,
                     updater_id: userId.value
                 });
                 successMessage.value = 'Credential created successfully.';
@@ -157,7 +184,24 @@ export default {
             }
         };
 
+        const deleteCredential = async () => {
+            isLoading.value = true;
+            errorMessage.value = null;
+            successMessage.value = null;
+
+            try {
+                await providerStore.deleteCredential(credentialId.value);
+                successMessage.value = 'Credential deleted successfully.';
+                router.push('/provider/list');
+            } catch (error) {
+                errorMessage.value = 'An error occurred while deleting the credential.';
+            } finally {
+                isLoading.value = false;
+            }
+        };
+
         onMounted(() => {
+            fetchCredentialData();
             fetchProvidersByType(selectedType.value);
         });
 
@@ -188,7 +232,8 @@ export default {
             isLoading,
             errorMessage,
             successMessage,
-            createCredential,
+            updateCredential,
+            deleteCredential
         };
     }
 }

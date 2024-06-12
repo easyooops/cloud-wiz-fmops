@@ -1,11 +1,13 @@
 <template>
-    <indexFilemanager />
+    <indexStorageCreate />
 </template>
+
 <script>
-import indexFilemanager from "@/components/filemanager/indexFilemanager.vue";
+import indexStorageCreate from '@/components/storage/create/indexStorageCreate.vue'
 export default {
+    name: 'indexList',
     components: {
-        indexFilemanager
-    }
+        indexStorageCreate
+    },
 }
 </script>

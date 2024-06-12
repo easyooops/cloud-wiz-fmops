@@ -32,7 +32,22 @@ const restApi = () => {
     });
   };
 
-  return { get, post };
+  const put = async (url, body, header) => {
+    return await useFetch(`${API_ENDPOINT}${url}`, {
+      method: 'PUT',
+      headers: header == null ? { 'Content-Type': 'application/json' } : header,
+      body: JSON.stringify(body)
+    });
+  };
+
+  const del = async (url, header) => {
+    return await useFetch(`${API_ENDPOINT}${url}`, {
+      method: 'DELETE',
+      headers: header == null ? { 'Content-Type': 'application/json' } : header
+    });
+  };
+
+  return { get, post, put, del };
 };
 
 export default restApi;
