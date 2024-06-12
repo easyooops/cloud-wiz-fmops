@@ -1,6 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from sqlmodel import Session, select
 from app.service.store.model import Store
 from app.api.v1.schemas.store import StoreCreate, StoreUpdate
@@ -73,6 +73,13 @@ class StoreService(S3Service):
             self.s3_client.upload_fileobj(file, self.bucket_name, file_location)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
+
+    def upload_file_to_store(self, store_name: str, file: UploadFile):
+        try:
+            file_location = f"{store_name}/{file.filename}"
+            self.upload_file(file.file, file_location)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="Error uploading file to store")
 
     def delete_directory(self, store_name: str):
         try:
