@@ -81,3 +81,24 @@ def openai_multi_files_embeddings(
             return EmbeddingMultipleResponse(embeddings=embeddings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading and embedding files: {str(e)}")
+
+# Bedrock Text Embedding
+@router.post("/embedding-bedrock", response_model=EmbeddingResponse)
+def get_bedrock_embedding(
+        text: Optional[str] = None,
+        model: str = None,
+        session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+):
+    try:
+        if not text or model:
+            raise HTTPException(status_code=400, detail="Text and model parameters are required")
+
+        embedding_service = EmbeddingService(session)
+        embedding = embedding_service.get_openai_embedding(text)
+        return EmbeddingResponse(embedding=embedding)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Bedrock Single File Embedding
+
+# Bedrock Multi Files Embedding
