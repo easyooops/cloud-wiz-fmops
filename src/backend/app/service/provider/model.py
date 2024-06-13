@@ -13,7 +13,7 @@ class Provider(SQLModel, table=True):
     sort_order: int
     is_deleted: bool = Field(default=False)
     creator_id: UUID
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: Optional[datetime] = Field(default_factory=datetime.now)
     updater_id: Optional[UUID] = Field(default=None)
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
 

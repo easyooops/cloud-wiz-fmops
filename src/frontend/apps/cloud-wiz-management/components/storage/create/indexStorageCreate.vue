@@ -59,10 +59,11 @@ export default {
 
         try {
             await storageStore.createStorage({
+                user_id: userId.value,
                 store_name: storageName.value,
                 description: storageDescription.value,
                 creator_id: userId.value,
-                user_id: userId.value
+                updater_id: userId.value
             });
             successMessage.value = 'Storage created successfully.';
             router.push('/storage/list');

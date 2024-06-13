@@ -79,6 +79,55 @@ export const useStorageStore = defineStore({
       } finally {
         this.loading = false;
       }
-    }
+    },
+    async uploadFile(file, storeName) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const { post } = restApi();
+        await post(`/store/${storeName}/upload`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } catch (error) {
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchFiles(storeName) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { get } = restApi();
+        const response = await get(`/store/${storeName}/files`, {
+          headers: {
+            'accept': 'application/json'
+          }
+        });
+        return response.data;
+      } catch (error) {
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async deleteFile(storeName, fileKey) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { del } = restApi();
+        await del(`/store/${storeName}/files/${fileKey}`);
+      } catch (error) {
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    
   }
 });
