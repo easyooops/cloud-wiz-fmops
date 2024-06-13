@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Dict, List
 from dotenv import load_dotenv
 from boto3.session import Session
 from botocore.exceptions import ClientError
@@ -37,7 +38,7 @@ class S3Service:
             if error_code == '404':
                 self.retry(self.create_bucket)
                 print("Bucket created, waiting for stabilization...")
-                time.sleep(10)  # 추가 대기 시간
+                time.sleep(10)
             else:
                 print(f"Error while checking if bucket exists: {e}")
                 raise
@@ -88,6 +89,64 @@ class S3Service:
             print(e)
             return []
 
+    def list_all_objects(self, directory_name: str = '') -> List[Dict]:
+        if directory_name and not directory_name.endswith('/'):
+            directory_name += '/'
+
+        try:
+            all_objects = []
+            continuation_token = None
+
+            while True:
+                if continuation_token:
+                    response = self.s3_client.list_objects_v2(
+                        Bucket=self.bucket_name,
+                        Prefix=directory_name,
+                        ContinuationToken=continuation_token
+                    )
+                else:
+                    response = self.s3_client.list_objects_v2(
+                        Bucket=self.bucket_name,
+                        Prefix=directory_name
+                    )
+
+                contents = response.get('Contents', [])
+                all_objects.extend(contents)
+
+                if response.get('IsTruncated'):
+                    continuation_token = response.get('NextContinuationToken')
+                else:
+                    break
+
+            filtered_objects = [obj for obj in all_objects if not obj['Key'].endswith('/')]
+
+            if not filtered_objects:
+                print(f"No objects found in directory: {directory_name}")
+                return []
+
+            return filtered_objects
+        except ClientError as e:
+            print(f"An error occurred: {e}")
+            return []
+
+
+    def get_directory_info(self, directory_name: str = ''):
+        try:
+            response = self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=directory_name)
+            contents = response.get('Contents', [])
+            total_size = sum(obj['Size'] for obj in contents)
+            file_count = len(contents)
+            return {
+                'total_size': total_size,
+                'file_count': file_count
+            }
+        except ClientError as e:
+            print(e)
+            return {
+                'total_size': 0,
+                'file_count': 0
+            }
+        
     def upload_file(self, file_path: str, key: str):
         try:
             self.s3_client.upload_file(file_path, self.bucket_name, key)

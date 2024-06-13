@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 from fastapi import HTTPException, UploadFile
 from sqlmodel import Session, select
@@ -20,6 +20,12 @@ class StoreService(S3Service):
         except Exception as e:
             raise HTTPException(status_code=500, detail="Error retrieving stores")
 
+    def get_store_directory_info(self, directory_name: str):
+        try:
+            return self.get_directory_info(directory_name)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="Error retrieving directory info")
+        
     def create_store(self, store_data: StoreCreate):
         try:
             new_store = Store(**store_data.model_dump())
@@ -61,10 +67,18 @@ class StoreService(S3Service):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error deleting store: {str(e)}")
 
-    def list_files(self, store_name: str) -> List[str]:
+    def list_files(self, store_name: str) -> List[Dict[str, Any]]:
         try:
-            objects = self.list_objects(store_name)
-            return [obj['Key'] for obj in objects]
+            objects = self.list_all_objects(store_name)
+            files = []
+            for obj in objects:
+                file_info = {
+                    "Key": obj["Key"],
+                    "LastModified": obj["LastModified"],
+                    "Size": obj["Size"],
+                }
+                files.append(file_info)
+            return files
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
 
@@ -94,3 +108,9 @@ class StoreService(S3Service):
             self.s3_client.delete_object(Bucket=self.bucket_name, Key=f"{store_name}/")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error deleting directory: {str(e)}")
+        
+    def delete_file_from_store(self, file_location: str):
+        try:
+            self.delete_file(file_location)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error deleting file from store: {str(e)}")

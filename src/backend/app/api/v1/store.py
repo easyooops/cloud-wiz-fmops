@@ -1,24 +1,41 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlmodel import Session
 from app.core.interface.service import ServiceType
 from app.core.factories import get_database
 from app.service.store.service import StoreService
-from app.api.v1.schemas.store import StoreCreate, StoreUpdate
+from app.api.v1.schemas.store import StoreCreate, StoreUpdate, StoreWithDirectory
 from app.core.exception import internal_server_error
 from app.service.store.model import Store
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Store])
+@router.get("/", response_model=List[StoreWithDirectory])
 def get_stores(
     user_id: Optional[UUID] = None,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
     try:
         service = StoreService(session)
-        return service.get_all_stores(user_id)
+        stores = service.get_all_stores(user_id)
+    
+        store_responses = []
+        for store in stores:
+            directory_info = service.get_directory_info(store.store_name)
+            store_with_directory = StoreWithDirectory(
+                store_id=store.store_id,
+                store_name=store.store_name,
+                description=store.description,
+                creator_at=store.created_at,
+                updater_at=store.updated_at,
+                user_id=store.user_id,
+                total_size=directory_info['total_size'],
+                file_count=directory_info['file_count']
+            )
+            store_responses.append(store_with_directory)
+        return store_responses
+        
     except Exception as e:
         raise internal_server_error(e)
 
@@ -57,7 +74,7 @@ def delete_store(
     except Exception as e:
         raise internal_server_error(e)
 
-@router.get("/{store_name}/files", response_model=List[str])
+@router.get("/{store_name}/files", response_model=List[Dict[str, Any]])
 def get_store_files(
     store_name: str,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
@@ -79,5 +96,19 @@ def upload_file_to_store(
         file_location = f"{store_name}/{file.filename}"
         service.upload_file(file.file, file_location)
         return {"message": "File uploaded successfully"}
+    except Exception as e:
+        raise internal_server_error(e)
+    
+@router.delete("/{store_name}/files/{file_name}")
+def delete_file_from_store(
+    store_name: str,
+    file_name: str,
+    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+):
+    try:
+        service = StoreService(session)
+        file_location = f"{store_name}/{file_name}"
+        service.delete_file_from_store(file_location)
+        return {"message": "File deleted successfully"}
     except Exception as e:
         raise internal_server_error(e)

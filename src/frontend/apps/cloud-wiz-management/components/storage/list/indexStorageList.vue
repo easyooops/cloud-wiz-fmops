@@ -3,17 +3,17 @@
 
     <div class="container-fluid">
         <div class="row project-cards">
-            <storageHeader />
+            <storage />
         </div>
     </div>
 </template>
 
 <script>
-import storageHeader from '../list/storageHeader.vue'
+import storage from './storage.vue'
 export default {
     name: 'indexList',
     components: {
-        storageHeader
+        storage
     },
 
 }

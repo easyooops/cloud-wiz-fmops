@@ -1,9 +1,13 @@
 from logging.config import fileConfig
 
+import os
+import importlib.util
+
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from sqlmodel import SQLModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -14,11 +18,20 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+def import_models(service_directory):
+    for service_name in os.listdir(service_directory):
+        model_path = os.path.join(service_directory, service_name, 'model.py')
+        if os.path.isfile(model_path):
+            module_name = f"app.service.{service_name}.model"
+            spec = importlib.util.spec_from_file_location(module_name, model_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+# target_metadata = None
+target_metadata = SQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
