@@ -83,6 +83,8 @@
                                 </div>                       
                             </div>
                         </form>
+                        <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
+                        <div v-if="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>                        
                     </div>
                 </div>
             </div>

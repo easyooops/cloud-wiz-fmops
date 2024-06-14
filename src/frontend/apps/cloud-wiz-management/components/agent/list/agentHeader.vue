@@ -10,16 +10,10 @@
     
                     </ul>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <div class="form-group mb-0 me-0"></div>                    
                     <nuxt-link class="btn btn-primary" to='/agent/create'>
                         <vue-feather class="me-1" type="plus-square"> </vue-feather>Create New Agent
-                    </nuxt-link>
-                </div>                
-                <div class="col-md-1">
-                    <div class="form-group mb-0 me-0"></div>                    
-                    <nuxt-link class="btn btn-primary" to='/chat/chatApp'>
-                        <vue-feather class="me-1" type="plus-square"> </vue-feather>Result
                     </nuxt-link>
                 </div>
             </div>
