@@ -29,20 +29,15 @@
                         </li>
                     </ul>
                 </div>
-                <div class="project-status mt-4">
-                    <div class="d-flex mb-0">
-                        <p>{{ item.progress }}% </p>
-                        <div class="flex-grow-1 text-end"><span>Expiry</span></div>
-                    </div>
-                    <div class="progress" style="height: 5px">
-                        <div class="progress-bar-animated  progress-bar-striped" :class="item.class" role="progressbar"
-                            :style="{ 'width': item.width }" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-                <div>
-                    <button data-bs-toggle="modal" data-bs-target="#agent-modal" class="btn btn-primary plus-popup mt-3">
-                        API
-                    </button>
+                <div class="project-status m-2 p-b-10">
+                    <ul class="list-inline float-start float-sm-end chat-menu-icons">
+                        <li data-bs-toggle="modal" data-bs-target="#agent-modal" class="list-inline-item">
+                            <a href="#"><i class="fa fa-code"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#"><i class="fa fa-comments"></i></a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -60,3 +55,10 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.fa {
+    font: normal normal normal 25px / 1 FontAwesome;
+    margin-right: 10px;
+}
+</style>

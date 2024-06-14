@@ -11,6 +11,7 @@
                             </div>
                         </form> -->
                         <div class="media-body text-end">
+                            <router-link to="/storage/list" class="btn btn-secondary">Back to List</router-link>
                             <button class="btn btn-outline-danger ms-2" @click="deleteStorage()">
                                 <vue-feather type="trash-2" class="text-top"></vue-feather> Delete Directory
                             </button>
