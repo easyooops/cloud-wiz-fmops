@@ -10,7 +10,6 @@ class BedrockEmbeddingComponent(AbstractEmbeddingComponent):
         self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
         self.aws_region = os.getenv("AWS_REGION")
 
-        # boto3 자격증명 처리
         self.boto3_session = boto3.Session(
             aws_access_key_id=self.aws_access_key,
             aws_secret_access_key=self.aws_secret_access_key,

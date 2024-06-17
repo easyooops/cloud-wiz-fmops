@@ -7,9 +7,21 @@ from app.core.factories import get_database
 from app.service.embedding.service import EmbeddingService
 from app.api.v1.schemas.embedding import EmbeddingResponse, EmbeddingMultipleResponse
 from app.service.store.service import StoreService
+import tiktoken
 
 router = APIRouter()
 load_dotenv()
+
+def split_text_into_chunks(text, max_tokens):
+    encoding = tiktoken.get_encoding("cl100k_base")
+    tokens = encoding.encode(text)
+
+    chunks = []
+    for i in range(0, len(tokens), max_tokens):
+        chunk_tokens = tokens[i:i + max_tokens]
+        chunks.append(encoding.decode(chunk_tokens))
+
+    return chunks
 
 @router.post("/embedding-openai", response_model=EmbeddingResponse)
 def get_openai_embedding(
@@ -35,10 +47,20 @@ def openai_file_embeddings(
     try:
         store_service = StoreService(session)
         file_contents = []
+        MAX_TOKENS = 5000
 
         for file in files:
-            file_content = file.file.read().decode("utf-8")
-            file_contents.append(file_content)
+            raw_content = file.file.read()
+            try:
+                content = raw_content.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    content = raw_content.decode("latin1")
+                except UnicodeDecodeError:
+                    raise HTTPException(status_code=400, detail="File encoding not supported")
+
+            chunks = split_text_into_chunks(content, MAX_TOKENS)
+            file_contents.extend(chunks)
 
             file.file.seek(0)
             store_service.upload_file_to_store(store_name, file)
@@ -58,22 +80,28 @@ def openai_multi_files_embeddings(
     try:
         service = StoreService(session)
         file_contents = []
+        MAX_TOKENS = 5000
 
         for file in files:
-            content = file.file.read().decode("utf-8")
-            file_contents.append(content)
+            raw_content = file.file.read()
+            try:
+                content = raw_content.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    content = raw_content.decode("latin1")
+                except UnicodeDecodeError:
+                    raise HTTPException(status_code=400, detail="File encoding not supported")
+
+            chunks = split_text_into_chunks(content, MAX_TOKENS)
+            file_contents.extend(chunks)
             file.file.seek(0)
 
         for file in files:
             service.upload_file_to_store(store_name, file)
 
         embedding_service = EmbeddingService(session)
-        if len(file_contents) == 1:
-            embedding = embedding_service.get_openai_embedding(file_contents[0])
-            return EmbeddingResponse(embedding=embedding)
-        else:
-            embeddings = embedding_service.get_openai_embeddings(file_contents)
-            return EmbeddingMultipleResponse(embeddings=embeddings)
+        embeddings = embedding_service.get_openai_embeddings(file_contents)
+        return EmbeddingMultipleResponse(embeddings=embeddings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading and embedding files: {str(e)}")
 
@@ -105,13 +133,25 @@ def bedrock_single_file_embedding(
             raise HTTPException(status_code=400, detail="store_name and model parameters are required")
 
         service = StoreService(session)
-        content = file.file.read().decode("utf-8")
+        raw_content = file.file.read()
+        try:
+            content = raw_content.decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                content = raw_content.decode("latin1")
+            except UnicodeDecodeError:
+                raise HTTPException(status_code=400, detail="File encoding not supported")
+
         file.file.seek(0)
         service.upload_file_to_store(store_name, file)
 
+        MAX_TOKENS = 5000
+        chunks = split_text_into_chunks(content, MAX_TOKENS)
+
         embedding_service = EmbeddingService(session)
-        embedding = embedding_service.get_bedrock_embedding(model, content)
-        return EmbeddingResponse(embedding=embedding)
+        embeddings = [embedding_service.get_bedrock_embedding(model, chunk) for chunk in chunks]
+
+        return EmbeddingResponse(embedding=embeddings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading and embedding file: {str(e)}")
 
@@ -128,7 +168,7 @@ def bedrock_multi_files_embeddings(
 
         service = StoreService(session)
         file_contents = []
-        MAX_LENGTH = 50000
+        MAX_TOKENS = 5000
 
         for file in files:
             raw_content = file.file.read()
@@ -140,10 +180,8 @@ def bedrock_multi_files_embeddings(
                 except UnicodeDecodeError:
                     raise HTTPException(status_code=400, detail="File encoding not supported")
 
-            if len(content) > MAX_LENGTH:
-                content = content[:MAX_LENGTH]
-
-            file_contents.append(content)
+            chunks = split_text_into_chunks(content, MAX_TOKENS)
+            file_contents.extend(chunks)
             file.file.seek(0)
             service.upload_file_to_store(store_name, file)
 
