@@ -11,7 +11,6 @@ from app.service.store.service import StoreService
 router = APIRouter()
 load_dotenv()
 
-# OpenAI Text Embedding
 @router.post("/embedding-openai", response_model=EmbeddingResponse)
 def get_openai_embedding(
         text: Optional[str] = None,
@@ -27,7 +26,6 @@ def get_openai_embedding(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# OpenAI Embedding Single File (Upload to S3 store)
 @router.post("/{store_name}/embedding-openai-file", response_model=EmbeddingMultipleResponse)
 def openai_file_embeddings(
         store_name: str,
@@ -39,11 +37,9 @@ def openai_file_embeddings(
         file_contents = []
 
         for file in files:
-            # Read the file content into memory
             file_content = file.file.read().decode("utf-8")
             file_contents.append(file_content)
 
-            # Reset file pointer and store the file in S3
             file.file.seek(0)
             store_service.upload_file_to_store(store_name, file)
 
@@ -53,7 +49,6 @@ def openai_file_embeddings(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# OpenAI Embedding Multi Files (Upload to S3 store)
 @router.post("/{store_name}/embedding-openai-files", response_model=EmbeddingMultipleResponse)
 def openai_multi_files_embeddings(
         store_name: str,
@@ -82,23 +77,78 @@ def openai_multi_files_embeddings(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading and embedding files: {str(e)}")
 
-# Bedrock Text Embedding
 @router.post("/embedding-bedrock", response_model=EmbeddingResponse)
 def get_bedrock_embedding(
         text: Optional[str] = None,
-        model: str = None,
+        model: Optional[str] = None,
         session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
     try:
-        if not text or model:
+        if not text or not model:
             raise HTTPException(status_code=400, detail="Text and model parameters are required")
 
         embedding_service = EmbeddingService(session)
-        embedding = embedding_service.get_openai_embedding(text)
+        embedding = embedding_service.get_bedrock_embedding(model, text)
         return EmbeddingResponse(embedding=embedding)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Bedrock Single File Embedding
+@router.post("/{store_name}/embedding-bedrock-file", response_model=EmbeddingResponse)
+def bedrock_single_file_embedding(
+        store_name: str,
+        model: Optional[str] = None,
+        file: UploadFile = File(...),
+        session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+):
+    try:
+        if not store_name or not model:
+            raise HTTPException(status_code=400, detail="store_name and model parameters are required")
 
-# Bedrock Multi Files Embedding
+        service = StoreService(session)
+        content = file.file.read().decode("utf-8")
+        file.file.seek(0)
+        service.upload_file_to_store(store_name, file)
+
+        embedding_service = EmbeddingService(session)
+        embedding = embedding_service.get_bedrock_embedding(model, content)
+        return EmbeddingResponse(embedding=embedding)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error uploading and embedding file: {str(e)}")
+
+@router.post("/{store_name}/embedding-bedrock-files", response_model=EmbeddingMultipleResponse)
+def bedrock_multi_files_embeddings(
+        store_name: str,
+        model: Optional[str] = None,
+        files: List[UploadFile] = File(...),
+        session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+):
+    try:
+        if not store_name or not model:
+            raise HTTPException(status_code=400, detail="store_name and model parameters are required")
+
+        service = StoreService(session)
+        file_contents = []
+        MAX_LENGTH = 50000
+
+        for file in files:
+            raw_content = file.file.read()
+            try:
+                content = raw_content.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    content = raw_content.decode("latin1")
+                except UnicodeDecodeError:
+                    raise HTTPException(status_code=400, detail="File encoding not supported")
+
+            if len(content) > MAX_LENGTH:
+                content = content[:MAX_LENGTH]
+
+            file_contents.append(content)
+            file.file.seek(0)
+            service.upload_file_to_store(store_name, file)
+
+        embedding_service = EmbeddingService(session)
+        embeddings = embedding_service.get_bedrock_embeddings(model, file_contents)
+        return EmbeddingMultipleResponse(embeddings=embeddings)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error uploading and embedding files: {str(e)}")
