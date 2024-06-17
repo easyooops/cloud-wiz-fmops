@@ -8,7 +8,6 @@ class EmbeddingService:
     def __init__(self, session: Session):
         self.session = session
 
-    # OpenAI Text Embedding
     def get_openai_embedding(self, text: str):
         try:
             openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -22,7 +21,6 @@ class EmbeddingService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    # OpenAI documents Embedding
     def get_openai_embeddings(self, texts: list):
         try:
             openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -35,14 +33,13 @@ class EmbeddingService:
         except Exception as e:
             raise  HTTPException(status_code=500, detail=str(e))
 
-    # Bedrock Text Embedding
     def get_bedrock_embedding(self, model_id: str, text: str):
         try:
             aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
             aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
             aws_region = os.getenv("AWS_REGION")
-            if not all ([aws_access_key, aws_secret_access_key, aws_region]):
-                raise ValueError("AWS credential or region are not set in the environment variables")
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials or region are not set in the environment variables")
 
             embedding_component = BedrockEmbeddingComponent()
             embedding_component.configure(model_id=model_id)
@@ -51,14 +48,14 @@ class EmbeddingService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    # Bedrock documents Embedding
     def get_bedrock_embeddings(self, model_id: str, texts: list):
         try:
             aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
             aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
             aws_region = os.getenv("AWS_REGION")
-            if not all ([aws_access_key, aws_secret_access_key, aws_region]):
-                raise ValueError("AWS credential or region are not set in the environment variables")
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials or region are not set in the environment variables")
+
             embedding_component = BedrockEmbeddingComponent()
             embedding_component.configure(model_id=model_id)
             embedding = embedding_component.execute_embed_documents(texts)
