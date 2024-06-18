@@ -6,20 +6,50 @@
       "type": "headtitle"
     },
     {
-      "path": "/",
-      "title": "Dashboard",
-      "icon": "stroke-charts",
-      "iconf":"fill-charts",
-      "type": "link",
-      "active": false
+      "title": "Monitoring",
+      "icon": "stroke-home",
+      "iconf":"fill-home",
+      "type": "sub",
+      "badgeType": "light-primary",
+      "badgeValue": "2",
+      "active": false,
+      "children": [
+        {
+          "path": "/",
+          "title": "Dashboard",
+          "type": "link",
+          "active":false
+        },
+        {
+          "path": "/comingsoon/comingsoon_video",
+          "title": "Trace",
+          "type": "link",
+          "active":false
+        }
+      ]
     },
     {
-      "path": "/agent/list",
       "title": "Agents",
       "icon": "stroke-project",
       "iconf":"fill-project",
-      "type": "link",
-      "active": false
+      "type": "sub",
+      "badgeType": "light-primary",
+      "badgeValue": "2",
+      "active": false,
+      "children": [
+        {
+          "path": "/agent/list",
+          "title": "Managent",
+          "type": "link",
+          "active":false
+        },
+        {
+          "path": "/agent/compare",
+          "title": "Compare",
+          "type": "link",
+          "active":false
+        }
+      ]
     },
     {
       "path": "/provider/list",
@@ -38,8 +68,8 @@
       "active": false
     },
     {
-      "path": "/",
-      "title": "Tasks",
+      "path": "/processing/list",
+      "title": "Processing",
       "icon": "stroke-task",
       "iconf":"fill-task",
       "type": "link",

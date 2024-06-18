@@ -14,7 +14,8 @@
                                             <label>Provider Type</label>
                                             <select class="form-select" v-model="selectedType">
                                                 <option :value="'M'">Model</option>
-                                                <option :value="'N'">Not Model</option>
+                                                <option :value="'S'">Storage</option>
+                                                <option :value="'V'">VectorDB</option>
                                             </select>
                                         </div>
                                     </div>
