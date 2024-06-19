@@ -49,7 +49,8 @@ export const useAgentStore = defineStore({
       this.error = null;
       try {
         const { post } = restApi();
-        await post('/agent/', agentData);
+        const response = await post('/agent/', agentData);
+        this.agent = response.data;        
       } catch (error) {
         throw error;
       } finally {

@@ -59,7 +59,7 @@ git pull origin main
 
 ### 마이그레이션 생성
 ```
-alembic revision --autogenerate -m "Add user table"
+alembic revision --autogenerate -m "edit agent table"
 ```
 
 ### 마이그레이션 적용
