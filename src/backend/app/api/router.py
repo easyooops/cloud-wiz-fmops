@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import provider, inquiry, auth, agent, chain, chat, model, credential, store, chat_model, embedding
+from app.api.v1 import provider, inquiry, auth, agent, chain, chat, model, credential, store, chat_model, embedding, vector_store
 
 api_router = APIRouter()
 
@@ -14,3 +14,4 @@ api_router.include_router(chat.router, tags=["chat"], prefix="/chat")
 api_router.include_router(chat_model.router, tags=["chat_model"], prefix="/chat_model")
 api_router.include_router(model.router, tags=["model"], prefix="/model")
 api_router.include_router(embedding.router, tags=["embedding"], prefix="/embedding")
+api_router.include_router(vector_store.router, tags=["vector_store"], prefix="/vector_store")

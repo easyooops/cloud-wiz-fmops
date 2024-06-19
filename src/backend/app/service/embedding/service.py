@@ -1,12 +1,22 @@
+import os
+import boto3
+import faiss
 from sqlmodel import Session
+from datetime import datetime
 from fastapi import HTTPException
+from app.components.Embedding.Base import AbstractEmbeddingComponent
 from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.components.Embedding.Bedrock import BedrockEmbeddingComponent
-import os
+from app.components.VectorStore.Faiss import FaissAsyncVectorStore
+
 
 class EmbeddingService:
     def __init__(self, session: Session):
         self.session = session
+        self.faiss_store = None
+        self.s3_client = boto3.client('s3')
+        self.vector_store_bucket = os.getenv("AWS_S3_BUCKET_VECTOR_STORE_NAME")
+        self.store_bucket = os.getenv("AWS_S3_BUCKET_STORE_NAME")
 
     def get_openai_embedding(self, text: str):
         try:
@@ -62,3 +72,33 @@ class EmbeddingService:
             return embedding
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    async def initialize_faiss_store(self, embedding_component: AbstractEmbeddingComponent):
+        self.faiss_store = FaissAsyncVectorStore(embedding_component)
+        dimension = 1536
+        await self.faiss_store.initialize(dimension)
+
+    async def add_to_faiss_store(self, texts: list):
+        return await self.faiss_store.add_embeddings(texts)
+
+    async def query_faiss_store(self, query_text: str, top_k: int = 5):
+        return await self.faiss_store.query(query_text, top_k)
+
+    def save_faiss_index_to_file(self, file_path: str):
+        if self.faiss_store and self.faiss_store.index:
+            faiss.write_index(self.faiss_store.index, file_path)
+        else:
+            raise ValueError("FAISS store is not initialized")
+
+    def load_faiss_index_from_file(self, file_path: str):
+        self.faiss_store.index = faiss.read_index(file_path)
+
+    def save_faiss_index_to_s3(self, s3_file_path: str, local_file_path: str):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        local_file_path = f"/tmp/faiss_index_{timestamp}.index"
+        self.save_faiss_index_to_file(local_file_path)
+        self.s3_client.upload_file(local_file_path, self.vector_store_bucket, s3_file_path)
+
+    def load_faiss_index_from_s3(self, s3_file_path: str, local_file_path: str):
+        self.s3_client.download_file(self.vector_store_bucket, s3_file_path, local_file_path)
+        self.load_faiss_index_from_file(local_file_path)
