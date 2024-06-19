@@ -1,22 +1,19 @@
 <template>
     <Breadcrumbs main="Agent" title="Agents List" />
-
     <div class="container-fluid">
         <div class="row project-cards">
-            <agentHeader />
-            <Modal />
+            <mainAgent />
         </div>
     </div>
 </template>
 
 <script>
-import agentHeader from '../list/agentHeader.vue'
-import Modal from './modal.vue';
+import mainAgent from './mainAgent.vue'
+
 export default {
     name: 'indexList',
     components: {
-        agentHeader,
-        Modal
+        mainAgent
     },
 
 }

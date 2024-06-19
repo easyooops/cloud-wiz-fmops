@@ -18,7 +18,7 @@
                                         </div>
                                         <ul class="list-inline float-start float-sm-end chat-menu-icons">
                                             <li class="list-inline-item">
-                                                <a href="#"><i class="fa fa-code"></i></a>
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#agent-modal"><i class="fa fa-code"></i></a>
                                             </li>
                                         </ul>                                            
                                     </div>

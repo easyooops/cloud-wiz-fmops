@@ -76,10 +76,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(useProviderStore, ['providers']),
+    ...mapState(useProviderStore, ['credential']),
     filteredData() {
-      if (this.activeTab.type === 'all') return this.providers;
-      return this.providers.filter(provider => provider.provider_type === this.activeTab.type);
+      if (this.activeTab.type === 'all') return this.credential;
+      return this.credential.filter(provider => provider.provider_type === this.activeTab.type);
     },
     activeTab() {
       return this.tab.find(t => t.active);

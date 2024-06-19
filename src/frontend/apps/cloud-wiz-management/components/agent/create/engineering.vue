@@ -8,14 +8,21 @@
                         <li class="list-inline-item"><h5>Engineering</h5></li>
                     </ul>
                 </div>
-                <ul class="list-inline float-start float-sm-end chat-menu-icons">
+                <div class="row">
+                    <div class="col">
+                        <button @click="saveAgent" class="btn btn-primary me-2">Save</button>
+                        <button @click="deleteAgent" class="btn btn-danger me-2">Delete</button>
+                        <router-link to="/agent/list" class="btn btn-secondary">Back to List</router-link>
+                    </div>
+                </div>                  
+                <!-- <ul class="list-inline float-start float-sm-end chat-menu-icons">
                     <li class="list-inline-item">
-                        <a href="#"><i class="fa fa-save"></i></a>
+                        <a href="#" @click="saveAgent"><i class="fa fa-save"></i></a>
                     </li>
                     <li class="list-inline-item">
-                        <a href="#"><i class="fa fa-list"></i></a>
+                        <a href="/agent/list"><i class="fa fa-list"></i></a>
                     </li>
-                </ul>      
+                </ul>       -->
             </div>
         </div>
 
@@ -42,6 +49,9 @@
                     <div class="tab-pane contact-tab-0 tab-content-child fade show"
                         :class="item.activeTab === this.activeTab ? 'active' : ''" id="v-pills-user" role="tabpanel"
                         aria-labelledby="v-pills-user-tab" v-for="(item, index) in menu" :key="index">
+
+                        <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
+                        <div v-if="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>   
 
                         <!-- Foundation Model -->
                         <div class="card-body" v-if="'0'==this.activeTab">
@@ -109,7 +119,7 @@
                                     <div class="card-body"> 
                                         <div class="mb-3">
                                             <fieldset>
-                                                <label class="col-md-2 col-form-label sm-left-text" for="requestToken">Request Token</label>
+                                                <label class="col-md-2 col-form-label sm-left-text" for="requestToken">Request Token Limit</label>
                                                 <div class="input-group col-md-9">
                                                     <button type="button" class="btn btn-primary btn-square bootstrap-touchspin-down" @click="decrementRequestToken"><i class="fa fa-minus"></i></button>
                                                     <input class="touchspin form-control" type="text" v-model="requestToken">
@@ -118,7 +128,7 @@
                                             </fieldset>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="responseToken">Response Token</label>
+                                            <label for="responseToken">Response Token Limit</label>
                                             <fieldset>
                                                 <div class="input-group">
                                                     <button type="button" class="btn btn-primary btn-square bootstrap-touchspin-down" @click="decrementResponseToken"><i class="fa fa-minus"></i></button>
@@ -174,21 +184,17 @@
                                 <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
                                     <div class="card-body">
                                         <div class="mb-3">
-                                            <div class="col-form-label">Storage</div>
-                                            <select class="form-select form-control-primary" v-model="selectedProvider" :disabled="!embeddingEnabled">
-                                                <option value="" disabled hidden>Select Storage</option>
-                                                <option value="Amazon S3">Amazon S3</option>
-                                                <option value="GIT">GIT</option>
-                                                <option value="Notion">Notion</option>
-                                                <option value="Google Drive">Google Drive</option>
+                                            <div class="col-form-label">Storage *</div>
+                                            <select class="form-select form-control-primary" v-model="selectedStorageProvider">
+                                                <option value="" disabled hidden>Select Storage Provider</option>
+                                                <option v-for="provider in filteredStorageProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
                                             </select>
                                         </div>
-                                        <div class="mb-3">
+                                        <div v-if="isS3ProviderSelected" class="mb-3">
                                             <div class="col-form-label">Object</div>
-                                            <select class="form-select form-control-primary" v-model="selectedStorage" :disabled="!embeddingEnabled">
+                                            <select class="form-select form-control-primary" v-model="selectedObject">
                                                 <option value="" disabled hidden>Selete Object</option>
-                                                <option value="Default Storage">Default Storage</option>
-                                                <option value="Private Storage">Private Storage</option>
+                                                <option v-for="object in filteredObjects" :key="object.store_id" :value="object.store_id">{{ object.store_name }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -198,11 +204,9 @@
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <div class="col-form-label">Vector DB</div>
-                                            <select class="form-select form-control-primary" v-model="selectedVectorDB" :disabled="!embeddingEnabled">
-                                                <option value="" disabled hidden>Selete Vector DB</option>
-                                                <option value="FAISS">FAISS</option>
-                                                <option value="ChromaDB">ChromaDB</option>
-                                                <option value="Pincone">Pincone</option>
+                                            <select class="form-select form-control-primary" v-model="selectedVectorDB">
+                                                <option value="" disabled hidden>FAISS</option>
+                                                <option v-for="provider in filteredVectorDBProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -271,7 +275,9 @@ import 'vue-slider-component/theme/default.css'
 import { useContactStore } from '~~/store/contact'
 import { useAgentStore } from '@/store/agent';
 import { useProviderStore } from '@/store/provider';
+import { useStorageStore } from '@/store/storage';
 import { mapState, mapActions } from 'pinia';
+import { useRouter } from 'vue-router';
 
 export default {
     name: 'EngineeringSetup',
@@ -280,6 +286,7 @@ export default {
     },
     data() {
         return {
+            router: {},
             num1: 5000,
             temperature: {
                 value: 0.7,
@@ -297,7 +304,8 @@ export default {
             selectedEmbeddingProvider: '',
             selectedEmbeddingModel: '',
             selectedProvider: '',
-            selectedStorage: '',
+            selectedStorageProvider: '',
+            selectedObject: '',
             selectedVectorDB: '',
             selectedPreProcessing: '',
             selectedPostProcessing: '',
@@ -326,6 +334,10 @@ export default {
                 ],
             },
             modelType: 'C',
+            agentId: '',
+            agentData: {},            
+            errorMessage: '',
+            successMessage: '',
             userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
         }
     },
@@ -339,7 +351,9 @@ export default {
         menu() {
             return this.data.data
         },
-        ...mapState(useProviderStore, ['credential', 'models']),        
+        ...mapState(useProviderStore, ['credential', 'models']),
+        ...mapState(useStorageStore, ['storages']),  
+        ...mapState(useAgentStore, ['agent']),
         filteredProviders() {
             return this.credential.filter(provider => provider.provider_type === "M");
         },
@@ -350,8 +364,21 @@ export default {
             return this.credential.filter(provider => provider.provider_type === "M");
         },
         filteredEmbeddingModels() {
-            return this.models.filter(model => model.model_type === "E" && model.provider_id == this.selectedProvider);
-        }               
+            return this.models.filter(model => model.model_type === "E" && model.provider_id == this.selectedEmbeddingProvider);
+        },
+        filteredStorageProviders() {
+            return this.credential.filter(provider => provider.provider_type === "S");
+        },
+        filteredObjects() {
+            return this.storages;
+        },
+        isS3ProviderSelected() {
+            const selectedProvider = this.credential.find(provider => provider.provider_id === this.selectedStorageProvider);
+            return selectedProvider && selectedProvider.credential_name.includes('S3');
+        },
+        filteredVectorDBProviders() {
+            return this.credential.filter(provider => provider.provider_type === "V");
+        },               
     },
     watch: {
         requestToken(newValue) {
@@ -382,23 +409,16 @@ export default {
             if (this.models.length > 0) {
                 const filteredEmbeddingModels = this.models.filter(model => model.model_type === "E" && model.provider_id == newProviderId);
                 if (filteredEmbeddingModels.length > 0) {
-                    this.selectedFoundationModel = filteredEmbeddingModels[0].model_id;
+                    this.selectedEmbeddingModel = filteredEmbeddingModels[0].model_id;
                 }
             }
-        },
-        selectedEmbeddingModel(newModelType) {
-            if (this.models.length > 0) {
-                const filteredEmbeddingModels = this.models.filter(model => model.model_type === "E" && model.provider_id == this.selectedProvider);
-                if (filteredEmbeddingModels.length > 0) {
-                    this.selectedFoundationModel = filteredEmbeddingModels[0].model_id;
-                }
-            }
-        }        
-        
-        
+        }
+
     },
     methods: {
         ...mapActions(useProviderStore, ['fetchCredential', 'fetchModels']),
+        ...mapActions(useStorageStore, ['fetchAllStorages']),
+        ...mapActions(useAgentStore, ['fetchAgentById']),
         activeDiv(item) {
             useContactStore().active(item)
         },
@@ -414,38 +434,125 @@ export default {
         decrementResponseToken() {
             if (this.responseToken > 0) this.responseToken--
         },
+        async fetchAgentData() {
+            this.agentId = String(this.router.currentRoute.query.agentId);
+            if (this.agentId) {
+                try {
+                    await useAgentStore().fetchAgentById(this.agentId);
+                    const agentInfo = useAgentStore().agent; 
+                    this.agentData = agentInfo;
+                    this.agentName = agentInfo.agent_name;
+                    this.agentDescription = agentInfo.agent_description;
+                    this.modelType = agentInfo.fm_provider_type;
+                    this.selectedProvider = agentInfo.fm_provider_id;
+                    this.selectedFoundationModel = agentInfo.fm_model_id;
+                    this.temperature.value = agentInfo.fm_temperature;
+                    this.topP.value = agentInfo.fm_top_p;
+                    this.requestToken = agentInfo.fm_request_token_limit;
+                    this.responseToken = agentInfo.fm_response_token_limit;
+                    this.embeddingEnabled = agentInfo.embedding_enabled;
+                    this.selectedEmbeddingProvider = agentInfo.embedding_provider_id;
+                    this.selectedEmbeddingModel = agentInfo.embedding_model_id;
+                    this.selectedStorageProvider = agentInfo.storage_provider_id;
+                    this.selectedObject = agentInfo.storage_object_id;
+                    this.selectedVectorDB = agentInfo.vector_db_provider_id;
+                    this.processingEnabled = agentInfo.processing_enabled;
+                    this.selectedPreProcessing = agentInfo.pre_processing_id;
+                    this.selectedPostProcessing = agentInfo.post_processing_id;                    
+                } catch (error) {
+                    console.error('Error fetching agent data:', error);
+                }
+            }
+        },
+        async deleteAgent() {
+
+            this.errorMessage = '';
+            this.successMessage = '';
+
+            try {
+                await useAgentStore().deleteAgent(this.agentId);
+                this.successMessage = 'Agent deleted successfully.';
+                this.router.push('/agent/list');
+            } catch (error) {
+                this.errorMessage = 'An error occurred while deleting the agent.';
+            }
+        },
         async saveAgent() {
+
+            this.errorMessage = '';
+            this.successMessage = '';
+
+            if (!this.agentName || !this.selectedFoundationModel || !this.selectedProvider || !this.temperature.value || !this.topP.value || !this.requestToken || !this.responseToken || !this.selectedProvider || !this.userId) {
+                this.errorMessage = 'Please enter the required information.';
+                setTimeout(() => {
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                }, 2000);                
+                return;
+            }
+
             try {
                 const agentData = {
-                    agentName: this.agentName,
-                    agentDescription: this.agentDescription,
-                    selectedFoundationModel: this.selectedFoundationModel,
-                    requestToken: this.requestToken,
-                    responseToken: this.responseToken,
-                    selectedEmbeddingProvider: this.selectedEmbeddingProvider,
-                    selectedEmbeddingModel: this.selectedEmbeddingModel,
-                    selectedProvider: this.selectedProvider,
-                    selectedStorage: this.selectedStorage,
-                    selectedVectorDB: this.selectedVectorDB,
-                    selectedPreProcessing: this.selectedPreProcessing,
-                    selectedPostProcessing: this.selectedPostProcessing,
-                    embeddingEnabled: this.embeddingEnabled,
-                    processingEnabled: this.processingEnabled
+                    user_id: this.userId,
+                    agent_name: this.agentName,
+                    agent_description: this.agentDescription,
+                    fm_provider_type: this.modelType,
+                    fm_provider_id: this.selectedProvider,
+                    fm_model_id: this.selectedFoundationModel,
+                    fm_temperature: this.temperature.value,
+                    fm_top_p: this.topP.value,
+                    fm_request_token_limit: this.requestToken,
+                    fm_response_token_limit: this.responseToken,
+                    embedding_enabled: this.embeddingEnabled,
+                    embedding_provider_id: this.selectedEmbeddingProvider,
+                    embedding_model_id: this.selectedEmbeddingModel,
+                    storage_provider_id: this.selectedStorageProvider,
+                    storage_object_id: this.selectedObject,
+                    vector_db_provider_id: this.selectedVectorDB,
+                    processing_enabled: this.processingEnabled,
+                    pre_processing_id: this.selectedPreProcessing,
+                    post_processing_id: this.selectedPostProcessing,
+                    creator_id: this.userId,
+                    updater_id: this.userId
                 };
 
-                await useAgentStore().createAgent(agentData);
-
+                if (this.agentId) {
+                    agentData.agent_id = this.agentId;
+                    await useAgentStore().updateAgent(agentData);
+                    this.successMessage = 'Agent updated successfully.';
+                } else {
+                    await useAgentStore().createAgent(agentData);
+                    const agentInfo = useAgentStore().agent;
+                    this.agentId = agentInfo.agent_id;
+                    this.successMessage = 'Agent created successfully.';
+                }                
             } catch (error) {
-                console.error('Error saving agent:', error);
+                this.errorMessage = 'An error occurred while creating the agent.';
             }
+            setTimeout(() => {
+                this.errorMessage = '';
+                this.successMessage = '';
+            }, 2000);
         },        
     },
     async mounted() {
+        this.router = useRouter();
+        if (this.router.currentRoute.query.agentId || this.agentId) {
+            await this.fetchAgentData();
+        }
         await useProviderStore().fetchCredential({ userId: this.userId });
         await useProviderStore().fetchModels();
         if (this.credential.length > 0) {
-            this.selectedProvider = this.credential[0].provider_id;
+            this.selectedProvider = this.filteredProviders[0]?.provider_id || '';
+            this.selectedEmbeddingProvider = this.filteredEmbeddingProviders[0]?.provider_id || '';
+            this.selectedStorageProvider = this.filteredStorageProviders[0]?.provider_id || '';
+            this.selectedVectorDB = this.filteredVectorDBProviders[0]?.provider_id || '';
+            
         }
+        await useStorageStore().fetchAllStorages({ userId: this.userId });
+        if (this.storages.length > 0) {
+            this.selectedObject = this.filteredObjects[0]?.store_id || '';
+        }        
     }    
 }
 </script>
