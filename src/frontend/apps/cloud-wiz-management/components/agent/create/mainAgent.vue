@@ -16,10 +16,15 @@
                                             <h6 class="f-w-700">Prompt</h6>
                                             <p>Cloudwiz AI FMOps</p>
                                         </div>
+                                        <ul class="list-inline float-start float-sm-end chat-menu-icons">
+                                            <li class="list-inline-item">
+                                                <a href="#"><i class="fa fa-code"></i></a>
+                                            </li>
+                                        </ul>                                            
                                     </div>
                                     <ul class="nav main-menu contact-options" role="tablist">
                                         <prompt />
-                                    </ul>
+                                    </ul>                                  
                                 </div>
                             </div>
                         </div>

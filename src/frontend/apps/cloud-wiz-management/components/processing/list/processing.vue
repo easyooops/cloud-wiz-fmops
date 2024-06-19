@@ -14,7 +14,7 @@
         <div class="col-md-6">
           <div class="form-group mb-0 me-0"></div>
           <nuxt-link class="btn btn-primary" to="/provider/create">
-            <vue-feather class="me-1" type="plus-square"> </vue-feather>Add Provider
+            <vue-feather class="me-1" type="plus-square"> </vue-feather>Add Processing
           </nuxt-link>
         </div>
       </div>
@@ -36,7 +36,7 @@
                           </div>
                       </div>
                       <p>{{ dataItem.provider_desc }}</p>
-                      <div class="row details">
+                      <!-- <div class="row details">
                           <div class="col-6" v-if="dataItem.access_key"><span>Access Key </span></div>
                           <div class="col-6 font-primary" v-if="dataItem.access_key">{{ mask(dataItem.access_key) }} </div>
                           <div class="col-6" v-if="dataItem.secret_key"> <span>Secret Access Key</span></div>
@@ -47,7 +47,7 @@
                           <div class="col-6 font-primary" v-if="dataItem.access_token">{{ mask(dataItem.access_token) }}</div>
                           <div class="col-6" v-if="dataItem.api_key"> <span>API Key</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.api_key">{{ mask(dataItem.api_key) }}</div>                                                      
-                      </div>
+                      </div> -->
                   </div>
               </div>
             </div>
@@ -67,10 +67,7 @@ export default {
   data() {
     return {
       tab: [
-        { type: 'all', name: 'All', active: true, icon: 'target', id: 'top-all', label: 'all-tab' },
-        { type: 'M', name: 'Model', active: false, icon: 'cpu', id: 'top-model', label: 'model-tab' },
-        { type: 'S', name: 'Storage', active: false, icon: 'database', id: 'top-storage', label: 'storage-tab' },
-        { type: 'V', name: 'VectorDB', active: false, icon: 'database', id: 'top-vector', label: 'vector-tab' }
+        { type: 'all', name: 'All', active: true, icon: 'target', id: 'top-all', label: 'all-tab' }
       ],
       userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
     };
@@ -96,6 +93,7 @@ export default {
       return value.slice(0, 3) + '*************';
     },
     navigateToEdit(credentialId) {
+      // this.$router.push(`/provider/modify/${credentialId}`);
       this.$router.push({ path: '/provider/modify', query: { credentialId: credentialId } });
     },
     onMouseOver(event) {

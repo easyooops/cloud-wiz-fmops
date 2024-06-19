@@ -6,6 +6,7 @@ export const useProviderStore = defineStore({
     state: () => ({
       providers: [],
       credential: [],
+      models:[],
       loading: false,
       error: null
     }),
@@ -20,7 +21,7 @@ export const useProviderStore = defineStore({
         try {
           const { get } = restApi();
           const response = await get(`/credential/?user_id=${userId}`, { 'accept': 'application/json' });
-          this.providers = response.data;
+          this.credential = response.data;
         } catch (error) {
           this.error = error;
         } finally {
@@ -105,6 +106,19 @@ export const useProviderStore = defineStore({
         } finally {
           this.loading = false;
         }
-      }              
+      },
+      async fetchModels() {
+        this.loading = true;
+        this.error = null;
+        try {
+          const { get } = restApi();
+          const response = await get('/model/', null, { 'accept': 'application/json' });
+          this.models = response.data;
+        } catch (error) {
+          this.error = error;
+        } finally {
+          this.loading = false;
+        }
+      },                 
     }  
   });

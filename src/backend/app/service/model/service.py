@@ -1,11 +1,53 @@
+from uuid import UUID
+from fastapi import HTTPException
 import openai
 import os
 import requests
-from typing import Optional
+from typing import List, Optional
 from dotenv import load_dotenv
+from sqlmodel import Session, select
+
+from app.api.v1.schemas.model import ModelCreate, ModelUpdate
+from app.service.model.model import Model
 
 load_dotenv()
 
+class ModelService:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get_all_models(self, provider_id: Optional[UUID] = None) -> List[Model]:
+        statement = select(Model)
+        if provider_id:
+            statement = statement.where(Model.provider_id == provider_id)
+        return self.session.exec(statement).all()
+
+    def create_model(self, model_create: ModelCreate) -> Model:
+        model = Model.model_validate(model_create)
+        self.session.add(model)
+        self.session.commit()
+        self.session.refresh(model)
+        return model
+
+    def update_model(self, model_id: UUID, model_update: ModelUpdate) -> Model:
+        model = self.session.get(Model, model_id)
+        if not model:
+            raise HTTPException(status_code=404, detail="Model not found")
+        for key, value in model_update.dict(exclude_unset=True).items():
+            setattr(model, key, value)
+        self.session.add(model)
+        self.session.commit()
+        self.session.refresh(model)
+        return model
+
+    def delete_model(self, model_id: UUID) -> Model:
+        model = self.session.get(Model, model_id)
+        if not model:
+            raise HTTPException(status_code=404, detail="Model not found")
+        self.session.delete(model)
+        self.session.commit()
+        return model
+    
 class BaseModelService:
     def __init__(self, api_key: str, api_endpoint: str):
         self.api_key = api_key
