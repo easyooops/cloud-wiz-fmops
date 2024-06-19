@@ -42,3 +42,6 @@ openai
 
 # chat
 langchain-openai
+
+# Vector store
+faiss-cpu
