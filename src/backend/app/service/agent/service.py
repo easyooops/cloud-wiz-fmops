@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import HTTPException
 from sqlmodel import Session, select
+from uuid import UUID
 
 from app.service.agent.model import Agent
 from app.api.v1.schemas.agent import AgentCreate, AgentUpdate
@@ -9,12 +10,12 @@ class AgentService:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_all_agents(self, type: Optional[str] = None, name: Optional[str] = None):
+    def get_all_agents(self, agent_id: Optional[UUID] = None, user_id: Optional[int] = None):
         statement = select(Agent)
-        if type:
-            statement = statement.where(Agent.type == type)
-        if name:
-            statement = statement.where(Agent.title.contains(name))
+        if agent_id:
+            statement = statement.where(Agent.agent_id == agent_id)
+        if user_id:
+            statement = statement.where(Agent.user_id == user_id)
         return self.session.exec(statement).all()
 
     def create_agent(self, agent_data: AgentCreate):
@@ -27,7 +28,7 @@ class AgentService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    def update_agent(self, agent_id: int, agent_update: AgentUpdate):
+    def update_agent(self, agent_id: UUID, agent_update: AgentUpdate):
         try:
             agent = self.session.get(Agent, agent_id)
             if not agent:
@@ -41,7 +42,7 @@ class AgentService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    def delete_agent(self, agent_id: int):
+    def delete_agent(self, agent_id: UUID):
         try:
             agent = self.session.get(Agent, agent_id)
             if not agent:

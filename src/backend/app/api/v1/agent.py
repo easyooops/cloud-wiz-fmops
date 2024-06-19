@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
@@ -11,15 +12,27 @@ from app.service.agent.model import Agent
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Agent])
-def get_agents(
-    type: Optional[str] = None,
-    name: Optional[str] = None,
+@router.get("/{agent_id}", response_model=Agent)
+def get_agents_by_id(
+    agent_id: UUID,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
     try:
         service = AgentService(session)
-        return service.get_all_agents(type, name)
+        agent = service.get_all_agents(agent_id, None)
+        return agent[0]
+    except Exception as e:
+        raise internal_server_error(e)
+    
+@router.get("/", response_model=List[Agent])
+def get_agents(
+    agent_id: Optional[UUID] = None,
+    user_id: Optional[int] = None,
+    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+):
+    try:
+        service = AgentService(session)
+        return service.get_all_agents(agent_id, user_id)
     except Exception as e:
         raise internal_server_error(e)
 
@@ -36,7 +49,7 @@ def create_agent(
 
 @router.put("/{agent_id}", response_model=Agent)
 def update_agent(
-    agent_id: int,
+    agent_id: UUID,
     agent_update: AgentUpdate,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
@@ -48,7 +61,7 @@ def update_agent(
 
 @router.delete("/{agent_id}")
 def delete_agent(
-    agent_id: int,
+    agent_id: UUID,
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
     try:
