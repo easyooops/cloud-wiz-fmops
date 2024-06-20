@@ -8,6 +8,7 @@ export const useAgentStore = defineStore({
     agent: null,
     loading: false,
     error: null,
+    llmsResponse: null
   }),
   getters: {
     allAgents: (state) => state.agents,
@@ -81,5 +82,18 @@ export const useAgentStore = defineStore({
         this.loading = false;
       }
     },
+    async fetchLLMS(query) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { get } = restApi();
+        const response = await get(`/chat/llms-openai?query=${encodeURIComponent(query)}`, { 'accept': 'application/json' });
+        this.llmsResponse = response.data;
+      } catch (error) {
+        this.error = error;
+      } finally {
+        this.loading = false;
+      }
+    },    
   },
 });
