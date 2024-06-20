@@ -9,9 +9,22 @@ from app.service.agent.service import AgentService
 from app.api.v1.schemas.agent import AgentCreate, AgentUpdate
 from app.core.exception import internal_server_error
 from app.service.agent.model import Agent
+from app.api.v1.schemas.chat import ChatResponse
 
 router = APIRouter()
 
+@router.get("/prompt/{agent_id}", response_model=ChatResponse)
+def get_agents_prompt(
+    agent_id: UUID,    
+    query: Optional[str] = None,
+    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))    
+):
+    try:
+        service = AgentService(session)
+        return service.get_all_agents(agent_id, query)
+    except Exception as e:
+        raise internal_server_error(e)
+    
 @router.get("/{agent_id}", response_model=Agent)
 def get_agents_by_id(
     agent_id: UUID,
