@@ -1,12 +1,12 @@
 import os
 import boto3
 import faiss
+import numpy as np
 from sqlmodel import Session
-from datetime import datetime
 from fastapi import HTTPException
 from app.components.Embedding.Base import AbstractEmbeddingComponent
-from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.components.Embedding.Bedrock import BedrockEmbeddingComponent
+from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.components.VectorStore.Faiss import FaissAsyncVectorStore
 
 
@@ -41,7 +41,7 @@ class EmbeddingService:
             embeddings = embedding_component.execute_embed_documents(texts)
             return embeddings
         except Exception as e:
-            raise  HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e))
 
     def get_bedrock_embedding(self, model_id: str, text: str):
         try:
@@ -73,16 +73,18 @@ class EmbeddingService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def initialize_faiss_store(self, embedding_component: AbstractEmbeddingComponent):
+    async def initialize_faiss_store(self, embedding_component: AbstractEmbeddingComponent, dimension: int):
         self.faiss_store = FaissAsyncVectorStore(embedding_component)
-        dimension = 1536
         await self.faiss_store.initialize(dimension)
 
     async def add_to_faiss_store(self, texts: list):
-        return await self.faiss_store.add_embeddings(texts)
+        embeddings = self.get_openai_embeddings(texts)
+        vectors = np.array(embeddings).astype('float32')
+        return await self.faiss_store.add_embeddings(vectors)
 
-    async def query_faiss_store(self, query_text: str, top_k: int = 5):
-        return await self.faiss_store.query(query_text, top_k)
+    async def query_faiss_store(self, query_vector: list[float], top_k: int = 5):
+        # print(f"Querying FAISS store with vector: {query_vector}")
+        return await self.faiss_store.query(query_vector, top_k)
 
     def save_faiss_index_to_file(self, file_path: str):
         if self.faiss_store and self.faiss_store.index:
@@ -91,11 +93,11 @@ class EmbeddingService:
             raise ValueError("FAISS store is not initialized")
 
     def load_faiss_index_from_file(self, file_path: str):
+        if not self.faiss_store:
+            raise ValueError("FAISS store is not initialized")
         self.faiss_store.index = faiss.read_index(file_path)
 
     def save_faiss_index_to_s3(self, s3_file_path: str, local_file_path: str):
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        local_file_path = f"/tmp/faiss_index_{timestamp}.index"
         self.save_faiss_index_to_file(local_file_path)
         self.s3_client.upload_file(local_file_path, self.vector_store_bucket, s3_file_path)
 

@@ -5,23 +5,18 @@ from app.components.Embedding.Base import AbstractEmbeddingComponent
 
 
 class FaissAsyncVectorStore:
-    def __init__(self, embedding_component: AbstractEmbeddingComponent):
+    def __init__(self, embedding_component):
         self.embedding_component = embedding_component
         self.index = None
 
-    async def initialize(self, dimension: int):
+    async def initialize(self, dimension):
         self.index = faiss.IndexFlatL2(dimension)
 
-    async def add_embeddings(self, texts: list):
-        loop = asyncio.get_event_loop()
-        embeddings = await loop.run_in_executor(None, self.embedding_component.execute_embed_documents, texts)
-        embeddings = np.array(embeddings).astype('float32')
-        self.index.add(embeddings)
-        return embeddings
+    async def add_embeddings(self, embeddings: list):
+        vectors = np.array(embeddings).astype('float32')
+        self.index.add(vectors)
 
-    async def query(self, query_text: str, top_k: int):
-        loop = asyncio.get_event_loop()
-        query_embedding = await loop.run_in_executor(None, self.embedding_component.execute_embed_query, query_text)
-        query_embedding = np.array([query_embedding]).astype('float32')
-        distances, indices = self.index.search(query_embedding, top_k)
-        return distances, indices
+    async def query(self, query_vector: list[float], top_k: int):
+        query_vector_np = np.array([query_vector]).astype('float32')
+        distances, indices = self.index.search(query_vector_np, top_k)
+        return indices[0]  # return the indices of the nearest neighbors
