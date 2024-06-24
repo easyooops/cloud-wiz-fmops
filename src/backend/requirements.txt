@@ -45,3 +45,9 @@ langchain-openai
 
 # Vector store
 faiss-cpu
+
+#Document Loader
+pypdf
+pandas
+docx2txt
+openpyxl

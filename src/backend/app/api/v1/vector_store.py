@@ -1,12 +1,16 @@
 import os
 import boto3
-import numpy as np
-from openai import OpenAI
+import pandas as pd
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.documents import Document
-# from langchain_community.llms import OpenAI
 from sqlmodel import Session
+from langchain_openai import ChatOpenAI
+from langchain.chains import RetrievalQA
+from langchain_community.document_loaders import TextLoader, PyPDFLoader, CSVLoader, Docx2txtLoader
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import CharacterTextSplitter
 from typing import List
 from app.core.interface.service import ServiceType
 from app.core.factories import get_database
@@ -43,53 +47,61 @@ async def query_faiss_store(
         query: str,
         store_name: str,
         top_k: int = 5,
-        session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
 ):
     try:
-        embedding_service = EmbeddingService(session)
-
         s3_client = boto3.client('s3')
-        response = s3_client.list_objects_v2(Bucket=os.getenv("AWS_S3_BUCKET_VECTOR_STORE_NAME"), Prefix=f"{store_name}/")
-        files = [content['Key'] for content in response.get('Contents', [])]
+        response = s3_client.list_objects_v2(Bucket=os.getenv("AWS_S3_BUCKET_STORE_NAME"), Prefix=f"{store_name}/")
+        files = [content['Key'] for content in response.get('Contents', []) if content['Key'].endswith(('.txt', '.pdf', '.csv', '.docx', '.xlsx'))]
+
+        if not files:
+            raise ValueError("No documents found in the specified store")
+
+        documents = []
+        for s3_file_key in files:
+            local_file_path = f"/tmp/{s3_file_key.split('/')[-1]}"
+            s3_client.download_file(os.getenv("AWS_S3_BUCKET_STORE_NAME"), s3_file_key, local_file_path)
+
+            if local_file_path.endswith('.txt'):
+                loader = TextLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.pdf'):
+                loader = PyPDFLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.csv'):
+                loader = CSVLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.docx'):
+                loader = Docx2txtLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.xlsx'):
+                xlsx = pd.ExcelFile(local_file_path)
+                for sheet_name in xlsx.sheet_names:
+                    df = pd.read_excel(xlsx, sheet_name=sheet_name)
+                    full_text = df.to_string(index=False)
+                    documents.append(Document(page_content=full_text, metadata={"source": f"{local_file_path} - {sheet_name}"}))
+            else:
+                raise ValueError(f"Unsupported file format: {local_file_path}")
+
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        docs = text_splitter.split_documents(documents)
 
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if not openai_api_key:
             raise ValueError("OpenAI API key is not set in the environment")
 
-        embedding_component = OpenAIEmbeddingComponent(openai_api_key)
-        embedding_component.configure()
-        dimension = 1536
-        await embedding_service.initialize_faiss_store(embedding_component, dimension)
+        embeddings = OpenAIEmbeddings(api_key=openai_api_key)
+        db = await FAISS.afrom_documents(docs, embeddings)
+        matching_docs = await db.asimilarity_search(query, k=top_k)
+        llm = ChatOpenAI(api_key=openai_api_key, model="gpt-3.5-turbo", temperature=0)
+        qa_chain = RetrievalQA.from_chain_type(llm, retriever=db.as_retriever())
 
-        for s3_faiss_key in files:
-            local_faiss_path = f"/tmp/{s3_faiss_key.split('/')[-1]}"
-            embedding_service.load_faiss_index_from_s3(s3_faiss_key, local_faiss_path)
+        inputs = {"query": query, "input_documents": matching_docs}
+        answer = qa_chain.invoke(inputs)
+        result = answer['result'] if 'result' in answer else answer
 
-        query_vector: list[float] = embedding_component.execute_embed_query(query)
-        if not isinstance(query_vector, list) or not all(isinstance(x, float) for x in query_vector):
-            raise ValueError("query_vector must be a list of floats")
+        return {"results": result}
 
-        results = await embedding_service.query_faiss_store(query_vector, top_k)
-        documents = [Document(page_content=str(result)) for result in results]
-
-        response_text = generate_response_from_documents(query, documents, openai_api_key)
-        return {"results": response_text}
     except Exception as e:
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-
-
-def generate_response_from_documents(query, documents, openai_api_key):
-    client = OpenAI(api_key=openai_api_key)
-    context = "\n\n".join([f"문서 {i+1}: {doc.page_content}" for i, doc in enumerate(documents)])
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "당신은 도움을 주는 어시스턴트입니다. 주어진 문서를 기반으로 정확하고 상세한 답변을 제공하세요."},
-            {"role": "user", "content": f"문맥: {context}\n\n질문: {query}\n\n정확하고 상세한 답변을 한국어로 작성하세요:"},
-        ],
-        temperature=0.5,
-        max_tokens=1000
-    )
-    return response.choices[0].message.content.strip()

@@ -78,19 +78,12 @@ async def openai_file_embeddings(
         openai_embedding_component = OpenAIEmbeddingComponent(openai_api_key)
         openai_embedding_component.configure()
 
-        dimension = 1536
-        await embedding_service.initialize_faiss_store(openai_embedding_component, dimension)
-        await embedding_service.add_to_faiss_store(file_contents)
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        local_faiss_path = f"/tmp/faiss_index_{timestamp}.index"
-        s3_faiss_path = f"{store_name}/faiss_index_{timestamp}.index"
-        embedding_service.save_faiss_index_to_s3(s3_faiss_path, local_faiss_path)
-
         embeddings = embedding_service.get_openai_embeddings(file_contents)
         return EmbeddingMultipleResponse(embeddings=embeddings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/{store_name}/embedding-openai-files", response_model=EmbeddingMultipleResponse)
 async def openai_multi_files_embeddings(
         store_name: str,
@@ -124,20 +117,13 @@ async def openai_multi_files_embeddings(
 
         embedding_component = OpenAIEmbeddingComponent(openai_api_key)
         embedding_component.configure()
-        dimension = 1536
-
-        await embedding_service.initialize_faiss_store(embedding_component, dimension)
-        await embedding_service.add_to_faiss_store(file_contents)
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        local_faiss_path = f"/tmp/faiss_index_{timestamp}.index"
-        s3_faiss_path = f"{store_name}/faiss_index_{timestamp}.index"
-        embedding_service.save_faiss_index_to_s3(s3_faiss_path, local_faiss_path)
 
         embeddings = embedding_service.get_openai_embeddings(file_contents)
         return EmbeddingMultipleResponse(embeddings=embeddings)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading and embedding files: {str(e)}")
+
+
 @router.post("/embedding-bedrock", response_model=EmbeddingResponse)
 def get_bedrock_embedding(
         text: Optional[str] = None,
@@ -153,6 +139,7 @@ def get_bedrock_embedding(
         return EmbeddingResponse(embedding=embedding)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/{store_name}/embedding-bedrock-file", response_model=EmbeddingResponse)
 async def bedrock_single_file_embedding(
@@ -179,21 +166,10 @@ async def bedrock_single_file_embedding(
         service.upload_file_to_store(store_name, file)
         MAX_TOKENS = 5000
         chunks = split_text_into_chunks(content, MAX_TOKENS)
-
         embedding_service = EmbeddingService(session)
-
         bedrock_embedding_component = BedrockEmbeddingComponent()
         bedrock_embedding_component.configure(model_id=model)
-        dimension = 1536
-
-        await embedding_service.initialize_faiss_store(bedrock_embedding_component, dimension)
         embeddings = [embedding_service.get_bedrock_embedding(model, chunk) for chunk in chunks]
-        await embedding_service.add_to_faiss_store(chunks)
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        local_faiss_path = f"/tmp/faiss_index_{timestamp}.index"
-        s3_faiss_path = f"{store_name}/faiss_index_{timestamp}.index"
-        embedding_service.save_faiss_index_to_s3(s3_faiss_path, local_faiss_path)
 
         return EmbeddingResponse(embedding=embeddings)
     except Exception as e:
@@ -236,16 +212,8 @@ async def bedrock_multi_files_embeddings(
 
         bedrock_embedding_component = BedrockEmbeddingComponent()
         bedrock_embedding_component.configure(model_id=model)
-        dimension = 1536
 
-        await embedding_service.initialize_faiss_store(bedrock_embedding_component, dimension)
-        embeddings = embedding_service.get_bedrock_embeddings(model, file_contents)
-        await embedding_service.add_to_faiss_store(file_contents)
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        local_faiss_path = f"/tmp/faiss_index_{timestamp}.index"
-        s3_faiss_path = f"{store_name}/faiss_index_{timestamp}.index"
-        embedding_service.save_faiss_index_to_s3(s3_faiss_path, local_faiss_path)
+        embeddings = [embedding_service.get_bedrock_embedding(model, chunk) for chunk in file_contents]
 
         return EmbeddingMultipleResponse(embeddings=embeddings)
     except Exception as e:
