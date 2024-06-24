@@ -12,7 +12,7 @@ export const useAgentStore = defineStore({
   }),
   getters: {
     allAgents: (state) => state.agents,
-    getAgentById: (state) => (id) => state.agents.find(agent => agent.agent_id === id),
+    getAgentById: (state) => (id) => state.agents.find(agent => agent.agent_id === id)
   },
   actions: {
     async fetchAgents() {
@@ -94,6 +94,9 @@ export const useAgentStore = defineStore({
       } finally {
         this.loading = false;
       }
-    },    
+    },
+    async resetAgent() {
+      this.agent = null;
+    }     
   },
 });

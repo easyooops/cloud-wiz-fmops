@@ -23,7 +23,7 @@
                                 <input class="form-control input-txt-bx" id="message-to-send" v-model="text" v-on:keyup.enter="addChat()"
                                     type="text" name="message-to-send" placeholder="Type a message......" />
                             </div>
-                            <button @click="addChat()" class="btn btn-primary" type="button">
+                            <button @click="addChat()" class="btn btn-primary" type="button" :disabled="!agentId">
                                 <i class="fa fa-send-o"></i>
                             </button>
                         </div>                       
@@ -54,6 +54,12 @@ export default {
             chatmenutoogle: false
         }
     },
+    computed: {
+        agentId() {
+            const agentStore = useAgentStore();
+            return agentStore.agent ? agentStore.agent.agent_id : '';
+        }
+    },    
     methods: {
         getImgUrl(path) {
             return ('/images/' + path);

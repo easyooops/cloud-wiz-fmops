@@ -52,7 +52,16 @@ git push origin feature-suyeong
 ```
 ### Pull Main
 ```
+git status
+
+git add .
+
+git commit -m "Save current changes before pulling latest updates"
+
+git stash
+
 git pull origin main
+
 ```
 
 # alembic

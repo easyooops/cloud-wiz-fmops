@@ -17,7 +17,7 @@
                                             <p>Cloudwiz AI FMOps</p>
                                         </div>
                                         <ul class="list-inline float-start float-sm-end chat-menu-icons">
-                                            <li class="list-inline-item">
+                                            <li class="list-inline-item" v-if="agentId">
                                                 <a href="#" data-bs-toggle="modal" data-bs-target="#agent-modal"><i class="fa fa-code"></i></a>
                                             </li>
                                         </ul>                                            
@@ -57,6 +57,7 @@ import prompt from './prompt.vue'
 import engineering from './engineering.vue'
 import menu from '@/data/contact.json'
 import { useContactStore } from '~~/store/contact'
+import { useAgentStore } from '@/store/agent';
 export default {
     name: 'agent',
     data() {
@@ -67,7 +68,11 @@ export default {
     computed: {
         selectedUser() {
             return useContactStore().selectedUser1
-        }
+        },
+        agentId() {
+            const agentStore = useAgentStore();
+            return agentStore.agent ? agentStore.agent.agent_id : '';
+        }        
     },
     components: {
         prompt, engineering
