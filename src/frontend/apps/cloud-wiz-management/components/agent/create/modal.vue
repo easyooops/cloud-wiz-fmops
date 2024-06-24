@@ -16,14 +16,8 @@
                     configuration as mention
                   </p>
                   <div>
-                    <pre>
-                        <code>
-                        <textarea :value="data" ref="layout" rows="1" v-bind:style="styleObject"/>
-curl http://localhost:3000/api/v1/agent/0b7a2040-2619-4f1a-b11b-4bbdacab0d01 \
--X POST \
--d '{"question": "Hey, how are you?"}' \
--H "Content-Type: application/json"
-                        </code>
+                    <pre class="curl-code">
+                        <code>{{ curlCommand }}</code>
                     </pre>
                   </div>
                   <button class="btn btn-primary mt-2" @click="copyText()">
@@ -45,6 +39,7 @@ curl http://localhost:3000/api/v1/agent/0b7a2040-2619-4f1a-b11b-4bbdacab0d01 \
   import { mapState } from 'pinia';
   import { useLayoutStore } from '~~/store/layout';
   import { useMenuStore } from '~~/store/menu';
+  import { useAgentStore } from '@/store/agent';
   
   export default {
     name: 'CustomizerConfiguration',
@@ -63,15 +58,19 @@ curl http://localhost:3000/api/v1/agent/0b7a2040-2619-4f1a-b11b-4bbdacab0d01 \
         customizer: 'customizer',
       }),
       ...mapState(useLayoutStore, {
-  
-        layout: 'layout',
+        layout: 'layout'
       }),
-      data() {
-        return `curl http://localhost:3000/api/v1/agent/0b7a2040-2619-4f1a-b11b-4bbdacab0d01 \
-            -X POST \
+      curlCommand() {
+        const agentId = this.agentId;
+        return `curl ${import.meta.env.VITE_API_ENDPOINT}/api/v1/agent/prompt/${agentId} \
+            -X GET \
             -d '{"question": "Hey, how are you?"}' \
             -H "Content-Type: application/json"`
-      }
+      },
+      agentId() {
+        const agentStore = useAgentStore();
+        return agentStore.agent ? agentStore.agent.agent_id : '';
+      }      
     },
     methods: {
       closecustomizer() {
@@ -91,3 +90,11 @@ curl http://localhost:3000/api/v1/agent/0b7a2040-2619-4f1a-b11b-4bbdacab0d01 \
   };
   </script>
   
+  <style scoped>
+.modal {
+  --bs-modal-width: 700px;
+}
+.curl-code {
+  white-space: pre-wrap;
+}
+</style>

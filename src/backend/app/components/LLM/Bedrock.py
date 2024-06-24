@@ -1,10 +1,6 @@
-import os
-from dotenv import load_dotenv
 import boto3
 
-from langchain_community.llms import Bedrock
 from langchain_aws import BedrockLLM
-from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 
@@ -25,6 +21,9 @@ class BedrockLLMComponent(BaseLLMComponent):
     
     def build(self, model_id: str, temperature: float, top_p: float = None, max_tokens: int = None):
         
+        if not model_id:
+            model_id="amazon.titan-text-lite-v1"
+
         model_kwargs = {"temperature": temperature, "top_p": top_p, "max_tokens": max_tokens}
 
         if "ai21" in model_id:

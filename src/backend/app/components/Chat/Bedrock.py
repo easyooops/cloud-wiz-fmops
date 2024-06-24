@@ -1,7 +1,6 @@
 import boto3
 from langchain_aws import ChatBedrock
 from langchain_core.messages import HumanMessage
-from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from app.components.Chat.Base import AbstractLLMComponent
 
 class ChatBedrockComponent(AbstractLLMComponent):
@@ -19,6 +18,9 @@ class ChatBedrockComponent(AbstractLLMComponent):
 
     def build(self, model_id: str, temperature: float, top_p: float = None, max_tokens: int = None):
         
+        if not model_id:
+            model_id="amazon.titan-text-express-v1"
+
         model_kwargs = {"temperature": temperature, "top_p": top_p, "max_tokens": max_tokens}
 
         if "amazon" in model_id:

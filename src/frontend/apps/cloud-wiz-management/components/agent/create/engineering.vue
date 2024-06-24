@@ -537,6 +537,9 @@ export default {
     },
     async mounted() {
         this.router = useRouter();
+        if (!this.router.currentRoute.query.agentId) {
+            await useAgentStore().resetAgent();
+        }        
         if (this.router.currentRoute.query.agentId || this.agentId) {
             await this.fetchAgentData();
         }
