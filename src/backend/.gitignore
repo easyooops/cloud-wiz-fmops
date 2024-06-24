@@ -111,6 +111,6 @@ settings.json
 node_modules
 
 # backend
-src/backend/cloud-wiz-fmops.db
+.cloud-wiz-fmops.db
 
 .aws
