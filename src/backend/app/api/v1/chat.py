@@ -14,12 +14,21 @@ load_dotenv()
 
 @router.get("/llms-openai", response_model=ChatResponse)
 def get_llm_openai_answer(
-    query: Optional[str] = None
+    query: Optional[str] = None,
+    model_id: Optional[str] = None,
+    temperature: Optional[float] = 0.9,
+    top_p: Optional[float] = 0,
+    max_tokens: Optional[int] = 250      
 ):
     try:
         openai_api_key = os.getenv("OPENAI_API_KEY")
         openai_component = OpenAILLMComponent(openai_api_key)
-        openai_component.build(temperature=0.5)
+        openai_component.build(
+                model_id=model_id,
+                temperature=temperature,
+                top_p=top_p,
+                max_tokens=max_tokens
+            )
 
         return ChatResponse(answer=openai_component.run(query))
     except Exception as e:

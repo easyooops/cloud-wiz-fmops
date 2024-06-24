@@ -18,8 +18,8 @@ class ChatService:
                 raise ValueError("OpenAI API key is not set in the environment variables")
 
             openai_component = ChatOpenAIComponent(openai_api_key)
-            openai_component.configure(temperature=0.7)
-            response = openai_component.execute(query)
+            openai_component.build(temperature=0.7)
+            response = openai_component.run(query)
             return response
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -33,8 +33,8 @@ class ChatService:
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
             bedrock_component = ChatBedrockComponent()
-            bedrock_component.configure(model_id=model_id)
-            response = bedrock_component.execute(query)
+            bedrock_component.build(model_id=model_id)
+            response = bedrock_component.run(query)
             return response
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -52,18 +52,18 @@ class ChatService:
 
             # 쿼리 유형 감지 및 전처리
             refinement_component = QueryTuningComponent(openai_api_key)
-            refinement_component.configure()
-            refined_query = refinement_component.execute(query)
+            refinement_component.build()
+            refined_query = refinement_component.run(query)
 
             # 서비스 유형에 따른 컴포넌트 선택
             if service_type == "bedrock":
                 bedrock_component = ChatBedrockComponent()
-                bedrock_component.configure(model_id=model_id)
-                response = bedrock_component.execute(refined_query)
+                bedrock_component.build(model_id=model_id)
+                response = bedrock_component.run(refined_query)
             else:
                 openai_component = ChatOpenAIComponent(openai_api_key)
-                openai_component.configure(temperature=0.7)
-                response = openai_component.execute(refined_query)
+                openai_component.build(temperature=0.7)
+                response = openai_component.run(refined_query)
 
             return response
         except Exception as e:

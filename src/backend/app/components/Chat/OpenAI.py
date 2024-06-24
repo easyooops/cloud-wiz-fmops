@@ -6,10 +6,20 @@ class ChatOpenAIComponent(AbstractLLMComponent):
         super().__init__()
         self.openai_api_key = openai_api_key
 
-    def configure(self, temperature=0.7):
-        self.model_instance = ChatOpenAI(api_key=self.openai_api_key, temperature=temperature)
+    def build(self, model_id, temperature, max_tokens):
 
-    def execute(self, prompt):
+        if not model_id:
+            model_id="gpt-3.5-turbo"
+
+        self.model_instance = ChatOpenAI(
+            openai_api_key=self.openai_api_key, 
+            model=model_id,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            streaming=True
+        )
+
+    def run(self, prompt):
         if self.model_instance is None:
             raise ValueError("Model instance is not initialized. Call the configure method first.")
         response = self.model_instance.invoke(prompt)
