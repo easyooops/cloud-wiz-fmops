@@ -7,11 +7,23 @@ class OpenAILLMComponent(BaseLLMComponent):
         super().__init__()
         self.openai_api_key = openai_api_key
 
-    def build(self, temperature=0.7):
+    def build(self, model_id, temperature, top_p, max_tokens):
         template = """Question: {question}
         Answer: Let's think step by step."""
+
+        if not model_id:
+            model_id="gpt-3.5-turbo-instruct"
+
         self.prompt = PromptTemplate.from_template(template)
-        self.llm = OpenAI(openai_api_key=self.openai_api_key, temperature=temperature)
+
+        self.llm = OpenAI(
+            openai_api_key=self.openai_api_key, 
+            model=model_id,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+            streaming=True
+        )
 
     def run(self, prompt):
         if self.llm is None:

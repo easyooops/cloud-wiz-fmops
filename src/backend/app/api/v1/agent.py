@@ -10,6 +10,7 @@ from app.api.v1.schemas.agent import AgentCreate, AgentUpdate
 from app.core.exception import internal_server_error
 from app.service.agent.model import Agent
 from app.api.v1.schemas.chat import ChatResponse
+from app.service.prompt.service import PromptService
 
 router = APIRouter()
 
@@ -20,8 +21,8 @@ def get_agents_prompt(
     session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))    
 ):
     try:
-        service = AgentService(session)
-        return service.get_all_agents(agent_id, query)
+        service = PromptService(session)
+        return ChatResponse(answer=service.get_prompt(agent_id, query))
     except Exception as e:
         raise internal_server_error(e)
     

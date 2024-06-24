@@ -7,12 +7,12 @@ class QueryTuningComponent(AbstractLLMComponent):
         super().__init__()
         self.openai_api_key = openai_api_key
 
-    def configure(self, temperature=0.7):
+    def build(self, temperature=0.7):
         template = """Identify the query type and refine it if necessary. Query: {query}"""
         self.prompt = PromptTemplate.from_template(template)
         self.llm = OpenAI(openai_api_key=self.openai_api_key, temperature=temperature)
 
-    def execute(self, prompt):
+    def run(self, prompt):
         if self.llm is None:
             raise ValueError("LLM is not initialized. Call the configure method first.")
         refined_query = self.prompt | self.llm

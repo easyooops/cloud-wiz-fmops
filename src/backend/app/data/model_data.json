@@ -1,7 +1,7 @@
 [
     {
         "provider_name": "OpenAI",
-        "model_name": "gpt-3.5-turbo-instruct",
+        "model_name": "gpt-3.5-turbo",
         "provider_id": "",
         "model_type": "C",
         "sort_order": 1,
@@ -10,7 +10,7 @@
     },
     {
         "provider_name": "OpenAI",
-        "model_name": "gpt-3.5-turbo",
+        "model_name": "gpt-4",
         "provider_id": "",
         "model_type": "C",
         "sort_order": 2,
@@ -19,7 +19,7 @@
     },
     {
         "provider_name": "OpenAI",
-        "model_name": "gpt-4",
+        "model_name": "gpt-4-turbo",
         "provider_id": "",
         "model_type": "C",
         "sort_order": 3,
@@ -28,19 +28,10 @@
     },
     {
         "provider_name": "OpenAI",
-        "model_name": "gpt-4-turbo",
-        "provider_id": "",
-        "model_type": "C",
-        "sort_order": 4,
-        "creator_id": "a1eeac9b-92fb-423c-ac87-805c3266d624",
-        "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
-    },
-    {
-        "provider_name": "OpenAI",
         "model_name": "gpt-4o",
         "provider_id": "",
         "model_type": "C",
-        "sort_order": 5,
+        "sort_order": 4,
         "creator_id": "a1eeac9b-92fb-423c-ac87-805c3266d624",
         "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
     },
@@ -162,10 +153,19 @@
         "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
     },
     {
+        "provider_name": "OpenAI",
+        "model_name": "gpt-3.5-turbo-instruct",
+        "provider_id": "",
+        "model_type": "T",
+        "sort_order": 6,
+        "creator_id": "a1eeac9b-92fb-423c-ac87-805c3266d624",
+        "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
+    },    
+    {
         "provider_name": "Bedrock",        
         "model_name": "ai21.j2-ultra-v1",
         "provider_id": "system",
-        "model_type": "C",
+        "model_type": "T",
         "sort_order": 1,
         "creator_id": "a1eeac9b-92fb-423c-ac87-805c3266d624",
         "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
@@ -309,7 +309,7 @@
         "provider_name": "Bedrock",        
         "model_name": "cohere.embed-english-v3",
         "provider_id": "system",
-        "model_type": "T",
+        "model_type": "E",
         "sort_order": 3,
         "creator_id": "a1eeac9b-92fb-423c-ac87-805c3266d624",
         "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
@@ -327,7 +327,7 @@
         "provider_name": "Bedrock",        
         "model_name": "cohere.command-text-v14",
         "provider_id": "system",
-        "model_type": "C",
+        "model_type": "T",
         "sort_order": 5,
         "creator_id": "a1eeac9b-92fb-423c-ac87-805c3266d624",
         "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
@@ -336,7 +336,7 @@
         "provider_name": "Bedrock",        
         "model_name": "cohere.command-light-text-v14",
         "provider_id": "system",
-        "model_type": "C",
+        "model_type": "T",
         "sort_order": 6,
         "creator_id": "a1eeac9b-92fb-423c-ac87-805c3266d624",
         "updater_id": "a1eeac9b-92fb-423c-ac87-805c3266d624"
