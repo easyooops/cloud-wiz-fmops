@@ -9,8 +9,8 @@ class Agent(SQLModel, table=True):
     agent_name: str
     agent_description: Optional[str] = None
     fm_provider_type: str
-    fm_provider_id: UUID
-    fm_model_id: UUID
+    fm_provider_id: UUID = Field(index=True)
+    fm_model_id: UUID = Field(index=True)
     fm_temperature: float = Field(default=0.7)
     fm_top_p: float = Field(default=0.9)
     fm_request_token_limit: int = Field(default=5000)

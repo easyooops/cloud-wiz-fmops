@@ -11,41 +11,40 @@ from langchain.memory import ConversationBufferMemory
 from app.components.LLM.Base import BaseLLMComponent
 
 class BedrockLLMComponent(BaseLLMComponent):
-    def __init__(self, model_id):
+    def __init__(self, aws_access_key, aws_secret_access_key, aws_region):
         super().__init__()
-        self.model_id = model_id
-        self.llm = None
-        self.conversation = None
+        self.aws_access_key = aws_access_key
+        self.aws_secret_access_key = aws_secret_access_key
+        self.aws_region = aws_region
 
-    def load_credentials(self):
-        load_dotenv()
-        self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-        self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        self.aws_region = os.getenv("AWS_REGION")
-
-    def create_boto3_session(self):
-        self.load_credentials()
-        session = boto3.Session(
-            aws_access_key_id=self.aws_access_key_id,
+        self.boto3_session = boto3.Session(
+            aws_access_key_id=self.aws_access_key,
             aws_secret_access_key=self.aws_secret_access_key,
             region_name=self.aws_region
         )
-        return session
     
-    def build(self):
-        session = self.create_boto3_session()
-        # llm = Bedrock(
-        #     credentials_profile_name=session,
-        #     model_id=self.model_id,
-        #     streaming=True,
-        #     callbacks=[StreamingStdOutCallbackHandler()],
-        # )
+    def build(self, model_id: str, temperature: float, top_p: float = None, max_tokens: int = None):
+        
+        model_kwargs = {"temperature": temperature, "top_p": top_p, "max_tokens": max_tokens}
+
+        if "ai21" in model_id:
+            del model_kwargs["top_p"]
+            del model_kwargs["max_tokens"]
+
+        if "cohere" in model_id:
+            del model_kwargs["top_p"]
+
+        if "amazon" in model_id:
+            del model_kwargs["top_p"]
+            del model_kwargs["max_tokens"]
+
+        if "meta" in model_id:
+            del model_kwargs["max_tokens"]
+
         llm = BedrockLLM(
-            region_name=self.aws_region,
-            # credentials_profile_name=session,
-            model_id=self.model_id,
-            streaming=True,
-            callbacks=[StreamingStdOutCallbackHandler()],
+            client=self.boto3_session.client('bedrock-runtime'),
+            model_id=model_id,
+            model_kwargs=model_kwargs
         )        
         self.conversation = ConversationChain(
             llm=llm, verbose=True, memory=ConversationBufferMemory()
