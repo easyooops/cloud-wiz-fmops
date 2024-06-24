@@ -41,7 +41,8 @@ export default {
     name: 'prompt',
     data() {
         return {
-            text: "",            
+            text: "",
+            agentId: '',
             currentChatMessages: [
                 {
                     sender: 0,
@@ -71,8 +72,9 @@ export default {
             this.scrollChat();
 
             const agentStore = useAgentStore();
+            const agentId = agentStore.agent ? agentStore.agent.agent_id : '';
             try {
-                await agentStore.fetchLLMS(userInput);
+                await agentStore.fetchLLMS(agentId, userInput);
 
                 this.currentChatMessages.push({
                     sender: 0,
