@@ -82,12 +82,12 @@ export const useAgentStore = defineStore({
         this.loading = false;
       }
     },
-    async fetchLLMS(query) {
+    async fetchLLMS(agentId, query) {
       this.loading = true;
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/chat/llms-openai?query=${encodeURIComponent(query)}`, { 'accept': 'application/json' });
+        const response = await get(`/agent/prompt/${agentId}?query=${encodeURIComponent(query)}`, { 'accept': 'application/json' });
         this.llmsResponse = response.data;
       } catch (error) {
         this.error = error;
