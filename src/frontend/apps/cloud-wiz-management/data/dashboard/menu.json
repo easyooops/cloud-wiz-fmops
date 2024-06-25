@@ -21,7 +21,7 @@
           "active":false
         },
         {
-          "path": "/comingsoon/comingsoon_video",
+          "path": "/trace/list",
           "title": "Trace",
           "type": "link",
           "active":false

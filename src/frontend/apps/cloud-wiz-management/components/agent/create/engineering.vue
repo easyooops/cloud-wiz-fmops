@@ -14,15 +14,7 @@
                         <button @click="deleteAgent" class="btn btn-danger me-2">Delete</button>
                         <router-link to="/agent/list" class="btn btn-secondary">Back to List</router-link>
                     </div>
-                </div>                  
-                <!-- <ul class="list-inline float-start float-sm-end chat-menu-icons">
-                    <li class="list-inline-item">
-                        <a href="#" @click="saveAgent"><i class="fa fa-save"></i></a>
-                    </li>
-                    <li class="list-inline-item">
-                        <a href="/agent/list"><i class="fa fa-list"></i></a>
-                    </li>
-                </ul>       -->
+                </div>
             </div>
         </div>
 
@@ -236,24 +228,17 @@
                                         <div class="mb-3">
                                             <div class="col-form-label">Pre-Processing</div>
                                             <select class="form-select form-control-primary" v-model="selectedPreProcessing" :disabled="!processingEnabled">
-                                                <option value="" disabled hidden>Select One Value Only</option>
-                                                <option value="task I">task I</option>
-                                                <option value="task II">task II</option>
-                                                <option value="template I">template I</option>
+                                                <option v-for="processing in filteredPreProcessings" :key="processing.processing_id" :value="processing.processing_id">{{ processing.processing_name }}</option>
                                             </select>
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="card" :class="{ 'disabled-card': !processingEnabled }">
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <div class="col-form-label">Post-Processing</div>
                                             <select class="form-select form-control-primary" v-model="selectedPostProcessing" :disabled="!processingEnabled">
-                                                <option value="" disabled hidden>Select One Value Only</option>
-                                                <option value="task I">task I</option>
-                                                <option value="task II">task II</option>
-                                                <option value="template I">template I</option>
+                                                <option v-for="processing in filteredPostProcessings" :key="processing.processing_id" :value="processing.processing_id">{{ processing.processing_name }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -276,6 +261,7 @@ import { useContactStore } from '~~/store/contact'
 import { useAgentStore } from '@/store/agent';
 import { useProviderStore } from '@/store/provider';
 import { useStorageStore } from '@/store/storage';
+import { useProcessingStore } from '@/store/processing';
 import { mapState, mapActions } from 'pinia';
 import { useRouter } from 'vue-router';
 
@@ -354,6 +340,7 @@ export default {
         ...mapState(useProviderStore, ['credential', 'models']),
         ...mapState(useStorageStore, ['storages']),  
         ...mapState(useAgentStore, ['agent']),
+        ...mapState(useProcessingStore, ['processings']),
         filteredProviders() {
             return this.credential.filter(provider => provider.provider_type === "M");
         },
@@ -378,7 +365,17 @@ export default {
         },
         filteredVectorDBProviders() {
             return this.credential.filter(provider => provider.provider_type === "V");
-        },               
+        },
+        filteredPreProcessings() {
+            console.log('=== filteredPreProcessings Start ======================');
+            console.log(this.processings);
+            return this.processings.filter(processing => processing.processing_type === 'pre');
+        },
+        filteredPostProcessings() {
+            console.log(this.processings);
+            console.log('=== filteredPostProcessings Start ======================');
+            return this.processings.filter(processing => processing.processing_type === 'post');
+        }            
     },
     watch: {
         requestToken(newValue) {
@@ -419,6 +416,7 @@ export default {
         ...mapActions(useProviderStore, ['fetchCredential', 'fetchModels']),
         ...mapActions(useStorageStore, ['fetchAllStorages']),
         ...mapActions(useAgentStore, ['fetchAgentById']),
+        ...mapActions(useProcessingStore, ['fetchProcessingsById']),
         activeDiv(item) {
             useContactStore().active(item)
         },
@@ -519,13 +517,13 @@ export default {
                 if (this.agentId) {
                     agentData.agent_id = this.agentId;
                     await useAgentStore().updateAgent(agentData);
-                    this.successMessage = 'Agent updated successfully.';
+                    
                 } else {
                     await useAgentStore().createAgent(agentData);
                     const agentInfo = useAgentStore().agent;
                     this.agentId = agentInfo.agent_id;
-                    this.successMessage = 'Agent created successfully.';
-                }                
+                }   
+                this.successMessage = 'Agent updated successfully.';             
             } catch (error) {
                 this.errorMessage = 'An error occurred while creating the agent.';
             }
@@ -533,7 +531,7 @@ export default {
                 this.errorMessage = '';
                 this.successMessage = '';
             }, 2000);
-        },        
+        }         
     },
     async mounted() {
         this.router = useRouter();
@@ -552,6 +550,11 @@ export default {
             this.selectedVectorDB = this.filteredVectorDBProviders[0]?.provider_id || '';
             
         }
+        await useProcessingStore().fetchProcessingsById({ userId: this.userId })
+        if (this.processings.length > 0) {
+            this.selectedPreProcessing = this.filteredPreProcessings[0]?.processing_id || '';
+            this.selectedPostProcessing = this.filteredPostProcessings[0]?.processing_id || '';
+        }          
         await useStorageStore().fetchAllStorages({ userId: this.userId });
         if (this.storages.length > 0) {
             this.selectedObject = this.filteredObjects[0]?.store_id || '';
