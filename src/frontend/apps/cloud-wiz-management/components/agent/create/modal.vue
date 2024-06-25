@@ -1,48 +1,43 @@
 <template>
-    <div class="customizer-header">
-      <Teleport to="body">
-        <div class="modal fade modal-bookmark" id="agent-modal" tabindex="-1" role="dialog"
-          aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content">
-              <header id="modal-customizer___BV_modal_header_" class="modal-header">
-                <h5 id="modal-customizer___BV_modal_title_" class="modal-title">Agent CURL</h5><button type="button"
-                  aria-label="Close" data-bs-dismiss="modal" class="close">×</button>
-              </header>
-              <div class="modal-body">
-                <div class="config-popup">
-                  <p>
-                    To replace our design with your desired theme. Please do
-                    configuration as mention
-                  </p>
-                  <div>
-                    <pre class="curl-code">
-                        <code>{{ curlCommand }}</code>
-                    </pre>
-                  </div>
-                  <button class="btn btn-primary mt-2" @click="copyText()">
-                    Copy
-                  </button>
-                </div>
+  <div class="customizer-header">
+    <Teleport to="body">
+      <div class="modal fade modal-bookmark" id="agent-modal" tabindex="-1" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document">
+          <div class="modal-content">
+            <header id="modal-customizer___BV_modal_header_" class="modal-header">
+              <h5 id="modal-customizer___BV_modal_title_" class="modal-title">Agent CURL</h5><button type="button"
+                aria-label="Close" data-bs-dismiss="modal" class="close">×</button>
+            </header>
+            <div class="modal-body">
+              <div class="config-popup">
+                <p>
+                  Please use URI encoding for the value of the query argument.
+                </p>
+                <div><pre class="curl-code">{{ curlCommand }}</pre></div>
+                <button class="btn btn-primary mt-2" @click="copyText()">
+                  Copy
+                </button>
               </div>
-              <footer id="modal-customizer___BV_modal_footer_" class="modal-footer">
-                <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button> -->
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button></footer>
             </div>
+            <footer id="modal-customizer___BV_modal_footer_" class="modal-footer">
+              <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button> -->
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button></footer>
           </div>
         </div>
-      </Teleport>
-    </div>
-  </template>
+      </div>
+    </Teleport>
+  </div>
+</template>
   
-  <script>
+<script>
   import { mapState } from 'pinia';
   import { useLayoutStore } from '~~/store/layout';
-  import { useMenuStore } from '~~/store/menu';
   import { useAgentStore } from '@/store/agent';
-  
+  import { useToast } from 'vue-toastification';
+
   export default {
-    name: 'CustomizerConfiguration',
+    name: 'CURL',
     data() {
       return {
         styleObject: {
@@ -54,18 +49,18 @@
       };
     },
     computed: {
-      ...mapState(useMenuStore, {
-        customizer: 'customizer',
-      }),
       ...mapState(useLayoutStore, {
         layout: 'layout'
       }),
       curlCommand() {
         const agentId = this.agentId;
-        return `curl ${import.meta.env.VITE_API_ENDPOINT}/api/v1/agent/prompt/${agentId} \
-            -X GET \
-            -d '{"question": "Hey, how are you?"}' \
-            -H "Content-Type: application/json"`
+        return this.removeLeadingWhitespace(
+          `curl ${import.meta.env.VITE_API_ENDPOINT}/api/v1/agent/prompt/${agentId}?query=What%20is%20fmops%3F \\` +
+          `\n-X 'GET' \\` +
+          `\n-H 'accept: application/json'`
+        );
+
+
       },
       agentId() {
         const agentStore = useAgentStore();
@@ -73,26 +68,28 @@
       }      
     },
     methods: {
-      closecustomizer() {
-        useMenuStore().customizer = ''
+      removeLeadingWhitespace(str) {
+        return str.replace(/^\s+/gm, '');
       },
-      copyText() {
-        this.$refs.layout.select();
-        document.execCommand('copy');
-        this.$toasted.show('Code Copied to clipboard', {
-          theme: 'outline',
-          position: 'top-right',
-          type: 'default',
-          duration: 2000,
+      async copyText() {
+        const text = this.curlCommand;
+        navigator.clipboard.writeText(text).then(() => {
+          this.toast.success('Code Copied to clipboard');
+        }).catch(() => {
+          this.toast.error('Failed to copy text');
         });
       },
     },
+    setup() {
+      const toast = useToast();
+      return { toast };
+    },    
   };
-  </script>
+</script>
   
-  <style scoped>
+<style scoped>
 .modal {
-  --bs-modal-width: 700px;
+  --bs-modal-width: 900px;
 }
 .curl-code {
   white-space: pre-wrap;
