@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import uuid
 from sqlmodel import Session, select, delete
 from uuid import UUID
 
@@ -127,16 +128,82 @@ def clear_processing_table(session: Session):
     session.commit()
 
 def create_agent_data(session: Session, agent_data):
+
+    clear_abent_table(session)
+
     agents = []
-    # for data in agent_data:
-    #     provider_name = data.pop("credential_name")
-    #     provider = session.exec(select(Agent).where(Provider.name == provider_name)).first()
-    #     if provider:
-    #         provider_id = provider.provider_id
+    for data in agent_data:
 
-    #     data["provider_id"] = provider_id
+        fm_provider = session.exec(select(Provider).where(Provider.name == "OpenAI")).first()
 
-    #     agents.append(Agent(**data))
+        if not validate_uuid(fm_provider.provider_id):
+            print(fm_provider.provider_id)
+            return
+        data["fm_provider_id"] = fm_provider.provider_id
+        data["embedding_provider_id"] = fm_provider.provider_id
 
-    # session.add_all(agents)
-    # session.commit()    
+        model_typ = data.pop("fm_provider_type")
+        model_name = None
+        if model_typ == "C":
+            model_name = "gpt-3.5-turbo"
+        elif model_typ == "T":
+            model_name = "gpt-3.5-turbo-instruct"
+
+        fm_model = session.exec(select(Model).where(Model.model_name == model_name)).first()
+        if not validate_uuid(fm_model.model_id):
+            print(fm_model.model_id)
+            return
+        data["fm_provider_type"] = model_typ
+        data["fm_model_id"] = fm_model.model_id
+
+
+        embedding_model = session.exec(select(Model).where(Model.model_name == "text-embedding-ada-002")).first()
+        if not validate_uuid(embedding_model.model_id):
+            print(embedding_model.model_id)
+            return        
+        data["embedding_model_id"] = embedding_model.model_id
+
+        store_provider = session.exec(select(Provider).where(Provider.name == "Amazon S3")).first()
+        if not validate_uuid(store_provider.provider_id):
+            print(store_provider.provider_id)
+            return          
+        data["storage_provider_id"] = store_provider.provider_id
+
+        object_name = session.exec(select(Store).where(Store.store_name == "Default Storage")).first()
+        if not validate_uuid(object_name.store_id):
+            print(object_name.store_id)
+            return                
+        data["storage_object_id"] = object_name.store_id
+
+        pre_processing = session.exec(select(Processing).where(Processing.processing_type == "pre")).first()
+        if not validate_uuid(pre_processing.processing_id):
+            print(pre_processing.processing_id)
+            return          
+        data["pre_processing_id"] = pre_processing.processing_id
+
+        post_processing = session.exec(select(Processing).where(Processing.processing_type == "post")).first()
+        if not validate_uuid(post_processing.processing_id):
+            print(post_processing.processing_id)
+            return                
+        data["post_processing_id"] = post_processing.processing_id
+
+        data["vector_db_provider_id"] = None
+
+        agents.append(Agent(**data))
+
+    session.add_all(agents)
+    session.commit()
+
+def clear_abent_table(session: Session):
+    statement = delete(Agent)
+    session.exec(statement)
+    session.commit()
+
+def validate_uuid(value):
+    if isinstance(value, uuid.UUID):
+        return True
+    try:
+        uuid_obj = uuid.UUID(value)
+        return True
+    except ValueError:
+        return False  
