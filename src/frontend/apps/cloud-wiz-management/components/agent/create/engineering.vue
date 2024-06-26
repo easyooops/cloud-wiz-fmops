@@ -546,9 +546,7 @@ export default {
         },
         async loadFiles(storeName) {
           try {
-            console.log(`Loading files for store: ${storeName}`);
             const files = await useStorageStore().fetchFiles(storeName);
-            console.log('Loaded Files:', files);
             this.filteredFiles = files;
           } catch (error) {
             console.error('Error loading files:', error);
