@@ -185,10 +185,17 @@
                                         <div v-if="isS3ProviderSelected" class="mb-3">
                                             <div class="col-form-label">Object</div>
                                             <select class="form-select form-control-primary" v-model="selectedObject">
-                                                <option value="" disabled hidden>Selete Object</option>
+                                                <option value="" disabled hidden>Select Object</option>
                                                 <option v-for="object in filteredObjects" :key="object.store_id" :value="object.store_id">{{ object.store_name }}</option>
                                             </select>
                                         </div>
+                                       <div class="mb-3">
+                                            <div class="col-form-label">File</div>
+                                            <select class="form-select form-control-primary" v-model="selectedFiles" >
+                                              <option value="" disabled hidden="">Select file</option>
+                                              <option v-for="file in filteredFiles" :key="file.key" :value="file.key">{{ getFileName(file.Key) }}</option>
+                                            </select>
+                                       </div>
                                     </div>
                                 </div>
 
@@ -292,6 +299,8 @@ export default {
             selectedProvider: '',
             selectedStorageProvider: '',
             selectedObject: '',
+            selectedFiles: '',
+            filteredFiles: [],
             selectedVectorDB: '',
             selectedPreProcessing: '',
             selectedPostProcessing: '',
@@ -359,6 +368,9 @@ export default {
         filteredObjects() {
             return this.storages;
         },
+        filteredFiles(){
+            return this.filteredFiles;
+        },
         isS3ProviderSelected() {
             const selectedProvider = this.credential.find(provider => provider.provider_id === this.selectedStorageProvider);
             return selectedProvider && selectedProvider.credential_name.includes('S3');
@@ -414,7 +426,7 @@ export default {
     },
     methods: {
         ...mapActions(useProviderStore, ['fetchCredential', 'fetchModels']),
-        ...mapActions(useStorageStore, ['fetchAllStorages']),
+        ...mapActions(useStorageStore, ['fetchAllStorages','fetchFiles']),
         ...mapActions(useAgentStore, ['fetchAgentById']),
         ...mapActions(useProcessingStore, ['fetchProcessingsById']),
         activeDiv(item) {
@@ -531,7 +543,21 @@ export default {
                 this.errorMessage = '';
                 this.successMessage = '';
             }, 2000);
-        }         
+        },
+        async loadFiles(storeName) {
+          try {
+            const files = await useStorageStore().fetchFiles(storeName);
+            this.filteredFiles = files;
+          } catch (error) {
+            console.error('Error loading files:', error);
+          }
+        },
+        getFileName(filePath) {
+          if (filePath && filePath.lastIndexOf('/') !== -1) {
+            return filePath.substring(filePath.lastIndexOf('/') + 1);
+          }
+          return filePath;
+        }
     },
     async mounted() {
         this.router = useRouter();
@@ -554,11 +580,15 @@ export default {
         if (this.processings.length > 0) {
             this.selectedPreProcessing = this.filteredPreProcessings[0]?.processing_id || '';
             this.selectedPostProcessing = this.filteredPostProcessings[0]?.processing_id || '';
-        }          
+        }
         await useStorageStore().fetchAllStorages({ userId: this.userId });
         if (this.storages.length > 0) {
-            this.selectedObject = this.filteredObjects[0]?.store_id || '';
-        }        
+          this.selectedObject = this.filteredObjects[0]?.store_id || '';
+          const firstStore = this.filteredObjects[0];
+          if (firstStore?.store_name) {
+            await this.loadFiles(firstStore.store_name);
+          }
+        }
     }    
 }
 </script>
