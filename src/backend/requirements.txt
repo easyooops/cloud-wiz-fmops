@@ -39,6 +39,7 @@ langchain_aws
 langchain_core
 
 openai
+tiktoken
 
 # chat
 langchain-openai

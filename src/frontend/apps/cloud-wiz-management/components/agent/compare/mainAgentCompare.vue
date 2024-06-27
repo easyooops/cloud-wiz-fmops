@@ -48,7 +48,7 @@
                                 <label class="col-form-label"><h6>Token Usage</h6></label>
                             </div>
                             <div class="col-xl-1">
-                                <label class="col-form-label">0</label>
+                                <label class="col-form-label">{{ formatTokenSize(dataItem.tokens) }}</label>
                             </div>                        
                         </div>
                         <div class="row">
@@ -56,7 +56,7 @@
                                 <label class="col-form-label"><h6>Expected Cost</h6></label>
                             </div>
                             <div class="col-xl-1">
-                                <label class="col-form-label">0</label>
+                                <label class="col-form-label">{{ formatCost(dataItem.cost) }}</label>
                             </div>                        
                         </div>                        
                     </div>
@@ -117,6 +117,8 @@ export default {
                 return {
                     ...agent,
                     selectedAgent: '',
+                    tokens: 0,
+                    cost: 0,
                     currentChatMessages: [
                         {
                             sender: 0,
@@ -124,7 +126,7 @@ export default {
                             time: new Date().toLocaleTimeString()
                         }
                     ],
-                    currentChatThumb: 'default-thumbnail.jpg'                    
+                    currentChatThumb: 'default-thumbnail.jpg'                 
                 };
             });
         }      
@@ -139,7 +141,18 @@ export default {
         },
         getImgUrl(path) {
             return ('/images/' + path);
-        },        
+        },
+        formatTokenSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const decimalPlaces = 3;
+            const k = 1024;
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(decimalPlaces)) + ' ' + units[i];
+        },
+        formatCost(cost) {
+            return parseFloat(cost).toFixed(3) + ' $';
+        },                
         async addChat() {
             if (this.text.trim() === '') return;
                         
@@ -171,6 +184,9 @@ export default {
                         text: responseText,
                         time: new Date().toLocaleTimeString()
                     });
+
+                    dataItem.tokens += useAgentStore().llmsResponse.tokens;
+                    dataItem.cost += useAgentStore().llmsResponse.cost;
 
                     this.scrollChat(agentId);
 

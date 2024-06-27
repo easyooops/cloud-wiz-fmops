@@ -42,13 +42,13 @@
                             <span>Token Count</span>
                         </div>
                         <div class="col-6 font-primary">
-                            {{ dataItem.expected_token_count }}
+                            {{ formatTokenSize(dataItem.expected_token_count) }}
                         </div>
                         <div class="col-6">
                             <span>Expected Cost</span>
                         </div>
                         <div class="col-6 font-primary">
-                            {{ dataItem.expected_cost }}
+                            {{ formatCost(dataItem.expected_cost) }}
                         </div>
                     </div>
 
@@ -147,6 +147,17 @@
             return '';
         }
       },
+      formatTokenSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const decimalPlaces = 3;
+        const k = 1024;
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(decimalPlaces)) + ' ' + units[i];
+      },
+      formatCost(cost) {
+            return parseFloat(cost).toFixed(3) + ' $';
+      },        
       navigateToEdit(agentId) {
         this.$router.push({ path: '/agent/create', query: { agentId: agentId } });
       },

@@ -1,7 +1,7 @@
 import boto3
 
 from langchain_aws import BedrockLLM
-from langchain.chains import ConversationChain
+from langchain.chains import conversation
 from langchain.memory import ConversationBufferMemory
 
 from app.components.LLM.Base import BaseLLMComponent
@@ -45,7 +45,7 @@ class BedrockLLMComponent(BaseLLMComponent):
             model_id=model_id,
             model_kwargs=model_kwargs
         )        
-        self.conversation = ConversationChain(
+        self.conversation = conversation(
             llm=llm, verbose=True, memory=ConversationBufferMemory()
         )
 
