@@ -5,3 +5,5 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
+    tokens: int
+    cost : float

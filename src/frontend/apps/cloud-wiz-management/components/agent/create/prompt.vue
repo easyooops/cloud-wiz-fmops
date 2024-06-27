@@ -94,7 +94,7 @@ export default {
             }
         },
         scrollChat() {
-            const container = this.$refs.chatInput;
+            const container = this.$refs.chatInput;  
             setTimeout(() => {
                 container.scrollBy({
                     top: container.scrollHeight,

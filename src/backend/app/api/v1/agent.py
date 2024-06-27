@@ -22,7 +22,10 @@ def get_agents_prompt(
 ):
     try:
         service = PromptService(session)
-        return ChatResponse(answer=service.get_prompt(agent_id, query))
+        # answer = service.get_prompt(agent_id, query)
+        # tokens = service._get_token_counts(agent_id, answer)
+        # return ChatResponse(answer=answer, tokens=tokens)
+        return service.get_prompt(agent_id, query)
     except Exception as e:
         raise internal_server_error(e)
     

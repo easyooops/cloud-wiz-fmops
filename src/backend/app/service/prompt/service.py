@@ -14,6 +14,8 @@ from app.components.LLM.OpenAI import OpenAILLMComponent
 from app.components.Chat.OpenAI import ChatOpenAIComponent
 from app.components.Chat.Bedrock import ChatBedrockComponent
 from app.components.LLM.Bedrock import BedrockLLMComponent
+from app.core.util.token import TokenUtilityService
+from app.api.v1.schemas.chat import ChatResponse
 
 
 
@@ -21,9 +23,9 @@ class PromptService:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_prompt(self, agent_id: UUID, query: Optional[str] = None):
+    def get_prompt(self, agent_id: UUID, query: Optional[str] = None) -> ChatResponse:
         
-        response = None
+        response = []
 
         try:
             agent_data = self._get_agent_data(agent_id)
@@ -51,10 +53,40 @@ class PromptService:
             # set history
             history = self._set_history(agent_id)
 
+            # Extract tokens count from response if available
+            tokens = 0
+            logging.warning(response)
+
+
+            # response_metadata = response.response_metadata  # AIMessage 객체의 usage_metadata
+
+            # if response_metadata:
+            #     usage = response_metadata.get('usage')
+            #     if usage:
+            #         total_tokens = usage.get('total_tokens')
+            #         if isinstance(total_tokens, int):
+            #             tokens = total_tokens
+            #         else:
+            #             # total_tokens가 int 형식이 아닌 경우 처리
+            #             logging.warning(f"total_tokens is not an integer: {total_tokens}")
+            # else:
+            #     # usage_metadata가 없는 경우 처리
+            #     logging.warning("usage_metadata is not available: {usage_metadata}")                    
+
+            tokens = self._get_token_counts(agent_id, response)
+            cost_per_token = 0.004
+            tokens_per_thousand = 1000
+
+            return ChatResponse(
+                        answer=response, 
+                        tokens=tokens, 
+                        cost=(tokens/tokens_per_thousand)*cost_per_token
+                    )
+
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-        return response
+        
 
     def _get_agent_data(self, agent_id: UUID):
         statement = (
@@ -231,3 +263,64 @@ class PromptService:
     def _postprocess_response(self, response):
         # Logic for post-processing
         return response
+
+    def _get_token_counts(self, agent_id: UUID, text: Optional[str] = None):
+        try:
+            token_counts = 0
+            agent_data = self._get_agent_data(agent_id)
+            _d_agent = agent_data['Model']
+            _d_provider = agent_data['Provider']
+
+            if _d_provider.name == "OpenAI":
+                token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
+            elif _d_provider.name == "Bedrock":
+                token_counts = self._get_bedrock_token_counts(text, _d_agent.model_name)
+            else:
+                token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
+
+            self.update_agent_count(agent_id, token_counts)
+
+            return token_counts
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
+    def _get_openai_token_counts(self, text: Optional[str] = None, model_name: Optional[str] = None):
+        
+        token_component = TokenUtilityService(None, None, None)
+        return token_component.get_openai_token_count(
+                text=text,
+                model_id=model_name
+            )
+    
+    def _get_bedrock_token_counts(self, text: Optional[str] = None, model_name: Optional[str] = None):
+
+        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        aws_region = os.getenv("AWS_REGION")
+
+        if not aws_access_key:
+            raise ValueError("aws_access_key is not set in the environment variables")
+        if not aws_secret_access_key:
+            raise ValueError("aws_secret_access_key is not set in the environment variables")
+        if not aws_region:
+            raise ValueError("aws_region is not set in the environment variables")
+        
+        token_component = TokenUtilityService(aws_access_key, aws_secret_access_key, aws_region)
+        return token_component.get_bedrock_token_count(
+                text=text,
+                model_id=model_name
+            )
+    
+    def update_agent_count(self, agent_id: UUID, token_count: int):
+        try:
+            agent = self.session.get(Agent, agent_id)
+            cost_per_token = 0.004
+            tokens_per_thousand = 1000
+            if agent:
+                agent.expected_token_count += token_count
+                agent.expected_request_count += 1
+                agent.expected_cost += (token_count/tokens_per_thousand) * cost_per_token
+                self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise HTTPException(status_code=500, detail=str(e))    
