@@ -1,7 +1,7 @@
 <template>
     <div class="email-wrap bookmark-wrap">
         <div class="row">
-            <div class="col-xl-4 box-col-6">
+            <div :class="getGridClass(filteredData.length)" class="box-col-6" v-for="(dataItem, dataIndex) in filteredData.slice(0,4)" :key="dataIndex">
                 <div class="card">
                     <div class="card-body">
                         <div class="email-app-sidebar left-bookmark">
@@ -10,16 +10,34 @@
                                     <li class="list-inline-item"><i class="fa fa-comments"></i></li>
                                 </div>
                                 <div class="media-body">
-                                    <select class="form-select form-control-primary" v-model="modelType">
-                                        <option value="C">Default Chat Agent</option>
-                                        <option value="T">Default Text Agent</option>
-                                        <option value="I">Default Embedding Agent</option>
+                                    <select class="form-select form-control-primary" v-model="dataItem.selectedAgent">
+                                        <option value="" disabled hidden>Select Agent</option>
+                                        <option v-for="agents in filteredData" :key="agents.agent_id" :value="agents.agent_id">{{ agents.agent_name }}</option>
                                     </select>
                                 </div>                                         
                             </div>
                             <ul class="nav main-menu contact-options" role="tablist">
-                                <prompt />
-                            </ul>                                  
+                                <div class="row chat-box">
+                                    <div class="col pe-0 chat-right-aside">
+                                        <div class="chat">
+                                            <div class="chat-history chat-msg-box custom-scrollbar" :ref="`chatInput-${dataItem.agent_id}`">
+                                                <ul>
+                                                    <li v-for="(chat, index) in dataItem.currentChatMessages" :key="chat.time" :class="{ clearfix: chat.sender == 0 }">
+                                                        <div class="message" :class="{ 'other-message pull-right': chat.sender == 0, 'my-message': chat.sender != 0}">
+                                                            <img class="rounded-circle float-start chat-user-img img-30 text-end" alt="" v-if="chat.sender != 0" :src="getImgUrl(dataItem.currentChatThumb)" />
+                                                            <img class="rounded-circle float-end chat-user-img img-30" alt="" v-if="chat.sender == 0" :src="getImgUrl('user/1.jpg')" />
+                                                            <div class="message-data text-end" :class="{ 'text-start': chat.sender == 0 }">
+                                                                <span class="message-data-time">{{ chat.time }}</span>
+                                                            </div>
+                                                            {{ chat.text }}
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -43,154 +61,155 @@
                         </div>                        
                     </div>
                 </div>                
-            </div>
-
-            <div class="col-xl-4 box-col-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="email-app-sidebar left-bookmark">
-                            <div class="media">
-                                <div class="media-size-email">
-                                    <li class="list-inline-item"><i class="fa fa-comments"></i></li>
-                                </div>
-                                <div class="media-body">
-                                    <select class="form-select form-control-primary" v-model="modelType">
-                                        <option value="C">Default Chat Agent</option>
-                                        <option value="T">Default Text Agent</option>
-                                        <option value="I">Default Embedding Agent</option>
-                                    </select>
-                                </div>                                         
-                            </div>
-                            <ul class="nav main-menu contact-options" role="tablist">
-                                <prompt />
-                            </ul>                                  
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-xl-11">
-                                <label class="col-form-label"><h6>Token Usage</h6></label>
-                            </div>
-                            <div class="col-xl-1">
-                                <label class="col-form-label">0</label>
-                            </div>                        
-                        </div>
-                        <div class="row">
-                            <div class="col-xl-11">
-                                <label class="col-form-label"><h6>Expected Cost</h6></label>
-                            </div>
-                            <div class="col-xl-1">
-                                <label class="col-form-label">0</label>
-                            </div>                        
-                        </div>                        
-                    </div>
-                </div>                  
-            </div>
-
-            <div class="col-xl-4 box-col-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="email-app-sidebar left-bookmark">
-                            <div class="media">
-                                <div class="media-size-email">
-                                    <li class="list-inline-item"><i class="fa fa-comments"></i></li>
-                                </div>
-                                <div class="media-body">
-                                    <select class="form-select form-control-primary" v-model="modelType">
-                                        <option value="C">Default Chat Agent</option>
-                                        <option value="T">Default Text Agent</option>
-                                        <option value="I">Default Embedding Agent</option>
-                                    </select>
-                                </div>                                         
-                            </div>
-                            <ul class="nav main-menu contact-options" role="tablist">
-                                <prompt />
-                            </ul>                                  
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-xl-11">
-                                <label class="col-form-label"><h6>Token Usage</h6></label>
-                            </div>
-                            <div class="col-xl-1">
-                                <label class="col-form-label">0</label>
-                            </div>                        
-                        </div>
-                        <div class="row">
-                            <div class="col-xl-11">
-                                <label class="col-form-label"><h6>Expected Cost</h6></label>
-                            </div>
-                            <div class="col-xl-1">
-                                <label class="col-form-label">0</label>
-                            </div>                        
-                        </div>                        
-                    </div>
-                </div>                  
             </div>
 
             <div class="col-xl-12 box-col-6">
-                <div class="row chat-box">
-                    <div class="col pe-0">
-                        <div class="chat">
-                            <div class="chat-message clearfix">
-                                <div class="row">
-                                    <div class="col-xl-1 d-flex"></div>
-                                    <div class="col-xl-9 d-flex">
-                                        <div class="input-group text-box" ref="abc">
-                                            <input class="form-control input-txt-bx" id="message-to-send" v-model="text" v-on:keyup.enter="addChat()"
-                                                type="text" name="message-to-send" placeholder="Type a message......" />
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row chat-box">
+                            <div class="col pe-0">
+                                <div class="chat">
+                                    <div class="chat-message clearfix">
+                                        <div class="row">
+                                            <div class="col-xl-1 d-flex"></div>
+                                            <div class="col-xl-9 d-flex">
+                                                <div class="input-group text-box" ref="abc">
+                                                    <input class="form-control input-txt-bx" id="message-to-send" v-model="text" v-on:keyup.enter="addChat()"
+                                                        type="text" name="message-to-send" placeholder="Type a message......" />
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-1">
+                                                <button @click="addChat()" class="btn btn-primary" type="button">
+                                                    <i class="fa fa-send-o"></i>
+                                                </button>
+                                            </div>
+                                            <div class="col-xl-1 d-flex"></div>                                 
                                         </div>
                                     </div>
-                                    <div class="col-xl-1">
-                                        <button @click="addChat()" class="btn btn-primary" type="button">
-                                            <i class="fa fa-send-o"></i>
-                                        </button>
-                                    </div>
-                                    <div class="col-xl-1 d-flex"></div>                                 
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>                
+                        </div>     
+                    </div>                
+                </div>           
             </div>
         </div>
     </div>
 </template>
+
 <script>
-import prompt from './prompt.vue'
-import menu from '@/data/contact.json'
-import { useContactStore } from '~~/store/contact'
+import { useAgentStore } from '@/store/agent';
+import { mapState, mapActions } from 'pinia';
+
 export default {
     name: 'agent',
     data() {
         return {
-            activeclass: 'pills-personal-tab', menu: menu.data, filtered: false
+            activeclass: 'pills-personal-tab', 
+            filtered: false,
+            text: "",
+            userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
         }
     },
     computed: {
-        selectedUser() {
-            return useContactStore().selectedUser1
-        }
-    },
-    components: {
-        prompt
+        ...mapState(useAgentStore, ['agents']),
+        filteredData() {
+            return this.agents.map(agent => {
+                return {
+                    ...agent,
+                    selectedAgent: '',
+                    currentChatMessages: [
+                        {
+                            sender: 0,
+                            text: "Feel free to ask a variety of questions to test the agent you create.",
+                            time: new Date().toLocaleTimeString()
+                        }
+                    ],
+                    currentChatThumb: 'default-thumbnail.jpg'                    
+                };
+            });
+        }      
     },
     methods: {
+        ...mapActions(useAgentStore, ['fetchAgents', 'fetchLLMS']),
         active(item) {
             this.activeclass = item
         },
         collapseFilter() {
             this.filtered = !this.filtered
         },
-        getImageUrl(path) {
-            return ('/images/' + path)
-        }
+        getImgUrl(path) {
+            return ('/images/' + path);
+        },        
+        async addChat() {
+            if (this.text.trim() === '') return;
+                        
+            const userInput = this.text;
+            this.text = '';
+
+            const promises = this.filteredData.map(async (dataItem) => {
+
+                dataItem.currentChatMessages.push({
+                    sender: 1,
+                    text: userInput,
+                    time: new Date().toLocaleTimeString()
+                });
+
+                try {
+
+                    const agentId = dataItem.selectedAgent;
+                    let responseText = '';
+
+                    if (!agentId) {
+                        responseText = 'No agent selected';
+                    } else {
+                        await this.fetchLLMS(agentId, userInput);
+                        responseText = useAgentStore().llmsResponse ? useAgentStore().llmsResponse.answer : 'No response';
+                    }
+
+                    dataItem.currentChatMessages.push({
+                        sender: 0,
+                        text: responseText,
+                        time: new Date().toLocaleTimeString()
+                    });
+
+                    this.scrollChat(agentId);
+
+                    this.$forceUpdate();
+                } catch (error) {
+                    console.error('Error fetching LLMS response:', error);
+                }
+            });
+
+            await Promise.all(promises);
+        },
+        scrollChat(agentId) {
+            setTimeout(() => {
+                const container = this.$refs[`chatInput-${agentId}`];
+                if (container && container[0]) {
+                    container[0].scrollBy({
+                        top: container[0].scrollHeight,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    console.error(`Container for agentId ${agentId} not found or is undefined.`);
+                }
+            }, 310);
+        },        
+        getGridClass(length) {
+            if (length === 0) return "col-xl-12";
+            const colSize = Math.max(1, Math.floor(12 / length));
+            return `col-xl-${colSize}`;
+        },
+        setSelectedAgent(agentId, value) {
+            const agent = this.filteredData.find(agent => agent.agent_id === agentId);
+            if (agent) {
+                agent.selectedAgent = value;
+            }
+        }          
     },
+    async mounted() {
+        await this.fetchAgents({ userId: this.userId });
+    }
 }
 </script>
 
@@ -206,5 +225,21 @@ export default {
     font: normal normal normal 30px / 1 FontAwesome;
     margin-right: 10px;
 }
-
+.chat-box .chat-right-aside .chat .chat-msg-box { 
+    height: 660px; 
+    border-top: 1px solid #f4f4f4;
+    padding: 30px;
+    margin-bottom: 0px;
+}
+.chat-box {
+    min-width: 100%;
+}
+.chat-box .chat-right-aside .chat .chat-msg-box .message-text {
+    display: inline-block;
+    max-width: 100%;
+}
+.form-control-primary {
+    border-color: var(--theme-deafult);
+    color: var(--theme-deafult);
+}
 </style>
