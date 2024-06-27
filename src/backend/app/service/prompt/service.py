@@ -5,6 +5,8 @@ from sqlmodel import Session, select
 from uuid import UUID
 import logging
 
+from app.components.Embedding.Bedrock import BedrockEmbeddingComponent
+from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.service.agent.model import Agent
 from app.service.model.model import Model
 from app.service.provider.model import Provider
@@ -86,18 +88,19 @@ class PromptService:
     def _preprocess_query(self, query: str):
         pass
 
-    def _run_embedding(self, agent_data, query, embedding_provider):
-        # Logic to run specified embedding provider
-        if embedding_provider == "ProviderA":
-            return self._run_embedding_provider_a(agent_data, query)
-        elif embedding_provider == "ProviderB":
-            return self._run_embedding_provider_b(agent_data, query)
-        else:
-            return self._run_default_embedding(agent_data, query)
+    def _preprocess_documents(self, documents:list):
+        pass
 
-    def _run_default_embedding(self, agent_data, query):
-        # Default embedding provider or other providers
-        return None
+    def _run_embedding(self, agent_data, query, documents):
+
+        _d_provider = agent_data['Provider']
+
+        if _d_provider.name == "OpenAI":
+            return self._run_embedding_openai_model(agent_data, documents)
+        elif _d_provider.name == "Bedrock":
+            return self._run_embedding_bedrock_model(agent_data, documents)
+        else:
+            return self._run_embedding_openai_model(agent_data, documents)
 
     def _run_provider(self, agent_data, query, history):
         
@@ -110,13 +113,43 @@ class PromptService:
         else:
             return self._run_openai_model(agent_data, query)
 
-    def _run_embedding_provider_a(self, agent_data, query):
-        # Logic to run embedding provider A
-        pass
+    def _run_embedding_openai_model(self, agent_data, documents):
 
-    def _run_embedding_provider_b(self, agent_data, query):
-        # Logic to run embedding provider B
-        pass
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+
+        if not openai_api_key:
+            raise ValueError("OpenAI API key is not in the environment variables")
+
+        embed_component = None
+        _d_agent = agent_data['Agent']
+        _d_model = agent_data['Model']
+
+        if _d_agent.fm_provider_type == "E":
+            embed_component = OpenAIEmbeddingComponent(openai_api_key)
+            embed_component.build(model_id=_d_model.model_name)
+        return embed_component.run_embed_documents(documents)
+
+    def _run_embedding_bedrock_model(self, agent_data, documents):
+
+        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        aws_region = os.getenv("AWS_REGION")
+
+        if not aws_access_key:
+            raise ValueError("aws_access_key is not set in the environment variables")
+        if not aws_secret_access_key:
+            raise ValueError("aws_secret_access_key is not set in the environment variables")
+        if not aws_region:
+            raise ValueError("aws_region is not set in the environment variables")
+
+        embed_component = None
+        _d_agent = agent_data['Agent']
+        _d_model = agent_data['Model']
+
+        if _d_agent.fm_provider_type == "E":
+            embed_component = BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
+            embed_component.build(model_id=_d_model.model_name)
+        return embed_component.run_embed_documents(documents)
 
     def _initialize_rag_model(self, agent_data, history):
         # Logic to initialize RAG model
