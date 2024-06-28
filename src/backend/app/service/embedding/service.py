@@ -25,8 +25,8 @@ class EmbeddingService:
                 raise ValueError("OpenAI API key is not set in the environment variables")
 
             embedding_component = OpenAIEmbeddingComponent(openai_api_key)
-            embedding_component.configure()
-            embedding = embedding_component.execute_embed_query(text)
+            embedding_component.build()
+            embedding = embedding_component.run_embed_query(text)
             return embedding
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -37,8 +37,8 @@ class EmbeddingService:
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
             embedding_component = OpenAIEmbeddingComponent(openai_api_key)
-            embedding_component.configure()
-            embeddings = embedding_component.execute_embed_documents(texts)
+            embedding_component.build()
+            embeddings = embedding_component.run_embed_documents(texts)
             return embeddings
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -52,8 +52,8 @@ class EmbeddingService:
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
             embedding_component = BedrockEmbeddingComponent()
-            embedding_component.configure(model_id=model_id)
-            embedding = embedding_component.execute_embed_query(text)
+            embedding_component.build(model_id=model_id)
+            embedding = embedding_component.run_embed_query(text)
             return embedding
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -67,8 +67,8 @@ class EmbeddingService:
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
             embedding_component = BedrockEmbeddingComponent()
-            embedding_component.configure(model_id=model_id)
-            embedding = embedding_component.execute_embed_documents(texts)
+            embedding_component.build(model_id=model_id)
+            embedding = embedding_component.run_embed_documents(texts)
             return embedding
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

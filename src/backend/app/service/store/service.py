@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 from fastapi import HTTPException, UploadFile
@@ -5,11 +6,15 @@ from sqlmodel import Session, select
 from app.service.store.model import Store
 from app.api.v1.schemas.store import StoreCreate, StoreUpdate
 from app.core.provider.aws.s3 import S3Service
+import pandas as pd
+from langchain_community.document_loaders import TextLoader, PyPDFLoader, CSVLoader, Docx2txtLoader
+from langchain_core.documents import Document
 
 class StoreService(S3Service):
     def __init__(self, session: Session):
         super().__init__()
         self.session = session
+        self.store_bucket = os.getenv("AWS_S3_BUCKET_STORE_NAME")
 
     def get_all_stores(self, user_id: Optional[UUID] = None):
         try:
@@ -114,3 +119,33 @@ class StoreService(S3Service):
             self.delete_file(file_location)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error deleting file from store: {str(e)}")
+
+    def load_documents(self, files: list):
+        documents = []
+        for file in files:
+            s3_file_key = file["Key"]
+            local_file_path = f"/tmp/{s3_file_key.split('/')[-1]}"
+            self.s3_client.download_file(self.store_bucket, s3_file_key, local_file_path)
+
+            if local_file_path.endswith('.txt'):
+                loader = TextLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.pdf'):
+                loader = PyPDFLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.csv'):
+                loader = CSVLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.docx'):
+                loader = Docx2txtLoader(local_file_path)
+                documents.extend(loader.load())
+            elif local_file_path.endswith('.xlsx'):
+                xlsx = pd.ExcelFile(local_file_path)
+                for sheet_name in xlsx.sheet_names:
+                    df = pd.read_excel(xlsx, sheet_name=sheet_name)
+                    full_text = df.to_string(index=False)
+                    documents.append(Document(page_content=full_text, metadata={"source": f"{local_file_path} - {sheet_name}"}))
+            else:
+                raise ValueError(f"Unsupported file format: {local_file_path}")
+        return documents
+
