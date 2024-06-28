@@ -1,3 +1,4 @@
+from decimal import Decimal
 import os
 from typing import Optional, List
 import tiktoken
@@ -55,34 +56,13 @@ class PromptService:
             # set history
             history = self._set_history(agent_id)
 
-            # Extract tokens count from response if available
-            tokens = 0
-            logging.warning(response)
-
-
-            # response_metadata = response.response_metadata  # AIMessage 객체의 usage_metadata
-
-            # if response_metadata:
-            #     usage = response_metadata.get('usage')
-            #     if usage:
-            #         total_tokens = usage.get('total_tokens')
-            #         if isinstance(total_tokens, int):
-            #             tokens = total_tokens
-            #         else:
-            #             # total_tokens가 int 형식이 아닌 경우 처리
-            #             logging.warning(f"total_tokens is not an integer: {total_tokens}")
-            # else:
-            #     # usage_metadata가 없는 경우 처리
-            #     logging.warning("usage_metadata is not available: {usage_metadata}")                    
-
-            tokens = self._get_token_counts(agent_id, response)
-            cost_per_token = 0.004
-            tokens_per_thousand = 1000
+            # tokens, cost
+            tokens = self._get_token_counts(agent_id, query, response)
 
             return ChatResponse(
                         answer=response, 
-                        tokens=tokens, 
-                        cost=(tokens/tokens_per_thousand)*cost_per_token
+                        tokens=tokens['token_counts'], 
+                        cost=tokens['total_cost']
                     )
 
         except Exception as e:
@@ -293,24 +273,55 @@ class PromptService:
         # Logic for post-processing
         return response
 
-    def _get_token_counts(self, agent_id: UUID, text: Optional[str] = None):
+    def _get_token_counts(self, agent_id: UUID, query: Optional[str] = None, text: Optional[str] = None):
         try:
-            token_counts = 0
+
             agent_data = self._get_agent_data(agent_id)
             _d_agent = agent_data['Model']
-            _d_provider = agent_data['Provider']
+            # _d_provider = agent_data['Provider']
 
-            if _d_provider.name == "OpenAI":
-                token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
-            elif _d_provider.name == "Bedrock":
-                token_counts = self._get_bedrock_token_counts(text, _d_agent.model_name)
-            else:
-                token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
+            # if _d_provider.name == "OpenAI":
+            #     token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
+            # elif _d_provider.name == "Bedrock":
+            #     token_counts = self._get_bedrock_token_counts(text, _d_agent.model_name)
+            # else:
+            #     token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
 
+            logging.warning('=== _get_token_counts()  =====================================')
+            
+            logging.warning(query)
+            logging.warning(_d_agent.model_name)
+            logging.warning(text)
+            token_component = TokenUtilityService(None, None, None)
+            prompt_token_counts = token_component.get_token_count(query, _d_agent.model_name)
+            completion_token_counts = token_component.get_token_count(text, _d_agent.model_name)
+            prompt_cost = token_component.get_prompt_cost(text, _d_agent.model_name)
+            completion_cost = token_component.get_completion_cost(query, _d_agent.model_name)
 
-            self.update_agent_count(agent_id, token_counts)
+            logging.warning(prompt_token_counts)
+            logging.warning(completion_token_counts)
+            logging.warning(prompt_cost)
+            logging.warning(completion_cost)
 
-            return token_counts
+            logging.warning('=== _get_token_counts()  =====================================')
+
+            if isinstance(prompt_cost, Decimal):
+                prompt_cost = float(prompt_cost)
+            if isinstance(completion_cost, Decimal):
+                completion_cost = float(completion_cost)
+                            
+            total_token_counts = prompt_token_counts+completion_token_counts
+            total_cost = prompt_cost+completion_cost
+
+            self.update_agent_count(agent_id, total_token_counts, total_cost)
+
+            result = {
+                "token_counts": total_token_counts,
+                "total_cost": total_cost
+            }
+
+            return result
+        
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         
@@ -341,16 +352,16 @@ class PromptService:
                 model_id=model_name
             )
     
-    def update_agent_count(self, agent_id: UUID, token_count: int):
+    def update_agent_count(self, agent_id: UUID, token_count: int, total_cost: float):
         try:
             agent = self.session.get(Agent, agent_id)
-            cost_per_token = 0.004
-            tokens_per_thousand = 1000
+
             if agent:
                 agent.expected_token_count += token_count
                 agent.expected_request_count += 1
-                agent.expected_cost += (token_count/tokens_per_thousand) * cost_per_token
+                agent.expected_cost += total_cost
                 self.session.commit()
+
         except Exception as e:
             self.session.rollback()
             raise HTTPException(status_code=500, detail=str(e))    
