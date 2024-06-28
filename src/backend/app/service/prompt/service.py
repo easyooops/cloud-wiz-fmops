@@ -307,6 +307,7 @@ class PromptService:
             else:
                 token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
 
+
             self.update_agent_count(agent_id, token_counts)
 
             return token_counts

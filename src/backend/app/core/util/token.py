@@ -1,5 +1,7 @@
+import logging
 import boto3
 import tiktoken
+from tokencost import calculate_prompt_cost, count_string_tokens, calculate_completion_cost
 from langchain_aws import ChatBedrock
 from langchain_openai import ChatOpenAI
 
@@ -20,8 +22,8 @@ class TokenUtilityService:
 
     def get_bedrock_token_count(self, text, model_id):
         try:
-            llm = ChatBedrock(model_id=model_id)
-            response = llm.invoke([("human", text)])
+            # llm = ChatBedrock(model_id=model_id)
+            # response = llm.invoke([("human", text)])
 
             # response = self.bedrock_client.invoke_model(
             #     modelId=model_id,
@@ -30,9 +32,12 @@ class TokenUtilityService:
             #     Accept='application/json'
             # )
             tokens = 0
-            if response['usage']['total_tokens']:
-                tokens = int(response.response_metadata['usage']['total_tokens'])
-            return tokens
+            # if response['usage']['total_tokens']:
+            #     tokens = int(response.response_metadata['usage']['total_tokens'])
+
+            response = count_string_tokens(prompt=text, model=model_id)
+
+            return response
         except Exception as e:
             print(f"Error calculating Bedrock token count: {e}")
             return None
@@ -45,3 +50,24 @@ class TokenUtilityService:
         except Exception as e:
             print(f"Error calculating OpenAI token count: {e}")
             return None
+        
+    def get_token_count(self, text, model_id):
+        try:
+            return count_string_tokens(prompt=text, model=model_id)
+        except Exception as e:
+            print(f"Error calculating Bedrock token count: {e}")
+            return None
+        
+    def get_prompt_cost(self, text, model_id):
+        try:
+            return calculate_prompt_cost(prompt=text, model=model_id)
+        except Exception as e:
+            print(f"Error calculating Bedrock token count: {e}")
+            return None
+        
+    def get_completion_cost(self, text, model_id):
+        try:
+            return calculate_completion_cost(prompt=text, model=model_id)
+        except Exception as e:
+            print(f"Error calculating Bedrock token count: {e}")
+            return None        

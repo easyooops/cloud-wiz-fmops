@@ -40,6 +40,7 @@ langchain_core
 
 openai
 tiktoken
+tokencost
 
 # chat
 langchain-openai
