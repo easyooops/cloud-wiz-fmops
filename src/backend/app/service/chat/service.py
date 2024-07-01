@@ -10,20 +10,22 @@ class ChatService:
     def __init__(self, session: Session):
         self.session = session
 
-    # OpenAI
-    def get_llm_openai_response(self, query: str):
+    def get_llm_openai_instance(self, model_id: str, max_tokens: int = 150, temperature: float = 0.7):
         try:
             openai_api_key = os.getenv("OPENAI_API_KEY")
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
 
             openai_component = ChatOpenAIComponent(openai_api_key)
-            openai_component.build(temperature=0.7)
-            response = openai_component.run(query)
-            return response
+            openai_component.build(model_id=model_id, max_tokens=max_tokens, temperature=temperature)
+            return openai_component.model_instance
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
-    # Bedrock
+
+    def get_llm_openai_response(self, query: str):
+        llm = self.get_llm_openai_instance(model_id="gpt-3.5-turbo", max_tokens=500, temperature=0.7)
+        return llm({"input": query})
+
     def get_llm_bedrock_response(self, model_id: str, query: str):
         try:
             aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
@@ -40,7 +42,7 @@ class ChatService:
             raise HTTPException(status_code=500, detail=str(e))
 
     # QueryTuning (OpenAI + Bedrock)
-    def openai_chaining(self, query: str, model_id: Optional[str] = None, service_type: str = "openai"):
+    def openai_chaining(self, query: str, model_id: str, service_type: str = "openai", max_tokens: int = 150, temperature: float = 0.7):
         try:
             openai_api_key = os.getenv("OPENAI_API_KEY")
             aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
@@ -62,7 +64,7 @@ class ChatService:
                 response = bedrock_component.run(refined_query)
             else:
                 openai_component = ChatOpenAIComponent(openai_api_key)
-                openai_component.build(temperature=0.7)
+                openai_component.build(model_id=model_id, max_tokens=max_tokens, temperature=temperature)
                 response = openai_component.run(refined_query)
 
             return response

@@ -1,4 +1,6 @@
 import os
+from typing import List
+
 import boto3
 import faiss
 import numpy as np
@@ -18,14 +20,14 @@ class EmbeddingService:
         self.vector_store_bucket = os.getenv("AWS_S3_BUCKET_VECTOR_STORE_NAME")
         self.store_bucket = os.getenv("AWS_S3_BUCKET_STORE_NAME")
 
-    def get_openai_embedding(self, text: str):
+    def get_openai_embedding(self, text: str) -> List[float]:
         try:
             openai_api_key = os.getenv("OPENAI_API_KEY")
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
 
             embedding_component = OpenAIEmbeddingComponent(openai_api_key)
-            embedding_component.build()
+            embedding_component.build(model_id="text-embedding-ada-002")
             embedding = embedding_component.run_embed_query(text)
             return embedding
         except Exception as e:
@@ -37,7 +39,7 @@ class EmbeddingService:
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
             embedding_component = OpenAIEmbeddingComponent(openai_api_key)
-            embedding_component.build()
+            embedding_component.build(model_id="text-embedding-ada-002")
             embeddings = embedding_component.run_embed_documents(texts)
             return embeddings
         except Exception as e:
