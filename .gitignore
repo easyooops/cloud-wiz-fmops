@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -133,6 +132,3 @@ src/backend/cloud-wiz-fmops.db
 
 #DB
 .db
-=======
-node_modules
->>>>>>> Stashed changes

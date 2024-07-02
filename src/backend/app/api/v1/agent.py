@@ -1,6 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from app.core.interface.service import ServiceType
@@ -36,8 +36,15 @@ def get_agents_by_id(
 ):
     try:
         service = AgentService(session)
-        agent = service.get_all_agents(agent_id, None)
-        return agent[0]
+        agents: List[Agent] = service.get_all_agents(agent_id, None)
+        
+        if not agents:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Agent with ID {agent_id} not found"
+            )
+        
+        return agents[0]
     except Exception as e:
         raise internal_server_error(e)
     

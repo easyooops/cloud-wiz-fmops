@@ -25,7 +25,7 @@ mysql-connector-python
 alembic
 
 # logger
-loguru
+# loguru
 
 # AWS
 boto3
@@ -53,3 +53,6 @@ pypdf
 pandas
 docx2txt
 openpyxl
+
+# Datadog
+ddtrace
