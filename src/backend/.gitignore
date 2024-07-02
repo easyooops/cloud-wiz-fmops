@@ -111,7 +111,18 @@ settings.json
 node_modules
 
 # backend
+cloud-wiz-fmops.db
 .cloud-wiz-fmops.db
-*.cloud-wiz-fmops.db
+*cloud-wiz-fmops.db
 
 .aws
+
+# logger
+app.log
+.app.log
+*app.log
+uvicorn.log
+.uvicorn.log
+*uvicorn.log
+*.log
+.logs

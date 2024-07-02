@@ -1,10 +1,10 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 from multiprocess import cpu_count
-# from sqlalchemy import create_engine
 from sqlmodel import SQLModel, Session, create_engine
 from alembic import command
 from alembic.config import Config
@@ -13,9 +13,12 @@ from app.core.config import settings
 from app.api import api_router
 from app.initial_data import init_db
 
+from ddtrace.llmobs import LLMObs
+
+from app.core.util.logging import LoggingConfigurator
+
 class AuthenticationMiddleware(TrustedHostMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # 인증 확인 로직
         # if not authenticate(request):
         #     return JSONResponse(status_code=401, content={"message": "Unauthorized"})
         response = await call_next(request)
@@ -32,15 +35,12 @@ class CustomErrorHandlerMiddleware(TrustedHostMiddleware):
         try:
             return await call_next(request)
         except Exception as e:
-            # 예외 처리 및 사용자 정의 응답 생성
             return JSONResponse(status_code=500, content={"error": "An unexpected error occurred"})
 
 class CustomMiddleware(TrustedHostMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # 요청 처리 전에 수행할 작업
         print("Before handling request")
         response = await call_next(request)
-        # 응답 처리 후에 수행할 작업
         print("After handling request")
         return response
     
@@ -55,8 +55,19 @@ def create_db_and_tables():
     with Session(engine) as session:
         init_db(session)
 
+def configure_datadog():
+    LLMObs.enable(
+        ml_app=os.getenv("DATADOG_ML_APP"),
+        api_key=os.getenv("DATADOG_API_KEY"),
+        site=os.getenv("DATADOG_SITE"),
+        agentless_enabled=True,
+        integrations_enabled=True,
+        )
+    
 def create_app():
+    
     app = FastAPI()
+    
     sio = socketio.AsyncServer(
                 async_mode="asgi", 
                 cors_allowed_origins="*", 
@@ -85,6 +96,9 @@ def create_app():
         create_db_and_tables()
         command.upgrade(alembic_cfg, "head")
 
+    LoggingConfigurator()
+    configure_datadog()
+    
     app.include_router(api_router, prefix=settings.API_V1_STR)
 
     @app.get("/")
@@ -93,15 +107,19 @@ def create_app():
     
     return app
 
-if __name__ == "__main__":
-    import uvicorn
+# if __name__ == "__main__":
+#     import uvicorn
     
-    uvicorn.run(
-        create_app,
-        host="127.0.0.1",
-        port=8000,
-        workers=get_workers(),
-        log_level="error",
-        reload=True,
-        loop="asyncio",
-    )
+#     uvicorn.run(
+#         create_app,
+#         host="127.0.0.1",
+#         port=8000,
+#         workers=get_workers(),        
+#         log_config="uvicorn_logging_config.yaml",
+#         log_level="debug", 
+#         access_log=True,
+#         reload=True,
+#         loop="asyncio",
+#     )
+if __name__ == "__main__":
+    create_app()

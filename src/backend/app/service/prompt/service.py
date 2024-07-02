@@ -20,16 +20,29 @@ from app.components.LLM.Bedrock import BedrockLLMComponent
 from app.core.util.token import TokenUtilityService
 from app.api.v1.schemas.chat import ChatResponse
 from app.service.store.service import StoreService
+from ddtrace.llmobs.decorators import agent, workflow, tool, task
+from app.core.util.logging import LoggingConfigurator
 
 
 class PromptService:
     def __init__(self, session: Session):
         self.session = session
 
+    # @agent(name="prompt_agent")
+    # @tool(name="get_current_weather")
+    # @task
+    # @log_method
+    # @workflow
+    @LoggingConfigurator.log_method
     def get_prompt(self, agent_id: UUID, query: Optional[str] = None) -> ChatResponse:
-        
+
         response = []
 
+        logger = logging.getLogger('agent')
+        logging.warning(logger.callHandlers)
+        logger.debug("Agent logger is configured debug.")
+        logger.info("Agent logger is configured info.")
+        
         try:
             agent_data = self._get_agent_data(agent_id)
             _d_agent = agent_data['Agent']
@@ -58,6 +71,12 @@ class PromptService:
 
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
+            
+            # logger.debug("Inside debug example_method")
+            # logger.info("Inside info example_method")
+            # logger.warn("Inside warn example_method")
+            # logger.warning("Inside warning example_method")
+            # logger.error("Inside error example_method")
 
             return ChatResponse(
                         answer=response, 
