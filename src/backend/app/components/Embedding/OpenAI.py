@@ -27,7 +27,7 @@ class OpenAIEmbeddingComponent(AbstractEmbeddingComponent):
         else:
             raise ValueError("Unexpected return type from embed_query")
 
-    def run_embed_documents(self, documents: list) -> list[list[float]]:
+    def run_embed_documents(self, documents: list[str]) -> list[list[float]]:
         if self.model_instance is None:
             raise ValueError("Model instance is not initialized. Call the configure method first.")
         return self.model_instance.embed_documents(documents)
