@@ -36,11 +36,11 @@ jobs:
         with:
           node-version: 20.9.0
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Generate Nuxt 3 app for CSR
-        run: npm run build:generate
+      - name: Install dependencies and build Nuxt 3 app
+        working-directory: src/frontend
+        run: |
+            npm install
+            npm run build:generate
 
       - name: Upload to S3 - base
         run: aws s3 cp ./src/frontend/apps/cloud-wiz-base/.output/public s3://$AWS_S3_BUCKET_BASE/ --recursive
