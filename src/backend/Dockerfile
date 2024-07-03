@@ -17,12 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY . .
 
-# Copy .env file
-COPY .env .env
-
-# Load .env file variables
-RUN export $(cat .env | xargs)
-
 # Expose the port the app runs on
 EXPOSE 8080
 
