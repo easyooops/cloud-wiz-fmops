@@ -1,3 +1,5 @@
+import asyncio
+
 from langchain_openai import ChatOpenAI
 from app.components.Chat.Base import AbstractLLMComponent
 
@@ -23,4 +25,10 @@ class ChatOpenAIComponent(AbstractLLMComponent):
         if self.model_instance is None:
             raise ValueError("Model instance is not initialized. Call the configure method first.")
         response = self.model_instance.invoke(prompt)
+        return response.content
+
+    async def run_chat(self, prompt):
+        if self.model_instance is None:
+            raise ValueError("Model instance is not initialized. Call the configure method first.")
+        response = await asyncio.to_thread(self.model_instance.invoke, prompt)
         return response.content

@@ -8,10 +8,11 @@ class OpenAIEmbeddingComponent(AbstractEmbeddingComponent):
         self.openai_api_key = openai_api_key
         self.model_instance = None
 
-    def build(self, model_id: str):
+    def build(self, model_id):
 
         if not model_id:
-            model_id = "text-embedding-ada-002"
+            model_id = "text-embedding-3-small"
+
         self.model_instance = OpenAIEmbeddings(
             openai_api_key=self.openai_api_key,
             model=model_id
