@@ -137,81 +137,80 @@
 
                         <!-- Embedding -->
                         <div class="card-body" v-if="'1'==item.activeTab">
-                            <div class="form theme-form">
-
-                                <div class="card">
-                                    <div class="card-body">  
-                                        <div class="media mb-3">
-                                            <label class="col-form-label m-r-10">Embedding Enable</label>
-                                            <div class="media-body text-end">
-                                                <label class="switch">
-                                                    <input type="checkbox" v-model="embeddingEnabled"><span class="switch-state"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
+                          <div class="form theme-form">
+                            <div class="card">
+                              <div class="card-body">
+                                <div class="media mb-3">
+                                  <label class="col-form-label m-r-10">Embedding Enable</label>
+                                  <div class="media-body text-end">
+                                    <label class="switch">
+                                      <input type="checkbox" v-model="embeddingEnabled"><span class="switch-state"></span>
+                                    </label>
+                                  </div>
                                 </div>
-
-                                <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-xl-6 mb-3">
-                                                <div class="col-form-label">Embedding Provider *</div>
-                                                <select class="form-select form-control-primary" v-model="selectedEmbeddingProvider">
-                                                    <option value="" disabled hidden>Select Embedding Provider</option>
-                                                    <option v-for="provider in filteredEmbeddingProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
-                                                </select>
-                                            </div> 
-                                            <div class="col-xl-6 mb-3">
-                                                <div class="col-form-label">Embedding Model *</div>
-                                                <select class="form-select form-control-primary" v-model="selectedEmbeddingModel">
-                                                    <option value="" disabled hidden>Select Embedding Model</option>
-                                                    <option v-for="model in filteredEmbeddingModels" :key="model.model_id" :value="model.model_id">{{ model.model_name }}</option>
-                                                </select>
-                                            </div>                                             
-                                        </div>                                        
-                                    </div>
-                                </div>
-
-                                <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <div class="col-form-label">Storage *</div>
-                                            <select class="form-select form-control-primary" v-model="selectedStorageProvider">
-                                                <option value="" disabled hidden>Select Storage Provider</option>
-                                                <option v-for="provider in filteredStorageProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
-                                            </select>
-                                        </div>
-                                        <div v-if="isS3ProviderSelected" class="mb-3">
-                                            <div class="col-form-label">Object</div>
-                                            <select class="form-select form-control-primary" v-model="selectedObject">
-                                                <option value="" disabled hidden>Select Object</option>
-                                                <option v-for="object in filteredObjects" :key="object.store_id" :value="object.store_id">{{ object.store_name }}</option>
-                                            </select>
-                                        </div>
-                                       <div class="mb-3">
-                                            <div class="col-form-label">File</div>
-                                            <select class="form-select form-control-primary" v-model="selectedFiles" >
-                                              <option value="" disabled hidden="">Select file</option>
-                                              <option v-for="file in filteredFiles" :key="file.key" :value="file.key">{{ getFileName(file.Key) }}</option>
-                                            </select>
-                                       </div>
-                                    </div>
-                                </div>
-
-                                <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <div class="col-form-label">Vector DB</div>
-                                            <select class="form-select form-control-primary" v-model="selectedVectorDB">
-                                                <option value="" disabled hidden>FAISS</option>
-                                                <option v-for="provider in filteredVectorDBProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            
+                              </div>
                             </div>
+
+                            <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
+                              <div class="card-body">
+                                <div class="row">
+                                  <div class="col-xl-6 mb-3">
+                                    <div class="col-form-label">Embedding Provider *</div>
+                                    <select class="form-select form-control-primary" v-model="selectedEmbeddingProvider">
+                                      <option value="" disabled hidden>Select Embedding Provider</option>
+                                      <option v-for="provider in filteredEmbeddingProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
+                                    </select>
+                                  </div>
+                                  <div class="col-xl-6 mb-3">
+                                    <div class="col-form-label">Embedding Model *</div>
+                                    <select class="form-select form-control-primary" v-model="selectedEmbeddingModel">
+                                      <option value="" disabled hidden>Select Embedding Model</option>
+                                      <option v-for="model in filteredEmbeddingModels" :key="model.model_id" :value="model.model_id">{{ model.model_name }}</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
+                              <div class="card-body">
+                                <div class="mb-3">
+                                  <div class="col-form-label">Storage *</div>
+                                  <select class="form-select form-control-primary" v-model="selectedStorageProvider">
+                                    <option value="" disabled hidden>Select Storage Provider</option>
+                                    <option v-for="provider in filteredStorageProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
+                                  </select>
+                                </div>
+                                <div v-if="isS3ProviderSelected" class="mb-3">
+                                  <div class="col-form-label">Object</div>
+                                  <select class="form-select form-control-primary" v-model="selectedObject">
+                                    <option value="" disabled hidden>Select Object</option>
+                                    <option v-for="object in filteredObjects" :key="object.store_id" :value="object.store_id">{{ object.store_name }}</option>
+                                  </select>
+                                </div>
+<!--                                <div class="mb-3">-->
+<!--                                  <div class="col-form-label">File</div>-->
+<!--                                  <select class="form-select form-control-primary" v-model="selectedFiles" >-->
+<!--                                    <option value="" disabled hidden="">Select file</option>-->
+<!--                                    <option v-for="file in filteredFiles" :key="file.key" :value="file.key">{{ getFileName(file.Key) }}</option>-->
+<!--                                  </select>-->
+<!--                                </div>-->
+                              </div>
+                            </div>
+
+                            <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
+                              <div class="card-body">
+                                <div class="mb-3">
+                                  <div class="col-form-label">Vector DB</div>
+                                  <select class="form-select form-control-primary" v-model="selectedVectorDB">
+                                    <option value="" disabled hidden>FAISS</option>
+                                    <option v-for="provider in filteredVectorDBProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
                         </div>
                         
                         <!-- Processing -->
@@ -299,7 +298,7 @@ export default {
             selectedProvider: '',
             selectedStorageProvider: '',
             selectedObject: '',
-            selectedFiles: '',
+            selectedFiles: [],
             filteredFiles: [],
             selectedVectorDB: '',
             selectedPreProcessing: '',
