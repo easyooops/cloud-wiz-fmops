@@ -57,7 +57,11 @@ export default {
     computed: {
         agentId() {
             const agentStore = useAgentStore();
-            return agentStore.agent ? agentStore.agent.agent_id : '';
+            const agent = agentStore.agent;
+            const agentId = agent ? agent.agent_id : '';
+            console.log('Current Agent:', agent);
+            return agentId;
+            // return agentStore.agent ? agentStore.agent.agent_id : '';
         }
     },    
     methods: {

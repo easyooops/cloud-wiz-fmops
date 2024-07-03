@@ -1,17 +1,23 @@
+import asyncio
 from decimal import Decimal
 import os
-from typing import Optional, List
+from typing import Optional
+import openai
 import tiktoken
 from fastapi import HTTPException
+from langchain_openai import OpenAIEmbeddings
 from sqlmodel import Session, select
 from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import CharacterTextSplitter
 from uuid import UUID
 import logging
 from app.components.Embedding.Bedrock import BedrockEmbeddingComponent
 from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.service.agent.model import Agent
+from langchain.chains import RetrievalQA
 from app.service.chat.service import ChatService
 from app.service.model.model import Model
+from app.service.store.model import Store
 from app.service.provider.model import Provider
 from app.components.LLM.OpenAI import OpenAILLMComponent
 from app.components.Chat.OpenAI import ChatOpenAIComponent
@@ -42,7 +48,7 @@ class PromptService:
         logging.warning(logger.callHandlers)
         logger.debug("Agent logger is configured debug.")
         logger.info("Agent logger is configured info.")
-        
+
         try:
             agent_data = self._get_agent_data(agent_id)
             _d_agent = agent_data['Agent']
@@ -50,17 +56,22 @@ class PromptService:
             # get history
             history = self._get_history(agent_id)
             self._verify_query(query)
-            
+
             # pre-processing
             if _d_agent.processing_enabled:
                 query = self._preprocess_query(query)
 
             # embedding
             if _d_agent.embedding_enabled:
-                embedding = self._run_embedding(agent_data, query)
-
-            # default llms
-            response = self._run_provider(agent_data, query, history)
+                try:
+                    documents = asyncio.run(self._run_embedding(agent_data, query))
+                    rag_response = asyncio.run(self.run_rag_openai(agent_data, query, documents))
+                    response = rag_response["llm_response"]
+                except openai.PermissionDeniedError as e:
+                    logging.error(f"Embedding generation permission denied: {str(e)}")
+                    raise HTTPException(status_code=403, detail="Embedding generation permission denied")
+            else:
+                response = self._run_provider(agent_data, query, history)
 
             # post-processing
             if _d_agent.processing_enabled:
@@ -71,7 +82,7 @@ class PromptService:
 
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
-            
+
             # logger.debug("Inside debug example_method")
             # logger.info("Inside info example_method")
             # logger.warn("Inside warn example_method")
@@ -79,21 +90,22 @@ class PromptService:
             # logger.error("Inside error example_method")
 
             return ChatResponse(
-                        answer=response, 
-                        tokens=tokens['token_counts'], 
+                        answer=response,
+                        tokens=tokens['token_counts'],
                         cost=tokens['total_cost']
                     )
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-        
+
 
     def _get_agent_data(self, agent_id: UUID):
         statement = (
-            select(Agent, Model, Provider)
+            select(Agent, Model, Provider, Store)
             .join(Model, Agent.fm_model_id == Model.model_id)
             .join(Provider, Agent.fm_provider_id == Provider.provider_id)
+            .join(Store, Agent.storage_object_id == Store.store_id)
         )
         statement = statement.where(Agent.agent_id == agent_id)
 
@@ -102,10 +114,10 @@ class PromptService:
         if not result:
             raise HTTPException(status_code=404, detail="Agent not found")
 
-        agent_data, model_data, provider_data = result
-        return {"Agent": agent_data, "Provider": provider_data, "Model": model_data}
-    
-    
+        agent_data, model_data, provider_data, store_data = result
+        return {"Agent": agent_data, "Provider": provider_data, "Model": model_data, "Store": store_data}
+
+
     def _get_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
@@ -131,25 +143,49 @@ class PromptService:
             chunks.append(encoding.decode(chunk_tokens))
         return chunks
 
-    def _run_embedding(self, agent_data, query):
+    async def _run_embedding(self, agent_data, query):
         _d_provider = agent_data['Provider']
         store_service = StoreService(self.session)
 
-        files = store_service.list_files(agent_data['Agent'].storage_object_id)
+        storage_object_id = str(agent_data['Agent'].storage_object_id)
+        storage_store = agent_data['Store']
+        store_name = storage_store.store_name
+
+        logging.info(f"Storage Object ID:{storage_object_id}")
+        logging.info(f"Store Name: {store_name}")
+
+        file_metadata_list = store_service.list_files(store_name)
+        files = [file_metadata['Key'] for file_metadata in file_metadata_list]
+        logging.info(f"Files: {files}")
+
+        if not files:
+            logging.error("No files found in storage Object")
+            raise HTTPException(status_code=500, detail="No files found in storage object")
+
         documents = store_service.load_documents(files)
-        combined_text = " ".join([doc.page_content for doc in documents])
-        chunks = self.split_text_into_chunks(combined_text, max_tokens=1000)
+        logging.info(f"Documents: {documents}")
+
+        if not documents:
+            logging.error("No documents found in files")
+            raise HTTPException(status_code=500, detail="No documents found in files")
+
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        chunks = text_splitter.split_documents(documents)
+        logging.info(f"Chunks: {chunks}")
+
+        if not chunks:
+            raise ValueError("No chunks were split into chunks")
 
         if _d_provider.name == "OpenAI":
-            return self._run_embedding_openai_model(agent_data, query, chunks)
+            return await self._run_embedding_openai_model(agent_data, chunks)
         elif _d_provider.name == "Bedrock":
-            # return self._run_embedding_bedrock_model(agent_data, query, chunks)
-            pass
+            return await self._run_embedding_bedrock_model(agent_data, chunks)
         else:
-            return self._run_embedding_openai_model(agent_data, query, chunks)
+            return await self._run_embedding_openai_model(agent_data, chunks)
+
 
     def _run_provider(self, agent_data, query, history):
-        
+
         _d_provider = agent_data['Provider']
 
         if _d_provider.name == "OpenAI":
@@ -159,37 +195,53 @@ class PromptService:
         else:
             return self._run_openai_model(agent_data, query)
 
-    def _run_embedding_openai_model(self, agent_data, query, documents):
-
+    async def _run_embedding_openai_model(self, agent_data, documents):
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if not openai_api_key:
             raise ValueError("OpenAI API key is not in the environment variables")
 
-        _d_agent = agent_data['Agent']
-        _d_model = agent_data['Model']
+        embeddings = OpenAIEmbeddings(api_key=openai_api_key)
+        db = await FAISS.afrom_documents(documents, embeddings)
+        return db
 
-        embed_component = OpenAIEmbeddingComponent(openai_api_key)
-        embed_component.build(model_id=_d_model.model_name)
-        doc_embeddings = embed_component.run_embed_documents(documents)
-
-        return self.run_rag_openai(agent_data, query, doc_embeddings, documents)
-
-    def run_rag_openai(self, agent_data, query: str, doc_embeddings: List[List[float]], documents: List[str], top_k: int = 5):
+    async def run_rag_openai(self, agent_data, query: str, db, top_k: int = 5):
         try:
-            db = FAISS.from_embeddings(embeddings=doc_embeddings, texts=documents)
-            matching_docs = db.similarity_search(query, k=top_k)
+            logging.info(f"FAISS database created")
+            matching_docs = await db.asimilarity_search(query, k=top_k)
+            logging.info(f"Matching documents: {matching_docs}")
 
-            chat_service = ChatService(self.session)
-            response = chat_service.get_llm_openai_response(query, model_id="gpt-3.5-turbo")
+            if not matching_docs:
+                raise ValueError("No matching documents found")
 
-            result = {
+            retriever = db.as_retriever()
+            openai_api_key = os.getenv("OPENAI_API_KEY")
+            if not openai_api_key:
+                raise ValueError("OpenAI API key is not set in the environment variables")
+
+            openai_component = ChatOpenAIComponent(openai_api_key)
+            openai_component.build(model_id="gpt-3.5-turbo", max_tokens=600, temperature=0.1)
+            llm_instance = openai_component.model_instance
+            logging.info(f"LLM instance created")
+
+            qa_chain = RetrievalQA.from_chain_type(llm=llm_instance, chain_type="stuff", retriever=retriever)
+            inputs = {"query": query, "input_documents": matching_docs}
+            try:
+                answer = await asyncio.to_thread(qa_chain.invoke, inputs)
+                result = answer['result'] if 'result' in answer else answer
+                logging.info(f"Generated answer: {result}")
+            except Exception as e:
+                logging.error(f"Error generating response from QA chain: {str(e)}")
+                result = "Error generating response from QA chain"
+
+            return {
                 "matching_documents": matching_docs,
-                "llm_response": response
+                "llm_response": result
             }
-            return result
 
         except Exception as e:
+            logging.error(f"Exception in run_rag_openai: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
+
 
     def _run_embedding_bedrock_model(self, agent_data, documents):
 
@@ -226,6 +278,7 @@ class PromptService:
             raise ValueError("OpenAI API key is not set in the environment variables")
                 
         llms_component = None
+
         _d_agent = agent_data['Agent']
         _d_model = agent_data['Model']
 
@@ -323,6 +376,11 @@ class PromptService:
             logging.warning(completion_cost)
 
             logging.warning('=== _get_token_counts()  =====================================')
+
+            prompt_token_counts = prompt_token_counts or 0
+            completion_token_counts = completion_token_counts or 0
+            prompt_cost = prompt_cost or 0.0
+            completion_cost = completion_cost or 0.0
 
             if isinstance(prompt_cost, Decimal):
                 prompt_cost = float(prompt_cost)
