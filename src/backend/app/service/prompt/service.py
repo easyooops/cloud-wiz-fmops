@@ -1,5 +1,6 @@
 import asyncio
 from decimal import Decimal
+from sqlalchemy.orm import aliased
 import os
 from typing import Optional
 import openai
@@ -101,11 +102,13 @@ class PromptService:
 
 
     def _get_agent_data(self, agent_id: UUID):
+        EmbeddingModel = aliased(Model)
         statement = (
-            select(Agent, Model, Provider, Store)
+            select(Agent, Model, Provider, Store, EmbeddingModel.model_name.label('embedding_model_name'))
             .join(Model, Agent.fm_model_id == Model.model_id)
             .join(Provider, Agent.fm_provider_id == Provider.provider_id)
             .join(Store, Agent.storage_object_id == Store.store_id)
+            .outerjoin(EmbeddingModel, Agent.embedding_model_id == EmbeddingModel.model_id)
         )
         statement = statement.where(Agent.agent_id == agent_id)
 
@@ -114,8 +117,9 @@ class PromptService:
         if not result:
             raise HTTPException(status_code=404, detail="Agent not found")
 
-        agent_data, model_data, provider_data, store_data = result
-        return {"Agent": agent_data, "Provider": provider_data, "Model": model_data, "Store": store_data}
+        agent_data, model_data, provider_data, store_data, embedding_model_name = result
+        return {"Agent": agent_data, "Provider": provider_data, "Model": model_data, "Store": store_data, "EmbeddingModelName": embedding_model_name}
+
 
 
     def _get_history(self, agent_id: UUID):
@@ -144,6 +148,7 @@ class PromptService:
         return chunks
 
     async def _run_embedding(self, agent_data, query):
+
         _d_provider = agent_data['Provider']
         store_service = StoreService(self.session)
 
@@ -196,16 +201,27 @@ class PromptService:
             return self._run_openai_model(agent_data, query)
 
     async def _run_embedding_openai_model(self, agent_data, documents):
+        _d_agent = agent_data['Agent']
+        embedding_model_name = agent_data['EmbeddingModelName']
+
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if not openai_api_key:
             raise ValueError("OpenAI API key is not in the environment variables")
 
-        embeddings = OpenAIEmbeddings(api_key=openai_api_key)
-        db = await FAISS.afrom_documents(documents, embeddings)
+        embed_component = OpenAIEmbeddingComponent(openai_api_key)
+        embed_component.build(
+            model_id=embedding_model_name
+        )
+        embeddings = embed_component.run_embed_documents([doc.page_content for doc in documents])
+        db = await FAISS.afrom_documents(documents, OpenAIEmbeddings(api_key=openai_api_key))
         return db
+
 
     async def run_rag_openai(self, agent_data, query: str, db, top_k: int = 5):
         try:
+            _d_agent = agent_data['Agent']
+            _d_model = agent_data['Model']
+
             logging.info(f"FAISS database created")
             matching_docs = await db.asimilarity_search(query, k=top_k)
             logging.info(f"Matching documents: {matching_docs}")
@@ -217,9 +233,30 @@ class PromptService:
             openai_api_key = os.getenv("OPENAI_API_KEY")
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
+            if _d_agent.fm_provider_type == "T":
+                openai_component = OpenAILLMComponent(openai_api_key)
+                openai_component.build(
+                    model_id=_d_model.model_name,
+                    temperature=_d_agent.fm_temperature,
+                    top_p=_d_agent.fm_top_p,
+                    max_tokens=_d_agent.fm_response_token_limit
+                )
+            elif _d_agent.fm_provider_type == "C":
+                openai_component = ChatOpenAIComponent(openai_api_key)
+                openai_component.build(
+                    model_id=_d_model.model_name,
+                    temperature=_d_agent.fm_temperature,
+                    max_tokens=_d_agent.fm_response_token_limit
+                )
+            else:
+                openai_component = OpenAILLMComponent(openai_api_key)
+                openai_component.build(
+                    model_id=_d_model.model_name,
+                    temperature=_d_agent.fm_temperature,
+                    top_p=_d_agent.fm_top_p,
+                    max_tokens=_d_agent.fm_response_token_limit
+                )
 
-            openai_component = ChatOpenAIComponent(openai_api_key)
-            openai_component.build(model_id="gpt-3.5-turbo", max_tokens=600, temperature=0.1)
             llm_instance = openai_component.model_instance
             logging.info(f"LLM instance created")
 

@@ -108,7 +108,7 @@ async def openai_multi_files_embeddings(
             raise ValueError("OpenAI API key is not set in the environment variables")
 
         embedding_component = OpenAIEmbeddingComponent(openai_api_key)
-        embedding_component.build()
+        embedding_component.build("text-embedding-ada-002")
 
         embeddings = embedding_service.get_openai_embeddings(file_contents)
         return EmbeddingMultipleResponse(embeddings=embeddings)
