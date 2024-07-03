@@ -31,7 +31,7 @@ class LoggingConfigurator:
 
         uvicorn_access_handler = logging.FileHandler('logs/uvicorn.access.log')
         uvicorn_access_handler.setFormatter(access_formatter)
-        uvicorn_access_handler.setLevel(logging.DEBUG)
+        uvicorn_access_handler.setLevel(logging.INFO)
 
         ddtrace_handler = logging.FileHandler('logs/ddtrace.log', mode='a', encoding='utf-8')
         ddtrace_handler.setFormatter(default_formatter)
@@ -84,6 +84,11 @@ class LoggingConfigurator:
             elif name == 'agent':
                 logger.addHandler(agent_handler)
 
+        for logger_name in logging.root.manager.loggerDict:
+            if logger_name not in logger_names:
+                logger = logging.getLogger(logger_name)
+                logger.addHandler(uvicorn_handler)
+
         # Test log messages to confirm configuration
         root_logger = logging.getLogger()
         root_logger.debug("Root logger is configured.")
@@ -95,9 +100,9 @@ class LoggingConfigurator:
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             logger = logging.getLogger('agent')
-            logger.debug("Agent logger is configured debug.")
-            logger.info("Agent logger is configured info.")
-            logger.info(f"Method {func.__name__} called with args: {args}, kwargs: {kwargs}")
+            LoggingConfigurator.log_debug("Agent logger is configured debug.")
+            LoggingConfigurator.log_info("Agent logger is configured info.")
+            LoggingConfigurator.log_info(f"Method {func.__name__} called with args: {args}, kwargs: {kwargs}")
             try:
                 result = func(self, *args, **kwargs)
                 logger.info(f"Method {func.__name__} returned: {result}")
@@ -106,3 +111,18 @@ class LoggingConfigurator:
                 logger.error(f"Method {func.__name__} raised an exception: {e}")
                 raise
         return wrapper
+
+    @staticmethod
+    def log_debug(message):
+        logger = logging.getLogger('agent')
+        logger.debug(message)
+
+    @staticmethod
+    def log_info(message):
+        logger = logging.getLogger('agent')
+        logger.info(message)
+
+    @staticmethod
+    def log_error(message):
+        logger = logging.getLogger('agent')
+        logger.error(message)

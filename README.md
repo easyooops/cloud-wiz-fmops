@@ -45,7 +45,7 @@ git branch
 git add .
 
 # git commit -m "[comment]"
-git commit -m "add frontend"
+git commit -m "Save current changes before pulling latest updates"
 
 # git push origin [new branch]
 git push origin feature-suyeong
