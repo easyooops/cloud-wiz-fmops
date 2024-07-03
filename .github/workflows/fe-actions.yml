@@ -29,7 +29,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           role-session-name: s3RoleSession
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_S3_REGION }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -61,7 +61,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           role-session-name: cloudfrontRoleSession
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_S3_REGION }}
 
       - name: invalidate cloudfront entrypoint (index.html) - BASE
         run: aws cloudfront create-invalidation --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_BASE --paths "/index.html"

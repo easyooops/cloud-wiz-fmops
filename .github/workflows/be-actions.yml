@@ -13,12 +13,9 @@ permissions:
   contents: read    # This is required for actions/checkout 
 
 env:
-  #AWS
   AWS_REGION: ${{secrets.AWS_REGION}}
   AWS_OIDC_ROLE_ARN: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-  #ECR
   ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}           # ECR Repository Name
-  #ECS
   ECS_CLUSTER: ${{secrets.ECS_CLUSTER}}                 # ECS Cluster Name
   ECS_SERVICE: ${{secrets.ECS_SERVICE}}                 # ECS Service Name
   ECS_TASK_DEFINITION: ${{secrets.ECS_TASK_DEFINITION}} # ECS TaskDefinition Name
