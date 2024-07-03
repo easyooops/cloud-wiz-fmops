@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copy .env file
-COPY src/backend/.env .env
+COPY .env .env
 
 # Load .env file variables
 RUN export $(cat .env | xargs)
