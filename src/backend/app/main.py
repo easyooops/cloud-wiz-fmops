@@ -101,7 +101,7 @@ def create_app():
     
     app.include_router(api_router, prefix=settings.API_V1_STR)
 
-    @app.get("/")
+    @app.get("/health")
     async def welcome():
         return {"message": "Hello, World!"}
     
