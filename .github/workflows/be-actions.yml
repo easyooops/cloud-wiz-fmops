@@ -13,7 +13,7 @@ permissions:
   contents: read    # This is required for actions/checkout 
 
 env:
-  AWS_REGION: ${{secrets.AWS_REGION}}
+  AWS_API_REGION: ${{secrets.AWS_API_REGION}}
   AWS_OIDC_ROLE_ARN: ${{ secrets.AWS_OIDC_ROLE_ARN }}
   ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}           # ECR Repository Name
   ECS_CLUSTER: ${{secrets.ECS_CLUSTER}}                 # ECS Cluster Name
@@ -34,7 +34,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ env.AWS_API_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
