@@ -21,7 +21,7 @@ import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
 export default defineComponent({
   setup() {
     const dashboardUrl = ref(
-        'https://p.datadoghq.com/sb/eb4d74c2-eb97-11ec-b30d-da7ad0900002-99e2e258795b206ee0f0bbb8fc40eef9?fromUser=false&refresh_mode=sliding&from_ts=1719988246141&to_ts=1719989146141&live=true'
+        'https://p.datadoghq.com/sb/eb4d74c2-eb97-11ec-b30d-da7ad0900002-c478ac9bf6eff219365e965a7b367621'
     );
     const iframeRef = ref<HTMLIFrameElement | null>(null);
     let interval: ReturnType<typeof setInterval> | null = null;
