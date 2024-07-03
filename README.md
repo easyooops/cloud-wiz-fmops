@@ -6,8 +6,11 @@ FMOops platform that can be used in real life through generative AI
 sudo npm install && sudo npm start
 ```
 # Fast API Docs
-
+### local
 http://localhost:8000/docs#/
+
+### prod
+https://be.cloudwiz-ai.com/docs#
 
 # Database Session
 ### SQLALCHEMY
