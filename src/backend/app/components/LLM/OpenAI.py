@@ -8,13 +8,9 @@ class OpenAILLMComponent(BaseLLMComponent):
         self.openai_api_key = openai_api_key
 
     def build(self, model_id, temperature, top_p, max_tokens):
-        template = """Question: {question}
-        Answer: Let's think step by step."""
 
         if not model_id:
             model_id="gpt-3.5-turbo-instruct"
-
-        self.prompt = PromptTemplate.from_template(template)
 
         self.llm = OpenAI(
             openai_api_key=self.openai_api_key, 
@@ -28,5 +24,4 @@ class OpenAILLMComponent(BaseLLMComponent):
     def run(self, prompt):
         if self.llm is None:
             raise ValueError("LLM is not initialized. Call the build method first.")
-        llm_chain = self.prompt | self.llm
-        return llm_chain.invoke(prompt)   
+        return self.llm.invoke(prompt)   

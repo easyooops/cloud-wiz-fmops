@@ -100,9 +100,7 @@ class LoggingConfigurator:
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             logger = logging.getLogger('agent')
-            LoggingConfigurator.log_debug("Agent logger is configured debug.")
-            LoggingConfigurator.log_info("Agent logger is configured info.")
-            LoggingConfigurator.log_info(f"Method {func.__name__} called with args: {args}, kwargs: {kwargs}")
+            logger.info(f"Method {func.__name__} called with args: {args}, kwargs: {kwargs}")
             try:
                 result = func(self, *args, **kwargs)
                 logger.info(f"Method {func.__name__} returned: {result}")
