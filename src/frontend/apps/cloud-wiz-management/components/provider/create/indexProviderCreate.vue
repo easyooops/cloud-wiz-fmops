@@ -129,7 +129,7 @@ export default {
             }
         };
 
-        const isAmazonWebServices = computed(() => selectedCompany.value && selectedCompany.value.includes('Amazon'));
+        const isAmazonWebServices = computed(() => selectedCompany.value && selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
         const isGitOrNotion = computed(() => selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion')));
 
         const createCredential = async () => {

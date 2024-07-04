@@ -2,7 +2,7 @@ import asyncio
 from decimal import Decimal
 from sqlalchemy.orm import aliased
 import os
-from typing import Optional
+from typing import Dict, List, Optional
 import openai
 import tiktoken
 from fastapi import HTTPException
@@ -27,28 +27,22 @@ from app.components.LLM.Bedrock import BedrockLLMComponent
 from app.core.util.token import TokenUtilityService
 from app.api.v1.schemas.chat import ChatResponse
 from app.service.store.service import StoreService
-from ddtrace.llmobs.decorators import agent, workflow, tool, task
+from ddtrace.llmobs.decorators import workflow, task
 from app.core.util.logging import LoggingConfigurator
+from app.service.processing.model import Processing
+from app.core.util.piimasking import PiiMaskingService
+from app.core.util.textNormailization import TextNormalizationService
 
 
 class PromptService:
     def __init__(self, session: Session):
         self.session = session
 
-    # @agent(name="prompt_agent")
-    # @tool(name="get_current_weather")
-    # @task
-    # @log_method
-    # @workflow
+    @workflow
     @LoggingConfigurator.log_method
     def get_prompt(self, agent_id: UUID, query: Optional[str] = None) -> ChatResponse:
 
         response = []
-
-        logger = logging.getLogger('agent')
-        logging.warning(logger.callHandlers)
-        logger.debug("Agent logger is configured debug.")
-        logger.info("Agent logger is configured info.")
 
         try:
             agent_data = self._get_agent_data(agent_id)
@@ -60,7 +54,7 @@ class PromptService:
 
             # pre-processing
             if _d_agent.processing_enabled:
-                query = self._preprocess_query(query)
+                query = self._preprocess_query(agent_data, query)
 
             # embedding
             if _d_agent.embedding_enabled:
@@ -76,19 +70,13 @@ class PromptService:
 
             # post-processing
             if _d_agent.processing_enabled:
-                response = self._postprocess_response(response)
+                response = self._postprocess_response(agent_data, response)
 
             # set history
             history = self._set_history(agent_id)
 
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
-
-            # logger.debug("Inside debug example_method")
-            # logger.info("Inside info example_method")
-            # logger.warn("Inside warn example_method")
-            # logger.warning("Inside warning example_method")
-            # logger.error("Inside error example_method")
 
             return ChatResponse(
                         answer=response,
@@ -99,8 +87,7 @@ class PromptService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-
-
+    @task
     def _get_agent_data(self, agent_id: UUID):
         EmbeddingModel = aliased(Model)
         statement = (
@@ -120,12 +107,22 @@ class PromptService:
         agent_data, model_data, provider_data, store_data, embedding_model_name = result
         return {"Agent": agent_data, "Provider": provider_data, "Model": model_data, "Store": store_data, "EmbeddingModelName": embedding_model_name}
 
+    def _get_processing_data(self, processing_id: UUID):
+        
+        statement = select(Processing).where(Processing.processing_id == processing_id)
+        result = self.session.exec(statement).first()
 
+        if not result:
+            raise HTTPException(status_code=404, detail="Agent not found")
+                
+        return result
 
+    @task
     def _get_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
     
+    @task    
     def _set_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None    
@@ -134,8 +131,43 @@ class PromptService:
         # Logic to verify query
         pass
 
-    def _preprocess_query(self, query: str):
-        pass
+    def _parse_options(self, data: str) -> Dict[str, bool]:
+        options = data.split('|')
+        return {option: True for option in options}
+    
+    def _convert_list(self, data: str) -> List[str]:
+        return data.split('|')
+        
+    def _replace_question(self, template: str, question: str) -> str:
+        return template.format(question=question)
+
+    @task        
+    def _preprocess_query(self, agent_data, query: str):
+
+        _d_agent = agent_data['Agent']
+        pre_processing_id = _d_agent.pre_processing_id
+        processing_data = self._get_processing_data(pre_processing_id)
+
+        # pii mask
+        pii_options = self._parse_options(processing_data.pii_masking)
+        pii_masking_service = PiiMaskingService()
+        query = pii_masking_service.mask_pii(query, pii_options)
+
+        # normalize text
+        normalize_options = self._parse_options(processing_data.normalization)
+        text_normalization_service = TextNormalizationService()
+        query = text_normalization_service.normalize_text(query, normalize_options)
+
+        # stopword removal
+        stopwords = set(self._convert_list(processing_data.stopword_removal))
+        # query = ' '.join([word for word in query.split() if word.lower() not in stopwords])
+        for stopword in stopwords:
+            query = query.replace(stopword, '')
+
+        # template
+        query = self._replace_question(processing_data.template, query)
+
+        return query
 
     def split_text_into_chunks(self, text, max_tokens):
         encoding = tiktoken.get_encoding("cl100k_base")
@@ -147,6 +179,7 @@ class PromptService:
             chunks.append(encoding.decode(chunk_tokens))
         return chunks
 
+    @task
     async def _run_embedding(self, agent_data, query):
 
         _d_provider = agent_data['Provider']
@@ -188,7 +221,7 @@ class PromptService:
         else:
             return await self._run_embedding_openai_model(agent_data, chunks)
 
-
+    @task
     def _run_provider(self, agent_data, query, history):
 
         _d_provider = agent_data['Provider']
@@ -216,7 +249,7 @@ class PromptService:
         db = await FAISS.afrom_documents(documents, OpenAIEmbeddings(api_key=openai_api_key))
         return db
 
-
+    @task
     async def run_rag_openai(self, agent_data, query: str, db, top_k: int = 5):
         try:
             _d_agent = agent_data['Agent']
@@ -378,10 +411,31 @@ class PromptService:
             
         return llms_component.run(query)
     
-    def _postprocess_response(self, response):
-        # Logic for post-processing
+    def _postprocess_response(self, agent_data, response: str):
+
+        _d_agent = agent_data['Agent']
+        post_processing_id = _d_agent.post_processing_id
+        processing_data = self._get_processing_data(post_processing_id)
+
+        # pii mask
+        pii_options = self._parse_options(processing_data.pii_masking)
+        pii_masking_service = PiiMaskingService()
+        response = pii_masking_service.mask_pii(response, pii_options)
+
+        # normalize text
+        normalize_options = self._parse_options(processing_data.normalization)
+        text_normalization_service = TextNormalizationService()
+        response = text_normalization_service.normalize_text(response, normalize_options)
+
+        # stopword removal
+        stopwords = set(self._convert_list(processing_data.stopword_removal))
+        # response = ' '.join([word for word in response.split() if word.lower() not in stopwords])
+        for stopword in stopwords:
+            response = response.replace(stopword, '')
+
         return response
 
+    @task
     def _get_token_counts(self, agent_id: UUID, query: Optional[str] = None, text: Optional[str] = None):
         try:
 
