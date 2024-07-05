@@ -60,7 +60,13 @@ class PromptService:
             if _d_agent.embedding_enabled:
                 try:
                     documents = asyncio.run(self._run_embedding(agent_data, query))
-                    rag_response = asyncio.run(self.run_rag_openai(agent_data, query, documents))
+                    if _d_agent.embedding_provider_name == "OpenAI":
+                        rag_response = asyncio.run(self.run_rag_openai(agent_data, query, documents))
+                    elif _d_agent.embedding_provider_name == "Bedrock":
+                        rag_response = asyncio.run(self.run_rag_bedrock(agent_data, query, documents))
+                    else:
+                        raise ValueError("Unsupported embedding provider")
+
                     response = rag_response["llm_response"]
                 except openai.PermissionDeniedError as e:
                     logging.error(f"Embedding generation permission denied: {str(e)}")
@@ -91,7 +97,11 @@ class PromptService:
     def _get_agent_data(self, agent_id: UUID):
         EmbeddingModel = aliased(Model)
         statement = (
-            select(Agent, Model, Provider, Store, EmbeddingModel.model_name.label('embedding_model_name'))
+            select(
+                Agent, Model, Provider, Store,
+                EmbeddingModel.model_name.label('embedding_model_name'),
+                Provider.name.label('embedding_provider_name')
+            )
             .join(Model, Agent.fm_model_id == Model.model_id)
             .join(Provider, Agent.fm_provider_id == Provider.provider_id)
             .join(Store, Agent.storage_object_id == Store.store_id)
@@ -104,9 +114,15 @@ class PromptService:
         if not result:
             raise HTTPException(status_code=404, detail="Agent not found")
 
-        agent_data, model_data, provider_data, store_data, embedding_model_name = result
-        return {"Agent": agent_data, "Provider": provider_data, "Model": model_data, "Store": store_data, "EmbeddingModelName": embedding_model_name}
-
+        agent_data, model_data, provider_data, store_data, embedding_model_name, embedding_provider_name = result
+        return {
+            "Agent": agent_data,
+            "Provider": provider_data,
+            "Model": model_data,
+            "Store": store_data,
+            "EmbeddingModelName": embedding_model_name,
+            "EmbeddingProviderName": embedding_provider_name
+        }
     def _get_processing_data(self, processing_id: UUID):
         
         statement = select(Processing).where(Processing.processing_id == processing_id)
@@ -312,28 +328,86 @@ class PromptService:
             logging.error(f"Exception in run_rag_openai: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-
-    def _run_embedding_bedrock_model(self, agent_data, documents):
+    async def _run_embedding_bedrock_model(self, agent_data, documents):
+        _d_agent = agent_data['Agent']
+        embedding_model_name = agent_data['EmbeddingModelName']
 
         aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
         aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
         aws_region = os.getenv("AWS_REGION")
 
-        if not aws_access_key:
-            raise ValueError("aws_access_key is not set in the environment variables")
-        if not aws_secret_access_key:
-            raise ValueError("aws_secret_access_key is not set in the environment variables")
-        if not aws_region:
-            raise ValueError("aws_region is not set in the environment variables")
+        if not all([aws_access_key, aws_secret_access_key, aws_region]):
+            raise ValueError("AWS credentials or region are not set in the environment variables")
 
-        embed_component = None
-        _d_agent = agent_data['Agent']
-        _d_model = agent_data['Model']
+        embed_component = BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
+        embed_component.build(model_id=embedding_model_name)
+        embeddings = embed_component.run_embed_documents([doc.page_content for doc in documents])
 
-        if _d_agent.fm_provider_type == "E":
-            embed_component = BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
-            embed_component.build(model_id=_d_model.model_name)
-        return embed_component.run_embed_documents(documents)
+        db = await FAISS.afrom_documents(documents, embeddings)
+        return db
+
+    @task
+    async def run_rag_bedrock(self, agent_data, query: str, db, top_k: int = 5):
+        try:
+            _d_agent = agent_data['Agent']
+            _d_model = agent_data['Model']
+
+            matching_docs = db.similarity_search(query, k=top_k)
+
+            if not matching_docs:
+                raise ValueError("No matching documents found")
+
+            retriever = db.as_retriever()
+            aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+            aws_region = os.getenv("AWS_REGION")
+
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials are not set in the environment variables")
+
+            if _d_agent.fm_provider_type == "T":
+                bedrock_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
+                bedrock_component.build(
+                    model_id=_d_model.model_name,
+                    temperature=_d_agent.fm_temperature,
+                    top_p=_d_agent.fm_top_p,
+                    max_tokens=_d_agent.fm_response_token_limit
+                )
+            elif _d_agent.fm_provider_type == "C":
+                bedrock_component = ChatBedrockComponent(aws_access_key, aws_secret_access_key, aws_region)
+                bedrock_component.build(
+                    model_id=_d_model.model_name,
+                    temperature=_d_agent.fm_temperature,
+                    max_tokens=_d_agent.fm_response_token_limit
+                )
+            else:
+                bedrock_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
+                bedrock_component.build(
+                    model_id=_d_model.model_name,
+                    temperature=_d_agent.fm_temperature,
+                    top_p=_d_agent.fm_top_p,
+                    max_tokens=_d_agent.fm_response_token_limit
+                )
+            llm_instance = bedrock_component.model_instance
+
+            qa_chain = RetrievalQA.from_chain_type(llm=llm_instance, chain_type="stuff", retriever=retriever)
+            inputs = {"query": query, "input_documents": matching_docs}
+
+            try:
+                answer = await asyncio.to_thread(qa_chain.invoke, inputs)
+                result = answer['result'] if 'result' in answer else answer
+            except Exception as e:
+                logging.error(f"Error generating response from QA chain: {str(e)}")
+                result = "Error generating response from QA chain"
+
+            return {
+                "matching_documents": matching_docs,
+                "llm_response": result
+            }
+
+        except Exception as e:
+            logging.error(f"Exception in run_rag_bedrock: {str(e)}")
+            raise HTTPException(status_code=500, detail=str(e))
 
     def _initialize_rag_model(self, agent_data, history):
         # Logic to initialize RAG model

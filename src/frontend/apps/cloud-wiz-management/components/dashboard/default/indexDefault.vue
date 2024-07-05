@@ -35,7 +35,7 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      interval = setInterval(reloadIframe, 60000); // 1분마다 새로고침
+      interval = setInterval(reloadIframe, 60000);
     });
 
     onUnmounted(() => {

@@ -26,7 +26,7 @@ class ChatService:
         llm = self.get_llm_openai_instance(model_id="gpt-3.5-turbo", max_tokens=500, temperature=0.7)
         return llm({"input": query})
 
-    def get_llm_bedrock_response(self, model_id: str, query: str):
+    def get_llm_bedrock_instance(self, model_id: str, max_tokens: int = 150, temperature: float = 0.7):
         try:
             aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
             aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -34,12 +34,20 @@ class ChatService:
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
-            bedrock_component = ChatBedrockComponent()
-            bedrock_component.build(model_id=model_id)
-            response = bedrock_component.run(query)
-            return response
+            bedrock_component = ChatBedrockComponent(
+                aws_access_key=aws_access_key,
+                aws_secret_access_key=aws_secret_access_key,
+                aws_region=aws_region
+            )
+            bedrock_component.build(model_id=model_id, max_tokens=max_tokens, temperature=temperature)
+            return bedrock_component.model_instance
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    def get_llm_bedrock_response(self, query: str):
+        llm = self.get_llm_bedrock_instance(model_id="anthropic.claude-3-sonnet-20240229-v1:0", max_tokens=500, temperature=0.7)
+        return llm({"input": query})
+
 
     # QueryTuning (OpenAI + Bedrock)
     def openai_chaining(self, query: str, model_id: str, service_type: str = "openai", max_tokens: int = 150, temperature: float = 0.7):
