@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/", response_model=List[StoreWithDirectory])
 def get_stores(
     user_id: Optional[UUID] = None,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = StoreService(session)
@@ -42,7 +42,7 @@ def get_stores(
 @router.post("/", response_model=Store)
 def create_store(
     store: StoreCreate,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = StoreService(session)
@@ -54,7 +54,7 @@ def create_store(
 def update_store(
     store_id: UUID,
     store_update: StoreUpdate,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = StoreService(session)
@@ -65,7 +65,7 @@ def update_store(
 @router.delete("/{store_id}")
 def delete_store(
     store_id: UUID,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = StoreService(session)
@@ -77,7 +77,7 @@ def delete_store(
 @router.get("/{store_name}/files", response_model=List[Dict[str, Any]])
 def get_store_files(
     store_name: str,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = StoreService(session)
@@ -89,7 +89,7 @@ def get_store_files(
 def upload_file_to_store(
     store_name: str,
     file: UploadFile = File(...),
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = StoreService(session)
@@ -103,7 +103,7 @@ def upload_file_to_store(
 def delete_file_from_store(
     store_name: str,
     file_name: str,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = StoreService(session)

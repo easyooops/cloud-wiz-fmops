@@ -12,23 +12,6 @@ http://localhost:8000/docs#/
 ### prod
 https://be.cloudwiz-ai.com/docs#
 
-# Database Session
-### SQLALCHEMY
-```
-python
-db: Session = Depends(lambda: get_database(ServiceType.SQLALCHEMY))
-```
-### MYSQL
-```
-python
-db: Session = Depends(lambda: get_database(ServiceType.MYSQL))
-```
-### SQLITE
-```
-python
-db: Session = Depends(lambda: get_database(ServiceType.SQLITE))
-```
-
 # GIT
 ### connection
 ```

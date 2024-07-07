@@ -17,7 +17,7 @@ router = APIRouter()
 def get_processings(
     user_id: Optional[UUID] = None,
     processing_type: Optional[str] = None,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = ProcessingService(session)
@@ -29,7 +29,7 @@ def get_processings(
 @router.post("/", response_model=Processing)
 def create_processing(
     processing: ProcessingCreate, 
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = ProcessingService(session)
@@ -42,7 +42,7 @@ def create_processing(
 def update_processing(
     processing_id: UUID,
     processing_update: ProcessingUpdate,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = ProcessingService(session)
@@ -54,7 +54,7 @@ def update_processing(
 @router.delete("/{processing_id}")
 def delete_processing(
     processing_id: UUID,
-    session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+    session: Session = Depends(lambda: next(get_database()))
 ):
     try:
         service = ProcessingService(session)

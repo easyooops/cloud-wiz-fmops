@@ -1,9 +1,9 @@
+import os
 from loguru import logger
 
 from sqlmodel import Session, create_engine
 
 from app.core.interface.service import Service, ServiceFactory
-from app.core.config import settings
 
 class SQLAlchemyService(Service):
     def __init__(self, db_url: str):
@@ -21,4 +21,4 @@ class SQLAlchemyService(Service):
 
 class SQLAlchemyServiceFactory(ServiceFactory):
     def create(self) -> SQLAlchemyService:
-        return SQLAlchemyService(settings.SQLALCHEMY_DATABASE_URL)
+        return SQLAlchemyService(os.getenv("SQLALCHEMY_DATABASE_URL"))

@@ -3,7 +3,7 @@ from loguru import logger
 
 from app.core.interface.service import NoFactoryRegisteredError, Service, ServiceFactory, ServiceType
 from app.core.provider.database.SQLAlchemy import SQLAlchemyServiceFactory
-# from app.core.provider.database.MySQL import MySQLServiceFactory
+from app.core.provider.database.MySQL import MySQLServiceFactory
 from app.core.provider.database.SQLite import SQLiteServiceFactory
 
 class ServiceManager:
@@ -14,7 +14,7 @@ class ServiceManager:
     def _initialize_factories(self) -> Dict[ServiceType, ServiceFactory]:
         return {
             ServiceType.SQLALCHEMY: SQLAlchemyServiceFactory(),
-            # ServiceType.MYSQL: MySQLServiceFactory(),
+            ServiceType.MYSQL: MySQLServiceFactory(),
             ServiceType.SQLITE: SQLiteServiceFactory()
         }
 
