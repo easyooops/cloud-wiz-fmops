@@ -50,7 +50,7 @@ def get_workers(workers=None):
     return workers
 
 def create_db_and_tables():
-    engine = create_engine(settings.SQLALCHEMY_DATABASE_URL, echo=True)
+    engine = create_engine(os.getenv("SQLALCHEMY_DATABASE_URL"), echo=True)
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         init_db(session)

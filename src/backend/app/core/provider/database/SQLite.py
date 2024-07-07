@@ -1,9 +1,9 @@
+import os
 from loguru import logger
 
 from sqlmodel import Session, create_engine
 
 from app.core.interface.service import Service, ServiceFactory
-from app.core.config import settings
 
 class SQLiteService(Service):
     def __init__(self, db_url: str):
@@ -21,4 +21,4 @@ class SQLiteService(Service):
 
 class SQLiteServiceFactory(ServiceFactory):
     def create(self) -> SQLiteService:
-        return SQLiteService(settings.SQLITE_DATABASE_URL)
+        return SQLiteService(os.getenv("SQLALCHEMY_DATABASE_URL"))
