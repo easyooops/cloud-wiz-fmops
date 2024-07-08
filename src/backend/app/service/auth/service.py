@@ -14,7 +14,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 def get_cognito_client():
     return boto3.client("cognito-idp", region_name=settings.COGNITO_REGION)
 
-def get_user_from_token(token: str = Depends(oauth2_scheme), session: Session = Depends(lambda: next(get_database()))):
+def get_user_from_token(token: str = Depends(oauth2_scheme), session: Session = Depends(get_database)):
     try:
         client = get_cognito_client()
         response = client.get_user(AccessToken=token)

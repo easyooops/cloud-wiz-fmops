@@ -44,28 +44,34 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-xl-11">
+                            <div class="col-xl-6">
                                 <label class="col-form-label"><h6>Token Usage</h6></label>
                             </div>
-                            <div class="col-xl-1">
+                            <div class="col-xl-6 text-end">
                                 <label class="col-form-label">{{ formatTokenSize(dataItem.tokens) }}</label>
                             </div>                        
                         </div>
                         <div class="row">
-                            <div class="col-xl-11">
+                            <div class="col-xl-6">
                                 <label class="col-form-label"><h6>Expected Cost</h6></label>
                             </div>
-                            <div class="col-xl-1">
+                            <div class="col-xl-6 text-end">
                                 <label class="col-form-label">{{ formatCost(dataItem.cost) }}</label>
                             </div>                        
                         </div>                        
                     </div>
-                </div>                
+                </div>
             </div>
 
             <div class="col-xl-12 box-col-6">
                 <div class="card">
                     <div class="card-body">
+
+                        <!-- loading area -->
+                        <div class="loader-box" v-if="loading">
+                            <div class="loader-30"></div>
+                        </div> 
+
                         <div class="row chat-box">
                             <div class="col pe-0">
                                 <div class="chat">
@@ -107,6 +113,7 @@ export default {
             activeclass: 'pills-personal-tab', 
             filtered: false,
             text: "",
+            loading: false,            
             userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
         }
     },
@@ -221,10 +228,21 @@ export default {
             if (agent) {
                 agent.selectedAgent = value;
             }
-        }          
+        },
+        async fetchData() {
+          try {
+            this.loading = true;
+            useAgentStore().agents = [];
+            await this.fetchAgents({ userId: this.userId });
+            this.loading = false;
+
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        }         
     },
     async mounted() {
-        await this.fetchAgents({ userId: this.userId });
+        await this.fetchData();
     }
 }
 </script>

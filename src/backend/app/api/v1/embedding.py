@@ -19,7 +19,7 @@ load_dotenv()
 @router.post("/embedding-openai", response_model=EmbeddingResponse)
 def get_openai_embedding(
         text: Optional[str] = None,
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         if not text:
@@ -36,7 +36,7 @@ def get_openai_embedding(
 async def openai_file_embeddings(
         store_name: str,
         files: List[UploadFile] = File(...),
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         store_service = StoreService(session)
@@ -79,7 +79,7 @@ async def openai_file_embeddings(
 async def openai_multi_files_embeddings(
         store_name: str,
         files: List[UploadFile] = File(...),
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         store_service = StoreService(session)
@@ -120,7 +120,7 @@ async def openai_multi_files_embeddings(
 def get_bedrock_embedding(
         text: Optional[str] = None,
         model: Optional[str] = None,
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         if not text or not model:
@@ -138,7 +138,7 @@ async def bedrock_single_file_embedding(
         store_name: str,
         model: Optional[str] = None,
         file: UploadFile = File(...),
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         prompt_service = PromptService(session)
@@ -177,7 +177,7 @@ async def bedrock_multi_files_embeddings(
         store_name: str,
         model: Optional[str] = None,
         files: List[UploadFile] = File(...),
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         prompt_service = PromptService(session)

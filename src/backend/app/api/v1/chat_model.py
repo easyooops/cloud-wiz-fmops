@@ -18,7 +18,7 @@ load_dotenv()
 @router.post("/chat-openai", response_model=ChatResponse)
 def get_openai_chat_answer(
         query: Optional[str] = None,
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database) 
 ):
     try:
         if not query:
@@ -35,7 +35,7 @@ def get_openai_chat_answer(
 def get_bedrock_chat_answer(
         query: Optional[str] = None,
         model: str = None,
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         if not query or not model:
@@ -53,7 +53,7 @@ def get_openai_bedrock_chaining(
         query: Optional[str] = None,
         model: str = None,
         service_type: str = "openai",
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         if not query:

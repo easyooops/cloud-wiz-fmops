@@ -38,7 +38,7 @@ def get_models(model_name: str):
 @router.get("/", response_model=List[Model])
 def get_models(
     provider_id: Optional[UUID] = None,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = ModelService(session)
@@ -50,7 +50,7 @@ def get_models(
 @router.post("/", response_model=Model)
 def create_model(
     model: ModelCreate,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = ModelService(session)
@@ -63,7 +63,7 @@ def create_model(
 def update_model(
     model_id: UUID,
     model: ModelUpdate,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = ModelService(session)
@@ -75,7 +75,7 @@ def update_model(
 @router.delete("/{model_id}", response_model=Model)
 def delete_model(
     model_id: UUID,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = ModelService(session)
