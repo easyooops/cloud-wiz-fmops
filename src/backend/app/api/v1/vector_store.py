@@ -96,7 +96,7 @@ async def rag_bedrock(
         store_name: str,
         model_id: str,
         top_k: int = 5,
-        session: Session = Depends(lambda: next(get_database(ServiceType.SQLALCHEMY)))
+        session: Session = Depends(get_database)
 ):
     try:
         store_service = StoreService(session)
