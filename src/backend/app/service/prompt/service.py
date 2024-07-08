@@ -1,5 +1,6 @@
 import asyncio
 from decimal import Decimal
+from langchain_core.documents import Document
 from sqlalchemy.orm import aliased
 import os
 from typing import Dict, List, Optional
@@ -60,9 +61,9 @@ class PromptService:
             if _d_agent.embedding_enabled:
                 try:
                     documents = asyncio.run(self._run_embedding(agent_data, query))
-                    if _d_agent.embedding_provider_name == "OpenAI":
+                    if agent_data["Provider"].name == "OpenAI":
                         rag_response = asyncio.run(self.run_rag_openai(agent_data, query, documents))
-                    elif _d_agent.embedding_provider_name == "Bedrock":
+                    elif agent_data["Provider"].name == "Bedrock":
                         rag_response = asyncio.run(self.run_rag_bedrock(agent_data, query, documents))
                     else:
                         raise ValueError("Unsupported embedding provider")
@@ -124,24 +125,24 @@ class PromptService:
             "EmbeddingProviderName": embedding_provider_name
         }
     def _get_processing_data(self, processing_id: UUID):
-        
+
         statement = select(Processing).where(Processing.processing_id == processing_id)
         result = self.session.execute(statement).first()
 
         if not result:
             raise HTTPException(status_code=404, detail="Agent not found")
-                
+
         return result
 
     @task
     def _get_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
-    
-    @task    
+
+    @task
     def _set_history(self, agent_id: UUID):
         # Logic to retrieve history
-        return None    
+        return None
 
     def _verify_query(self, query: str):
         # Logic to verify query
@@ -150,14 +151,14 @@ class PromptService:
     def _parse_options(self, data: str) -> Dict[str, bool]:
         options = data.split('|')
         return {option: True for option in options}
-    
+
     def _convert_list(self, data: str) -> List[str]:
         return data.split('|')
-        
+
     def _replace_question(self, template: str, question: str) -> str:
         return template.format(question=question)
 
-    @task        
+    @task
     def _preprocess_query(self, agent_data, query: str):
 
         _d_agent = agent_data['Agent']
@@ -185,8 +186,13 @@ class PromptService:
 
         return query
 
-    def split_text_into_chunks(self, text, max_tokens):
-        encoding = tiktoken.get_encoding("cl100k_base")
+    def split_text_into_chunks(self, text, max_tokens, model_name='cl100k_base'):
+        try:
+            encoding = tiktoken.get_encoding(model_name)
+        except KeyError:
+            logging.warning(f"Warning: model {model_name} not found. Using cl100k_base encoding.")
+            encoding = tiktoken.get_encoding("cl100k_base")
+
         tokens = encoding.encode(text)
 
         chunks = []
@@ -205,19 +211,14 @@ class PromptService:
         storage_store = agent_data['Store']
         store_name = storage_store.store_name
 
-        logging.info(f"Storage Object ID:{storage_object_id}")
-        logging.info(f"Store Name: {store_name}")
-
         file_metadata_list = store_service.list_files(store_name)
         files = [file_metadata['Key'] for file_metadata in file_metadata_list]
-        logging.info(f"Files: {files}")
 
         if not files:
             logging.error("No files found in storage Object")
             raise HTTPException(status_code=500, detail="No files found in storage object")
 
         documents = store_service.load_documents(files)
-        logging.info(f"Documents: {documents}")
 
         if not documents:
             logging.error("No documents found in files")
@@ -230,9 +231,11 @@ class PromptService:
         if not chunks:
             raise ValueError("No chunks were split into chunks")
 
-        if _d_provider.name == "OpenAI":
+        embedding_provider_name = agent_data['EmbeddingProviderName']
+
+        if agent_data["Provider"].name == "OpenAI":
             return await self._run_embedding_openai_model(agent_data, chunks)
-        elif _d_provider.name == "Bedrock":
+        elif agent_data["Provider"].name == "Bedrock":
             return await self._run_embedding_bedrock_model(agent_data, chunks)
         else:
             return await self._run_embedding_openai_model(agent_data, chunks)
@@ -340,10 +343,12 @@ class PromptService:
             raise ValueError("AWS credentials or region are not set in the environment variables")
 
         embed_component = BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
-        embed_component.build(model_id=embedding_model_name)
-        embeddings = embed_component.run_embed_documents([doc.page_content for doc in documents])
+        embed_component.build(embedding_model_name)
+        embeddings = await embed_component.run_embed_documents([doc.page_content for doc in documents])
 
-        db = await FAISS.afrom_documents(documents, embeddings)
+        docs_with_embeddings = [Document(page_content=doc.page_content, metadata={"embedding": embedding}) for doc, embedding in zip(documents, embeddings)]
+
+        db = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
         return db
 
     @task
@@ -378,6 +383,7 @@ class PromptService:
                 bedrock_component.build(
                     model_id=_d_model.model_name,
                     temperature=_d_agent.fm_temperature,
+                    top_p=_d_agent.fm_top_p,
                     max_tokens=_d_agent.fm_response_token_limit
                 )
             else:
@@ -415,12 +421,12 @@ class PromptService:
 
 
     def _run_openai_model(self, agent_data, query):
-        
+
         openai_api_key = os.getenv("OPENAI_API_KEY")
 
         if not openai_api_key:
             raise ValueError("OpenAI API key is not set in the environment variables")
-                
+
         llms_component = None
 
         _d_agent = agent_data['Agent']
@@ -433,7 +439,7 @@ class PromptService:
                     temperature=_d_agent.fm_temperature,
                     top_p=_d_agent.fm_top_p,
                     max_tokens=_d_agent.fm_response_token_limit
-                )   
+                )
         elif _d_agent.fm_provider_type == "C":
             llms_component = ChatOpenAIComponent(openai_api_key)
             llms_component.build(
@@ -464,7 +470,7 @@ class PromptService:
             raise ValueError("aws_secret_access_key is not set in the environment variables")
         if not aws_region:
             raise ValueError("aws_region is not set in the environment variables")
-                                
+
         llms_component = None
         _d_agent = agent_data['Agent']
         _d_model = agent_data['Model']
@@ -481,10 +487,10 @@ class PromptService:
                 temperature=_d_agent.fm_temperature,
                 top_p=_d_agent.fm_top_p,
                 max_tokens=_d_agent.fm_response_token_limit
-            )   
-            
+            )
+
         return llms_component.run(query)
-    
+
     def _postprocess_response(self, agent_data, response: str):
 
         _d_agent = agent_data['Agent']
@@ -525,7 +531,7 @@ class PromptService:
             #     token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
 
             logging.warning('=== _get_token_counts()  =====================================')
-            
+
             logging.warning(query)
             logging.warning(_d_agent.model_name)
             logging.warning(text)
@@ -551,7 +557,7 @@ class PromptService:
                 prompt_cost = float(prompt_cost)
             if isinstance(completion_cost, Decimal):
                 completion_cost = float(completion_cost)
-                            
+
             total_token_counts = prompt_token_counts+completion_token_counts
             total_cost = prompt_cost+completion_cost
 
@@ -563,18 +569,18 @@ class PromptService:
             }
 
             return result
-        
+
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
-        
+
     def _get_openai_token_counts(self, text: Optional[str] = None, model_name: Optional[str] = None):
-        
+
         token_component = TokenUtilityService(None, None, None)
         return token_component.get_openai_token_count(
                 text=text,
                 model_id=model_name
             )
-    
+
     def _get_bedrock_token_counts(self, text: Optional[str] = None, model_name: Optional[str] = None):
 
         aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
@@ -587,13 +593,13 @@ class PromptService:
             raise ValueError("aws_secret_access_key is not set in the environment variables")
         if not aws_region:
             raise ValueError("aws_region is not set in the environment variables")
-        
+
         token_component = TokenUtilityService(aws_access_key, aws_secret_access_key, aws_region)
         return token_component.get_bedrock_token_count(
                 text=text,
                 model_id=model_name
             )
-    
+
     def update_agent_count(self, agent_id: UUID, token_count: int, total_cost: float):
         try:
             agent = self.session.get(Agent, agent_id)
@@ -606,4 +612,4 @@ class PromptService:
 
         except Exception as e:
             self.session.rollback()
-            raise HTTPException(status_code=500, detail=str(e))    
+            raise HTTPException(status_code=500, detail=str(e))
