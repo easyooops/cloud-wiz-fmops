@@ -135,7 +135,7 @@ class S3Service:
             response = self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=directory_name)
             contents = response.get('Contents', [])
             total_size = sum(obj['Size'] for obj in contents)
-            file_count = len(contents)
+            file_count = len(contents)-1
             return {
                 'total_size': total_size,
                 'file_count': file_count

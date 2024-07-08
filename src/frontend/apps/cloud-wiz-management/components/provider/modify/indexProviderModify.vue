@@ -12,7 +12,7 @@
                                     <div class="col-sm-4">
                                         <div class="mb-3">
                                             <label>Provider Type</label>
-                                            <select class="form-select" v-model="selectedType">
+                                            <select class="form-select" v-model="selectedType" disabled>
                                                 <option :value="'M'">Model</option>
                                                 <option :value="'S'">Storage</option>
                                                 <option :value="'V'">VectorDB</option>
@@ -24,7 +24,7 @@
                                     <div class="col-sm-4">
                                         <div class="mb-3">
                                             <label>Provider</label>
-                                            <select class="form-select" v-model="selectedProvider">
+                                            <select class="form-select" v-model="selectedProvider" disabled>
                                                 <option v-for="provider in providers" :key="provider.provider_id" :value="provider.provider_id">
                                                     {{ provider.name }}
                                                 </option>
@@ -85,6 +85,11 @@
                                 </div>                       
                             </div>
                         </form>
+
+                        <!-- loading area -->
+                        <div class="loader-box" v-if="loading">
+                            <div class="loader-30"></div>
+                        </div>                        
                     </div>
                 </div>
             </div>
@@ -101,7 +106,7 @@ export default {
     name: 'ModifyProvider',
     setup() {
         const providerStore = useProviderStore();
-        const router = useRouter();        
+        const router = useRouter();
         const selectedType = ref('M');
         const selectedProvider = ref(null);
         const providerName = ref('');
@@ -111,16 +116,25 @@ export default {
         const accessToken = ref('');
         const apiKey = ref('');
         const apiEndpoint = ref('');
+        const allProviders = ref([]);
         const providers = ref([]);
         const selectedCompany = ref(null);
-        const isLoading = ref(false);
+        const loading = ref(false);
         const errorMessage = ref(null);
         const successMessage = ref(null);
         const userId = ref('3fa85f64-5717-4562-b3fc-2c963f66afa6');
         const credentialId = ref(null);
 
+        const fetchAllProviders = async () => {
+            try {
+                await providerStore.fetchProviders();
+                allProviders.value = providerStore.allProviders;
+            } finally {
+            }
+        };
+
         const fetchCredentialData = async () => {
-            isLoading.value = true;
+            loading.value = true;
             try {
                 credentialId.value = String(router.currentRoute.value.query.credentialId);
                 await providerStore.fetchCredentialById(credentialId.value);
@@ -134,33 +148,36 @@ export default {
                 accessToken.value = credential.access_token;
                 apiKey.value = credential.api_key;
                 apiEndpoint.value = credential.api_endpoint;
-                const selectedProviderObj = providers.value.find(provider => provider.provider_id === credential.provider_id);
-                if (selectedProviderObj) {
-                    selectedCompany.value = selectedProviderObj.company;
-                }
-                successMessage.value = 'Credential data fetched successfully.';
+
+                filterProvidersByType(selectedType.value);
             } catch (error) {
                 errorMessage.value = 'An error occurred while fetching the credential data.';
             } finally {
-                isLoading.value = false;
-            }
-        };        
-
-        const fetchProvidersByType = async (type) => {
-            await providerStore.fetchProvidersByType(type);
-            providers.value = providerStore.allProviders;
-
-            if (providers.value.length > 0) {
-                selectedProvider.value = providers.value[0].provider_id;
-                selectedCompany.value = providers.value[0].company;
+                loading.value = false;
             }
         };
 
-        const isAmazonWebServices = computed(() => selectedCompany.value && selectedCompany.value.includes('Amazon'));
-        const isGitOrNotion = computed(() => selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion')));
+        const filterProvidersByType = (type) => {
+            providers.value = allProviders.value.filter(provider => provider.type === type);
+            const selectedProviderObj = providers.value.find(provider => provider.provider_id === selectedProvider.value);
+            if (selectedProviderObj) {
+                selectedCompany.value = selectedProviderObj.company;
+            } else {
+                selectedProvider.value = providers.value[0].provider_id;
+                selectedCompany.value = providers.value[0].company;
+            }       
+        };
+
+        const isAmazonWebServices = computed(() => {
+            return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
+        });
+
+        const isGitOrNotion = computed(() => {
+            return selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion'));
+        });
 
         const updateCredential = async () => {
-            isLoading.value = true;
+            loading.value = true;
             errorMessage.value = null;
             successMessage.value = null;
 
@@ -176,17 +193,17 @@ export default {
                     api_endpoint: apiEndpoint.value,
                     updater_id: userId.value
                 });
-                successMessage.value = 'Credential created successfully.';
+                successMessage.value = 'Credential updated successfully.';
                 router.push('/provider/list');
             } catch (error) {
-                errorMessage.value = 'An error occurred while creating the credential.';
+                errorMessage.value = 'An error occurred while updating the credential.';
             } finally {
-                isLoading.value = false;
+                loading.value = false;
             }
         };
 
         const deleteCredential = async () => {
-            isLoading.value = true;
+            loading.value = true;
             errorMessage.value = null;
             successMessage.value = null;
 
@@ -197,17 +214,17 @@ export default {
             } catch (error) {
                 errorMessage.value = 'An error occurred while deleting the credential.';
             } finally {
-                isLoading.value = false;
+                loading.value = false;
             }
         };
 
         onMounted(() => {
+            fetchAllProviders();
             fetchCredentialData();
-            fetchProvidersByType(selectedType.value);
         });
 
         watch(selectedType, (newType) => {
-            fetchProvidersByType(newType);
+            filterProvidersByType(newType);
         });
 
         watch(selectedProvider, (newProviderId) => {
@@ -230,7 +247,7 @@ export default {
             providers,
             isAmazonWebServices,
             isGitOrNotion,
-            isLoading,
+            loading,
             errorMessage,
             successMessage,
             updateCredential,

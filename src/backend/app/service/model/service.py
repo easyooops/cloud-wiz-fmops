@@ -20,7 +20,7 @@ class ModelService:
         statement = select(Model)
         if provider_id:
             statement = statement.where(Model.provider_id == provider_id)
-        return self.session.exec(statement).all()
+        return self.session.execute(statement).scalars().all()
 
     def create_model(self, model_create: ModelCreate) -> Model:
         model = Model.model_validate(model_create)

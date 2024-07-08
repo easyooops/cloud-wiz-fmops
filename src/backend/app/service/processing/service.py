@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 from fastapi import HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 
 from app.service.processing.model import Processing
 from app.api.v1.schemas.processing import ProcessingCreate, ProcessingUpdate
@@ -16,7 +16,10 @@ class ProcessingService:
             statement = statement.where(Processing.user_id == user_id)
         if processing_type:
             statement = statement.where(Processing.processing_type == processing_type)
-        return self.session.exec(statement).all()
+
+        statement = statement.order_by(desc(Processing.processing_id))
+
+        return self.session.execute(statement).scalars().all()
 
     def create_processing(self, processing_data: ProcessingCreate):
         try:

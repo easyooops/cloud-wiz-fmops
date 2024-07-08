@@ -27,8 +27,8 @@ def get_stores(
                 store_id=store.store_id,
                 store_name=store.store_name,
                 description=store.description,
-                creator_at=store.created_at,
-                updater_at=store.updated_at,
+                created_at=store.created_at,
+                updated_at=store.updated_at,
                 user_id=store.user_id,
                 total_size=directory_info['total_size'],
                 file_count=directory_info['file_count']

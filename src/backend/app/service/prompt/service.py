@@ -99,7 +99,7 @@ class PromptService:
         )
         statement = statement.where(Agent.agent_id == agent_id)
 
-        result = self.session.exec(statement).first()
+        result = self.session.execute(statement).first()
 
         if not result:
             raise HTTPException(status_code=404, detail="Agent not found")
@@ -110,7 +110,7 @@ class PromptService:
     def _get_processing_data(self, processing_id: UUID):
         
         statement = select(Processing).where(Processing.processing_id == processing_id)
-        result = self.session.exec(statement).first()
+        result = self.session.execute(statement).first()
 
         if not result:
             raise HTTPException(status_code=404, detail="Agent not found")

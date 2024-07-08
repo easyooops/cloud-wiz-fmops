@@ -12,7 +12,7 @@ class UserService:
 
     def get_user_by_username(self, username: str) -> Optional[User]:
         statement = select(User).where(User.username == username)
-        return self.session.exec(statement).first()
+        return self.session.execute(statement).first()
 
     def create_user(self, username: str, email: str) -> User:
         new_user = User(username=username, email=email)

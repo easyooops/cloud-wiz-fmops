@@ -23,12 +23,18 @@
     <div class="col-sm-12">
       <div class="card">
         <div class="card-body">
+
+          <!-- loading area -->
+          <div class="loader-box" v-if="loading">
+            <div class="loader-30"></div>
+          </div> 
+
           <div class="tab-content" id="top-tabContent"> 
             <div v-for="(item, index) in tab" :key="index" :class="{ 'tab-pane': true, 'fade': !item.active, 'active show': item.active }" :id="item.id" role="tabpanel" :aria-labelledby="item.label">
               <div class="row">
                 <div class="col-lg-4 col-md-6" v-for="(dataItem, dataIndex) in filteredData" :key="dataIndex">
                     <div class="project-box" @click="navigateToEdit(dataItem.store_id, dataItem.store_name)" @mouseover="onMouseOver" @mouseleave="onMouseLeave">
-                      <span class="badge badge-primary">Private</span>
+                      <span class="badge badge-primary">Public</span>
                         <h6>{{ dataItem.store_name }}</h6>
                         <div class="d-flex mb-3"><img class="img-20 me-2 rounded-circle" :src="`/images/provider/aws.png`" alt="" data-original-title="" title="">
                             <div class="flex-grow-1 project-item-detail">
@@ -38,7 +44,7 @@
                         <p>{{ dataItem.description }}</p>
                         <div class="row details">
                             <div class="col-6"><span>Create Date</span></div>
-                            <div class="col-6 font-primary">{{ dataItem.creator_id }} </div>
+                            <div class="col-6 font-primary">{{ convertISODateToCustomFormat(dataItem.created_at) }} </div>
                             <div class="col-6"> <span>Volume Size</span></div>
                             <div class="col-6 font-primary">{{ formatFileSize(dataItem.total_size) }}</div>
                             <div class="col-6"> <span>File Count</span></div>
@@ -61,12 +67,13 @@ import { mapState, mapActions } from 'pinia';
 export default {
     name: 'ListStorage',
     data() {
-        return {
+      return {
         tab: [
             { type: 'all', name: 'All', active: true, icon: 'target', id: 'top-all', label: 'all-tab' }
         ],
+        loading: false,
         userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
-        };
+      };
     },
     computed: {
         ...mapState(useStorageStore, ['storages']),
@@ -100,10 +107,35 @@ export default {
         },
         onMouseLeave(event) {
             event.currentTarget.classList.remove('hover');
-        }
+        },
+        async fetchData() {
+          try {
+            this.loading = true;
+            useStorageStore().storages = [];
+            await this.fetchAllStorages({ userId: this.userId });
+            this.loading = false;
+
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        },
+        convertISODateToCustomFormat(isoDate) {
+          const date = new Date(isoDate);
+
+          const year = date.getFullYear();
+          const month = ('0' + (date.getMonth() + 1)).slice(-2);
+          const day = ('0' + date.getDate()).slice(-2);
+          const hours = ('0' + date.getHours()).slice(-2);
+          const minutes = ('0' + date.getMinutes()).slice(-2);
+          const seconds = ('0' + date.getSeconds()).slice(-2);
+
+          const customFormat = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+          return customFormat;
+        }        
     },
     async mounted() {
-        await this.fetchAllStorages({ userId: this.userId });
+      await this.fetchData();
     }
 };
 </script>
