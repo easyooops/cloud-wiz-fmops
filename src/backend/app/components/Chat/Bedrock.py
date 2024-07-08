@@ -19,7 +19,7 @@ class ChatBedrockComponent(AbstractLLMComponent):
     def build(self, model_id: str, temperature: float, top_p: float = None, max_tokens: int = None):
         
         if not model_id:
-            model_id="amazon.titan-text-express-v1"
+            model_id = "amazon.titan-text-express-v1"
 
         model_kwargs = {"temperature": temperature, "top_p": top_p, "max_tokens": max_tokens}
 

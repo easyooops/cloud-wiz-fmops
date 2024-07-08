@@ -13,13 +13,13 @@
               </div>
 
               <div class="iframe-container">
-                  <iframe
+                <iframe
                     :src="dashboardUrl"
                     width="100%"
                     height="800px"
                     frameborder="0"
                     ref="iframe"
-                  ></iframe>
+                ></iframe>
               </div>
             </div>
           </div>
@@ -28,10 +28,8 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
-
 export default defineComponent({
   setup() {
     const dashboardUrl = ref(
@@ -39,9 +37,7 @@ export default defineComponent({
     );
     const iframeRef = ref<HTMLIFrameElement | null>(null);
     const loading = ref(true);
-
     let interval: ReturnType<typeof setInterval> | null = null;
-
     const reloadIframe = () => {
       if (iframeRef.value) {
         loading.value = true; // 로딩 바 표시
@@ -50,29 +46,24 @@ export default defineComponent({
         iframeRef.value.onload = () => {
           // loading.value = false; // iframe 로드 완료 후 로딩 바 숨김
         };
-        iframeRef.value.src = tempSrc; // iframe 다시 로드
       }
     };
-
     const onIframeLoaded = () => {
       loading.value = false; // Hide loading indicator
     };
-
     onMounted(() => {
       // interval = setInterval(reloadIframe, 60000); // 1분마다 새로고침
-      
+
       setTimeout(() => {
         loading.value = false;
         reloadIframe();
       }, 4000);
     });
-
     onUnmounted(() => {
       if (interval) {
         clearInterval(interval);
       }
     });
-
     return {
       dashboardUrl,
       iframeRef,
@@ -82,7 +73,6 @@ export default defineComponent({
   },
 });
 </script>
-
 <style scoped>
 iframe {
   border: 0;

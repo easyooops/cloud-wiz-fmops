@@ -53,7 +53,11 @@ class EmbeddingService:
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
-            embedding_component = BedrockEmbeddingComponent()
+            embedding_component = BedrockEmbeddingComponent(
+                aws_access_key=aws_access_key,
+                aws_secret_access_key=aws_secret_access_key,
+                aws_region=aws_region
+            )
             embedding_component.build(model_id=model_id)
             embedding = embedding_component.run_embed_query(text)
             return embedding
@@ -68,7 +72,11 @@ class EmbeddingService:
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
-            embedding_component = BedrockEmbeddingComponent()
+            embedding_component = BedrockEmbeddingComponent(
+                aws_access_key=aws_access_key,
+                aws_secret_access_key=aws_secret_access_key,
+                aws_region=aws_region
+            )
             embedding_component.build(model_id=model_id)
             embedding = embedding_component.run_embed_documents(texts)
             return embedding
