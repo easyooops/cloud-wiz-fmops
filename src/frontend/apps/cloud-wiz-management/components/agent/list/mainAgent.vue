@@ -23,6 +23,12 @@
     <div class="col-sm-12">
       <div class="card">
         <div class="card-body">
+
+          <!-- loading area -->
+          <div class="loader-box" v-if="loading">
+            <div class="loader-30"></div>
+          </div> 
+
           <div class="tab-content" id="top-tabContent">
             <div v-for="(item, index) in tab" :key="index" :class="{ 'tab-pane': true, 'fade': !item.active, 'active show': item.active }" :id="item.id" role="tabpanel" :aria-labelledby="item.label">
               <div class="row">
@@ -62,16 +68,7 @@
                             </li>
                         </ul>
                     </div>                    
-                    <!-- <div class="project-status m-2 p-b-10">
-                        <ul class="list-inline float-start float-sm-end chat-menu-icons">
-                            <li data-bs-toggle="modal" data-bs-target="#agent-modal" class="list-inline-item">
-                                <a href="#"><i class="fa fa-code"></i></a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="#"><i class="fa fa-comments"></i></a>
-                            </li>
-                        </ul>
-                    </div>                     -->
+
                   </div>
                 </div>
               </div>
@@ -97,6 +94,7 @@
           { type: 'E', name: 'Embedding', active: false, icon: 'database', id: 'top-embedding', label: 'embedding-tab' },
           { type: 'I', name: 'Image', active: false, icon: 'image', id: 'top-image', label: 'image-tab' }
         ],
+        loading: false,        
         userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
       };
     },
@@ -178,10 +176,21 @@
         }
         
         return likeCount;
-      }      
+      },
+      async fetchData() {
+        try {
+          this.loading = true;
+          useAgentStore().agents = [];
+          await this.fetchAgents({ userId: this.userId });
+          this.loading = false;
+
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      }   
     },
     async mounted() {
-      await this.fetchAgents({ userId: this.userId });
+      await this.fetchData();
     }
   };
   </script>

@@ -13,7 +13,7 @@ class ChainService:
         statement = select(Chain)
         if provider_id:
             statement = statement.where(Chain.provider_id == provider_id)
-        return self.session.exec(statement).all()
+        return self.session.execute(statement).scalars().all()
 
     def create_chain(self, chain_data: ChainCreate):
         try:

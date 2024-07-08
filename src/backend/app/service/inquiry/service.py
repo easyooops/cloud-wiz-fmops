@@ -15,7 +15,7 @@ class InquiryService:
             statement = statement.where(Inquiry.inquiry_type == inquiry_type)
         if title:
             statement = statement.where(Inquiry.title == title)
-        return self.session.exec(statement).all()
+        return self.session.execute(statement).scalars().all()
 
     def create_inquiry(self, inquiry_data: InquiryCreate):
         try:

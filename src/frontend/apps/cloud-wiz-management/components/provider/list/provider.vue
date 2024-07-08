@@ -23,6 +23,12 @@
   <div class="col-sm-12">
     <div class="card">
       <div class="card-body">
+
+        <!-- loading area -->
+        <div class="loader-box" v-if="loading">
+          <div class="loader-30"></div>
+        </div> 
+        
         <div class="tab-content" id="top-tabContent"> 
           <div v-for="(item, index) in tab" :key="index" :class="{ 'tab-pane': true, 'fade': !item.active, 'active show': item.active }" :id="item.id" role="tabpanel" :aria-labelledby="item.label">
             <div class="row">
@@ -55,7 +61,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> 
 </template>
   
 <script>
@@ -72,7 +78,9 @@ export default {
         { type: 'S', name: 'Storage', active: false, icon: 'database', id: 'top-storage', label: 'storage-tab' },
         { type: 'V', name: 'VectorDB', active: false, icon: 'database', id: 'top-vector', label: 'vector-tab' }
       ],
+      loading: false,
       userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+
     };
   },
   computed: {
@@ -103,10 +111,21 @@ export default {
     },
     onMouseLeave(event) {
       event.currentTarget.classList.remove('hover');
+    },
+    async fetchData() {
+      try {
+        this.loading = true;
+        useProviderStore().credential = [];
+        await this.fetchCredential({ userId: this.userId });
+        this.loading = false;
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     }
   },
   async mounted() {
-    await this.fetchCredential({ userId: this.userId });
+    await this.fetchData();
   }
 };
 </script>

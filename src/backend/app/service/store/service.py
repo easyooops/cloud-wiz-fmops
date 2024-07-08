@@ -4,7 +4,7 @@ import os
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 from fastapi import HTTPException, UploadFile
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 from app.service.store.model import Store
 from app.api.v1.schemas.store import StoreCreate, StoreUpdate
 from app.core.provider.aws.s3 import S3Service
@@ -23,7 +23,10 @@ class StoreService(S3Service):
             statement = select(Store)
             if user_id:
                 statement = statement.where(Store.user_id == user_id)
-            return self.session.exec(statement).all()
+
+            statement = statement.order_by(desc(Store.store_id))
+
+            return self.session.execute(statement).scalars().all()
         except Exception as e:
             raise HTTPException(status_code=500, detail="Error retrieving stores")
 

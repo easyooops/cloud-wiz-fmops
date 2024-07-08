@@ -23,6 +23,12 @@
   <div class="col-sm-12">
     <div class="card">
       <div class="card-body">
+
+        <!-- loading area -->
+        <div class="loader-box" v-if="loading">
+          <div class="loader-30"></div>
+        </div> 
+                
         <div class="tab-content" id="top-tabContent"> 
           <div v-for="(item, index) in tab" :key="index" :class="{ 'tab-pane': true, 'fade': !item.active, 'active show': item.active }" :id="item.id" role="tabpanel" :aria-labelledby="item.label">
             <div class="row">
@@ -59,6 +65,7 @@
           { type: 'pre', name: 'Pre-Processing', active: false, icon: 'chevrons-left', id: 'top-pre', label: 'pre-tab' },
           { type: 'post', name: 'Post-Processing', active: false, icon: 'chevrons-right', id: 'top-post', label: 'post-tab' }
         ],
+        loading: false,        
         userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
       };
     },
@@ -96,10 +103,21 @@
           default:
             return '';
         }
-      },      
+      },
+      async fetchData() {
+        try {
+          this.loading = true;
+          useProcessingStore().processings = [];
+          await this.fetchProcessings({ userId: this.userId });
+          this.loading = false;
+
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      }        
     },
     async mounted() {
-      await this.fetchProcessings({ userId: this.userId });
+      await this.fetchData();
     }
   };
   </script>

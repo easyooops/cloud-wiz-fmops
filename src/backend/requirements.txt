@@ -21,6 +21,7 @@ python-socketio
 sqlmodel
 sqlalchemy
 mysql-connector-python
+pymysql
 
 alembic
 

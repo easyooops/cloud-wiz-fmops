@@ -6,6 +6,7 @@
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-body">
+
                         <form @submit.prevent="createCredential">
                             <div class="form theme-form">
                                 <div class="row">
@@ -13,9 +14,9 @@
                                         <div class="mb-3">
                                             <label>Provider Type</label>
                                             <select class="form-select" v-model="selectedType">
-                                                <option :value="'M'">Model</option>
-                                                <option :value="'S'">Storage</option>
-                                                <option :value="'V'">VectorDB</option>
+                                                <option value="M">Model</option>
+                                                <option value="S">Storage</option>
+                                                <option value="V">VectorDB</option>
                                             </select>
                                         </div>
                                     </div>
@@ -28,10 +29,10 @@
                                                 <option v-for="provider in providers" :key="provider.provider_id" :value="provider.provider_id">
                                                     {{ provider.name }}
                                                 </option>
-                                            </select>                                        
+                                            </select>
                                         </div>
                                     </div>
-                                </div>                            
+                                </div>
                                 <div class="row">
                                     <div class="col">
                                         <div class="mb-3">
@@ -75,17 +76,23 @@
                                             <input v-model="apiKey" class="form-control" type="text" placeholder="API Key *">
                                         </div>
                                     </div>
-                                </div>   
+                                </div>
                                 <div class="row">
                                     <div class="col">
                                         <button type="submit" class="btn btn-primary me-2">Submit</button>
                                         <router-link to="/provider/list" class="btn btn-secondary">Back to List</router-link>
                                     </div>
-                                </div>                       
+                                </div>
                             </div>
                         </form>
+
+                        <!-- loading area -->
+                        <div class="loader-box" v-if="loading">
+                            <div class="loader-30"></div>
+                        </div>
+                                                
                         <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
-                        <div v-if="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>                        
+                        <div v-if="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
                     </div>
                 </div>
             </div>
@@ -102,7 +109,7 @@ export default {
     name: 'createProvider',
     setup() {
         const providerStore = useProviderStore();
-        const router = useRouter();        
+        const router = useRouter();
         const selectedType = ref('M');
         const selectedProvider = ref(null);
         const providerName = ref('');
@@ -112,28 +119,46 @@ export default {
         const accessToken = ref('');
         const apiKey = ref('');
         const apiEndpoint = ref('');
+        const allProviders = ref([]);
         const providers = ref([]);
         const selectedCompany = ref(null);
-        const isLoading = ref(false);
+        const loading = ref(false);
         const errorMessage = ref(null);
         const successMessage = ref(null);
         const userId = ref('3fa85f64-5717-4562-b3fc-2c963f66afa6');
 
-        const fetchProvidersByType = async (type) => {
-            await providerStore.fetchProvidersByType(type);
-            providers.value = providerStore.allProviders;
-
-            if (providers.value.length > 0) {
-                selectedProvider.value = providers.value[0].provider_id;
-                selectedCompany.value = providers.value[0].company;
+        const fetchAllProviders = async () => {
+            
+            try {
+                await providerStore.fetchProviders();
+                allProviders.value = providerStore.allProviders;
+                filterProvidersByType(selectedType.value);
+            } finally {
+            
             }
         };
 
-        const isAmazonWebServices = computed(() => selectedCompany.value && selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
-        const isGitOrNotion = computed(() => selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion')));
+        const filterProvidersByType = (type) => {
+            providers.value = allProviders.value.filter(provider => provider.type === type);
+            if (providers.value.length > 0) {
+                selectedProvider.value = providers.value[0].provider_id;
+                selectedCompany.value = providers.value[0].company;
+            } else {
+                selectedProvider.value = null;
+                selectedCompany.value = null;
+            }
+        };
+
+        const isAmazonWebServices = computed(() => {
+            return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
+        });
+
+        const isGitOrNotion = computed(() => {
+            return selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion'));
+        });
 
         const createCredential = async () => {
-            isLoading.value = true;
+            loading.value = true;
             errorMessage.value = null;
             successMessage.value = null;
 
@@ -156,16 +181,16 @@ export default {
             } catch (error) {
                 errorMessage.value = 'An error occurred while creating the credential.';
             } finally {
-                isLoading.value = false;
+                loading.value = false;
             }
         };
 
         onMounted(() => {
-            fetchProvidersByType(selectedType.value);
+            fetchAllProviders();
         });
 
         watch(selectedType, (newType) => {
-            fetchProvidersByType(newType);
+            filterProvidersByType(newType);
         });
 
         watch(selectedProvider, (newProviderId) => {
@@ -185,10 +210,11 @@ export default {
             accessToken,
             apiKey,
             apiEndpoint,
+            allProviders,
             providers,
             isAmazonWebServices,
             isGitOrNotion,
-            isLoading,
+            loading,
             errorMessage,
             successMessage,
             createCredential,
@@ -196,4 +222,3 @@ export default {
     }
 }
 </script>
-

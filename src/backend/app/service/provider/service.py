@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
-from fastapi import HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 
 from app.service.provider.model import Provider
 from app.api.v1.schemas.provider import ProviderCreate, ProviderUpdate
@@ -16,7 +15,10 @@ class ProviderService:
             statement = statement.where(Provider.type == type)
         if name:
             statement = statement.where(Provider.name == name)
-        return self.session.exec(statement).all()
+
+        statement = statement.order_by(desc(Provider.provider_id))
+
+        return self.session.execute(statement).scalars().all()
 
     def create_provider(self, provider_data: ProviderCreate):
         try:

@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 from uuid import UUID
 
 from app.service.agent.model import Agent
@@ -16,7 +16,10 @@ class AgentService:
             statement = statement.where(Agent.agent_id == agent_id)
         if user_id:
             statement = statement.where(Agent.user_id == user_id)
-        return self.session.exec(statement).all()
+
+        statement = statement.order_by(desc(Agent.agent_id))            
+
+        return self.session.execute(statement).scalars().all()
 
     def create_agent(self, agent_data: AgentCreate):
         try:

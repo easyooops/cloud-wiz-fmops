@@ -1,6 +1,5 @@
 from typing import List, Optional
-from fastapi import HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 from uuid import UUID
 
 from app.service.credential.model import Credential
@@ -20,7 +19,9 @@ class CredentialService:
         if provider_id:
             statement = statement.where(Credential.provider_id == provider_id)
                     
-        results = self.session.exec(statement).all()
+        statement = statement.order_by(desc(Credential.credential_id))
+                            
+        results = self.session.execute(statement).all()
         return [self._map_to_credential_out(credential, provider) for credential, provider in results]
 
     def _map_to_credential_out(self, credential: Credential, provider: Provider) -> CredentialProviderJoin:
