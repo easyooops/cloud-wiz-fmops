@@ -35,7 +35,12 @@ class BedrockEmbeddingComponent(AbstractEmbeddingComponent):
         else:
             raise ValueError("Unexpected return type from embed_query")
 
-    def run_embed_documents(self, documents: list):
-        if self.model_instance is None:
-            raise ValueError("Model instance is not initialized. Call the configure method first")
-        return self.model_instance.embed_documents(documents)
+    # def run_embed_documents(self, documents: list[str]) -> list[list[float]]:
+    #     if not self.model_instance:
+    #         raise ValueError("Model instance is not initialized. Call the build method first.")
+    #     return self.model_instance.embed_documents(documents)
+
+    async def run_embed_documents(self, documents: list[str]) -> list[list[float]]:
+        if not self.model_instance:
+            raise ValueError("Model instance is not initialized. Call the build method first.")
+        return await self.model_instance.aembed_documents(documents)

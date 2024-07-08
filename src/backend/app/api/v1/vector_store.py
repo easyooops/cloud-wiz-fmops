@@ -111,7 +111,6 @@ async def rag_bedrock(
         if not split_docs:
             raise ValueError("No documents were split into chunks")
 
-        # Ensure docs are Document objects
         if isinstance(split_docs[0], str):
             docs = [Document(page_content=doc) for doc in split_docs]
         else:
@@ -129,7 +128,6 @@ async def rag_bedrock(
             aws_secret_access_key=aws_secret_access_key,
             region_name=aws_region
         )
-
 
         embeddings = BedrockEmbeddings(
             model_id=model_id,
