@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get("/", response_model=List[Chain])
 def get_chains(
     provider_id: Optional[int] = None,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database) 
 ):
     try:
         service = ChainService(session)
@@ -28,7 +28,7 @@ def get_chains(
 @router.post("/", response_model=Chain)
 def create_chain(
     chain: ChainCreate, 
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = ChainService(session)
@@ -41,7 +41,7 @@ def create_chain(
 def update_chain(
     chain_id: int,
     chain_update: ChainUpdate,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database) 
 ):
     try:
         service = ChainService(session)
@@ -53,7 +53,7 @@ def update_chain(
 @router.delete("/{chain_id}")
 def delete_chain(
     chain_id: int,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database) 
 ):
     try:
         service = ChainService(session)

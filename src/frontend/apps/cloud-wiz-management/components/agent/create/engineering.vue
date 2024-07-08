@@ -563,16 +563,12 @@ export default {
         if (!this.router.currentRoute.query.agentId) {
             await useAgentStore().resetAgent();
         }        
-        if (this.router.currentRoute.query.agentId || this.agentId) {
-            await this.fetchAgentData();
-        }
         await useProviderStore().fetchCredential({ userId: this.userId });
         await useProviderStore().fetchModels();
         if (this.credential.length > 0) {
             this.selectedProvider = this.filteredProviders[0]?.provider_id || '';
             this.selectedEmbeddingProvider = this.filteredEmbeddingProviders[0]?.provider_id || '';
             this.selectedStorageProvider = this.filteredStorageProviders[0]?.provider_id || '';
-            this.selectedVectorDB = this.filteredVectorDBProviders[0]?.provider_id || '';
             
         }
         await useProcessingStore().fetchProcessingsById({ userId: this.userId })
@@ -588,6 +584,12 @@ export default {
             await this.loadFiles(firstStore.store_name);
           }
         }
+        if (this.router.currentRoute.query.agentId || this.agentId) {
+            await this.fetchAgentData();
+        }
+        if (this.credential.length > 0) {
+            this.selectedVectorDB = this.filteredVectorDBProviders[0]?.provider_id || '';
+        }                
     }    
 }
 </script>

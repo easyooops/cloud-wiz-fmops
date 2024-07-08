@@ -21,7 +21,7 @@ load_dotenv()
 
 
 @router.post("/initialize-faiss")
-async def initialize_faiss_store(session: Session = Depends(lambda: next(get_database()))):
+async def initialize_faiss_store(session: Session = Depends(get_database)):
     embedding_service = EmbeddingService(session)
     openai_api_key = os.getenv("OPENAI_API_KEY")
     embedding_component = OpenAIEmbeddingComponent(openai_api_key)
@@ -33,7 +33,7 @@ async def initialize_faiss_store(session: Session = Depends(lambda: next(get_dat
 @router.post("/add-to-faiss", response_model=EmbeddingMultipleResponse)
 async def add_to_faiss_store(
         texts: List[str],
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     embedding_service = EmbeddingService(session)
     embeddings = await embedding_service.add_to_faiss_store(texts)
@@ -45,7 +45,7 @@ async def rag_open_ai(
         query: str,
         store_name: str,
         top_k: int = 5,
-        session: Session = Depends(lambda: next(get_database()))
+        session: Session = Depends(get_database)
 ):
     try:
         store_service = StoreService(session)

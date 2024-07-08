@@ -16,7 +16,7 @@ router = APIRouter()
 def get_inquiry(
     inquiry_type: Optional[str] = None,
     title: Optional[str] = None,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = InquiryService(session)
@@ -28,7 +28,7 @@ def get_inquiry(
 @router.post("/", response_model=Inquiry)
 def create_inquiry(
     inquiry: InquiryCreate, 
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = InquiryService(session)
@@ -41,7 +41,7 @@ def create_inquiry(
 def update_inquiry(
     inquiry_id: int,
     inquiry_update: InquiryUpdate,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = InquiryService(session)
@@ -53,7 +53,7 @@ def update_inquiry(
 @router.delete("/{inquiry_id}")
 def delete_inquiry(
     inquiry_id: int,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = InquiryService(session)

@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/{credential_id}", response_model=CredentialProviderJoin)
 def get_credential_by_id(
     credential_id: UUID,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = CredentialService(session)
@@ -29,7 +29,7 @@ def get_credentials(
     user_id: Optional[UUID] = None,
     credential_id: Optional[UUID] = None,
     provider_id: Optional[UUID] = None,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = CredentialService(session)
@@ -40,7 +40,7 @@ def get_credentials(
 @router.post("/", response_model=Credential)
 def create_credential(
     credential: CredentialCreate, 
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = CredentialService(session)
@@ -52,7 +52,7 @@ def create_credential(
 def update_credential(
     credential_id: UUID,
     credential_update: CredentialUpdate,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = CredentialService(session)
@@ -63,7 +63,7 @@ def update_credential(
 @router.delete("/{credential_id}")
 def delete_credential(
     credential_id: UUID,
-    session: Session = Depends(lambda: next(get_database()))
+    session: Session = Depends(get_database)
 ):
     try:
         service = CredentialService(session)
