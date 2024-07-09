@@ -1,5 +1,11 @@
 <template>
     <div class="card mb-0">
+        <div class="loader-overlay" v-if="loading">
+            <div class="loader-box">
+                <div class="loader-30"></div>
+            </div>
+        </div>
+
         <div class="chat">
             <div class="card-header d-flex">
                 <div class="about">
@@ -332,6 +338,7 @@ export default {
             agentData: {},            
             errorMessage: '',
             successMessage: '',
+            loading: false,
             userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
         }
     },
@@ -378,13 +385,9 @@ export default {
             return this.credential.filter(provider => provider.provider_type === "V");
         },
         filteredPreProcessings() {
-            console.log('=== filteredPreProcessings Start ======================');
-            console.log(this.processings);
             return this.processings.filter(processing => processing.processing_type === 'pre');
         },
         filteredPostProcessings() {
-            console.log(this.processings);
-            console.log('=== filteredPostProcessings Start ======================');
             return this.processings.filter(processing => processing.processing_type === 'post');
         }            
     },
@@ -444,6 +447,7 @@ export default {
             if (this.responseToken > 0) this.responseToken--
         },
         async fetchAgentData() {
+
             this.agentId = String(this.router.currentRoute.query.agentId);
             if (this.agentId) {
                 try {
@@ -474,7 +478,7 @@ export default {
             }
         },
         async deleteAgent() {
-
+            this.loading = true;
             this.errorMessage = '';
             this.successMessage = '';
 
@@ -484,10 +488,12 @@ export default {
                 this.router.push('/agent/list');
             } catch (error) {
                 this.errorMessage = 'An error occurred while deleting the agent.';
+            } finally {
+                this.loading = false;
             }
         },
         async saveAgent() {
-
+            this.loading = true;
             this.errorMessage = '';
             this.successMessage = '';
 
@@ -537,11 +543,13 @@ export default {
                 this.successMessage = 'Agent updated successfully.';             
             } catch (error) {
                 this.errorMessage = 'An error occurred while creating the agent.';
+            } finally {
+                this.loading = false;
+                setTimeout(() => {
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                }, 2000);                  
             }
-            setTimeout(() => {
-                this.errorMessage = '';
-                this.successMessage = '';
-            }, 2000);
         },
         async loadFiles(storeName) {
           try {
@@ -560,36 +568,48 @@ export default {
     },
     async mounted() {
         this.router = useRouter();
-        if (!this.router.currentRoute.query.agentId) {
-            await useAgentStore().resetAgent();
-        }        
-        await useProviderStore().fetchCredential({ userId: this.userId });
-        await useProviderStore().fetchModels();
-        if (this.credential.length > 0) {
-            this.selectedProvider = this.filteredProviders[0]?.provider_id || '';
-            this.selectedEmbeddingProvider = this.filteredEmbeddingProviders[0]?.provider_id || '';
-            this.selectedStorageProvider = this.filteredStorageProviders[0]?.provider_id || '';
-            
-        }
-        await useProcessingStore().fetchProcessingsById({ userId: this.userId })
-        if (this.processings.length > 0) {
-            this.selectedPreProcessing = this.filteredPreProcessings[0]?.processing_id || '';
-            this.selectedPostProcessing = this.filteredPostProcessings[0]?.processing_id || '';
-        }
-        await useStorageStore().fetchAllStorages({ userId: this.userId });
-        if (this.storages.length > 0) {
-          this.selectedObject = this.filteredObjects[0]?.store_id || '';
-          const firstStore = this.filteredObjects[0];
-          if (firstStore?.store_name) {
-            await this.loadFiles(firstStore.store_name);
-          }
-        }
-        if (this.router.currentRoute.query.agentId || this.agentId) {
-            await this.fetchAgentData();
-        }
-        if (this.credential.length > 0) {
-            this.selectedVectorDB = this.filteredVectorDBProviders[0]?.provider_id || '';
-        }                
+
+        this.loading = true
+
+        try {
+            const tasks = [
+                !this.router.currentRoute.query.agentId && useAgentStore().resetAgent(),
+                useProviderStore().fetchCredential({ userId: this.userId }),
+                useProviderStore().fetchModels(),
+                useProcessingStore().fetchProcessingsById({ userId: this.userId }),
+                useStorageStore().fetchAllStorages({ userId: this.userId })            
+            ];
+
+            await Promise.all(tasks);
+
+            if (this.credential.length > 0) {
+                this.selectedProvider = this.filteredProviders[0]?.provider_id || '';
+                this.selectedEmbeddingProvider = this.filteredEmbeddingProviders[0]?.provider_id || '';
+                this.selectedStorageProvider = this.filteredStorageProviders[0]?.provider_id || '';
+                
+            }
+            if (this.processings.length > 0) {
+                this.selectedPreProcessing = this.filteredPreProcessings[0]?.processing_id || '';
+                this.selectedPostProcessing = this.filteredPostProcessings[0]?.processing_id || '';
+            }
+            if (this.storages.length > 0) {
+            this.selectedObject = this.filteredObjects[0]?.store_id || '';
+            const firstStore = this.filteredObjects[0];
+            if (firstStore?.store_name) {
+                await this.loadFiles(firstStore.store_name);
+            }
+            }
+            if (this.router.currentRoute.query.agentId || this.agentId) {
+                await this.fetchAgentData();
+            }
+            if (this.credential.length > 0) {
+                this.selectedVectorDB = this.filteredVectorDBProviders[0]?.provider_id || '';
+            }                         
+        } catch (error) {
+            console.error('Error agents loading:', error);
+        } finally {
+            this.loading = false;
+        }   
     }    
 }
 </script>
@@ -622,5 +642,28 @@ export default {
 .disabled-card {
     pointer-events: none;
     opacity: 0.6;
+}
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 검정색 배경, 투명도 조절 가능 */
+    z-index: 999; /* 로딩 오버레이가 최상위에 오도록 설정 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader-box {
+    width: 100px; /* 로딩 바의 너비 설정 */
+    height: 100px; /* 로딩 바의 높이 설정 */
+    background-color: #fff; /* 로딩 바의 배경색 */
+    border-radius: 10px; /* 로딩 바 모서리 둥글게 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.5); /* 로딩 바에 그림자 효과 추가 */
 }
 </style>

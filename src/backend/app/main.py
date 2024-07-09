@@ -5,7 +5,9 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 from multiprocess import cpu_count
+from sqlalchemy import QueuePool, text
 from sqlmodel import SQLModel, Session, create_engine
+
 from alembic import command
 from alembic.config import Config
 
@@ -16,6 +18,7 @@ from app.initial_data import init_db
 from ddtrace.llmobs import LLMObs
 
 from app.core.util.logging import LoggingConfigurator
+from app.core.factories import get_database
 
 class AuthenticationMiddleware(TrustedHostMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -50,10 +53,27 @@ def get_workers(workers=None):
     return workers
 
 def create_db_and_tables():
-    engine = create_engine(os.getenv("DATABASE_URL"), echo=True)
+    engine = create_engine(
+        os.getenv("DATABASE_URL"), 
+        echo=True, 
+        pool_size=20, 
+        max_overflow=10, 
+        pool_timeout=30, 
+        pool_recycle=3600,
+        pool_pre_ping=True,  # 연결 유효성 검사
+        poolclass=QueuePool
+    )
+
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+
     SQLModel.metadata.create_all(engine)
+
     with Session(engine) as session:
-        init_db(session)
+        # init_db(session)
+        for _ in range(20):
+            session.exec(text("SELECT 1"))
+        session.close()        
 
 def configure_datadog():
     LLMObs.enable(
@@ -93,8 +113,12 @@ def create_app():
 
     @app.on_event("startup")
     def on_startup():
-        # create_db_and_tables()
+        create_db_and_tables()
         command.upgrade(alembic_cfg, "head")
+
+        # Pre-create database connections
+        # with next(get_database()) as db:
+        #     pass        
 
     LoggingConfigurator()
     configure_datadog()
