@@ -1,3 +1,5 @@
+import logging
+import time
 from typing import List, Optional
 from uuid import UUID
 from fastapi import HTTPException
@@ -11,6 +13,9 @@ class ProcessingService:
         self.session = session
 
     def get_all_processings(self, user_id: Optional[UUID] = None, processing_type: Optional[str] = None):
+
+        start_time = time.time()
+
         statement = select(Processing)
         if user_id:
             statement = statement.where(Processing.user_id == user_id)
@@ -19,7 +24,17 @@ class ProcessingService:
 
         statement = statement.order_by(desc(Processing.processing_id))
 
-        return self.session.execute(statement).scalars().all()
+        query_start_time = time.time()
+        result = self.session.execute(statement)
+        query_end_time = time.time()
+        logging.warning(f"Query execution time: {query_end_time - query_start_time} seconds")
+
+        processings = result.scalars().all()
+
+        end_time = time.time()
+        logging.warning(f"get_all_agents total execution time: {end_time - start_time} seconds")
+                
+        return processings
 
     def create_processing(self, processing_data: ProcessingCreate):
         try:

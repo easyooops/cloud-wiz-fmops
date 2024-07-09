@@ -1,3 +1,5 @@
+import logging
+import time
 from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends
@@ -19,11 +21,15 @@ def get_processings(
     processing_type: Optional[str] = None,
     session: Session = Depends(get_database)
 ):
+    start_time = time.time()
     try:
         service = ProcessingService(session)
         return service.get_all_processings(user_id, processing_type)
     except Exception as e:
         raise internal_server_error(e)
+    finally:
+        end_time = time.time()
+        logging.warning(f"Total get_agents_by_id execution time: {end_time - start_time} seconds")
 
 # CREATE    
 @router.post("/", response_model=Processing)

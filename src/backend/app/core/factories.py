@@ -21,4 +21,3 @@ def get_database(service_type: Optional[ServiceType] = None) -> Generator[Sessio
         yield db
     finally:
         db.close()
-        db_service.teardown()
