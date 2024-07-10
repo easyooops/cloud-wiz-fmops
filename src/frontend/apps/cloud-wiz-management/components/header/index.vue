@@ -48,7 +48,7 @@
           <Mode />
         </li>
         <Cart /> -->
-        <Notifications />
+        <!-- <Notifications /> -->
         <Profile />
       </ul>
     </div>

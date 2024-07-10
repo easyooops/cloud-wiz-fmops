@@ -1,15 +1,11 @@
+import { useAuthStore } from '@/store/auth';
+
 export default defineNuxtRouteMiddleware((to, from) => {
-   
-    const  path = ['/auth/register','/auth/login'];
-   
-    
-     if(path.includes('to.path') || useCookie('User').value ){
-   
-     }
-     else{
-         
-          navigateTo('/auth/login')
-    }
-        
-  })
+    const authStore = useAuthStore();
+
+    const publicPaths = ['/login', '/register'];
   
+    if (!authStore.isAuthenticated && !publicPaths.includes(to.path)) {
+      return navigateTo('/login');
+    }
+});

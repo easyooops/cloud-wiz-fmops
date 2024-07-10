@@ -66,6 +66,7 @@
   
 <script>
 import { useProviderStore } from '@/store/provider';
+import { useAuthStore } from '@/store/auth';
 import { mapState, mapActions } from 'pinia';
 
 export default {
@@ -79,7 +80,7 @@ export default {
         { type: 'V', name: 'VectorDB', active: false, icon: 'database', id: 'top-vector', label: 'vector-tab' }
       ],
       loading: false,
-      userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+      userId: useAuthStore().userId
 
     };
   },

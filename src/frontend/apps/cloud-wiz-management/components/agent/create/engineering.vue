@@ -269,6 +269,7 @@
 <script>
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
+import { useAuthStore } from '@/store/auth';
 import { useContactStore } from '~~/store/contact'
 import { useAgentStore } from '@/store/agent';
 import { useProviderStore } from '@/store/provider';
@@ -339,7 +340,7 @@ export default {
             errorMessage: '',
             successMessage: '',
             loading: false,
-            userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+            userId: useAuthStore().userId
         }
     },
     computed: {

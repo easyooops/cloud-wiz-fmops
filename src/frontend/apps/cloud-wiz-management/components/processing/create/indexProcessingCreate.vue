@@ -124,6 +124,7 @@
 <script>
 import { ref, watch, onMounted, computed } from 'vue';
 import { useProcessingStore } from '@/store/processing';
+import { useAuthStore } from '@/store/auth';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -141,7 +142,7 @@ export default {
         const errorMessage = ref(null);
         const successMessage = ref(null);
         const isEditMode = ref(false);
-        const userId = ref('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+        const userId = ref(useAuthStore().userId);
 
         const piiMaskingOptions = ref([
             { id: 'email', label: 'Email', checked: false },

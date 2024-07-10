@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/auth';
 
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT+'/api/v1';
 
@@ -17,33 +18,48 @@ const useFetch = async (url, options) => {
 };
 
 const restApi = () => {
-  const get = async (url, header) => {
+
+  const authStore = useAuthStore();
+
+  const get = async (url) => {
     return await useFetch(`${API_ENDPOINT}${url}`, {
       method: 'GET',
-      headers: header == null ? { 'Content-Type': 'application/json' } : header
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.accessToken}`
+      }
     });
   };
 
-  const post = async (url, body, header) => {
+  const post = async (url, body) => {
     return await useFetch(`${API_ENDPOINT}${url}`, {
       method: 'POST',
-      headers: header == null ? { 'Content-Type': 'application/json' } : header,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.accessToken}`
+      },
       body: JSON.stringify(body)
     });
   };
 
-  const put = async (url, body, header) => {
+  const put = async (url, body) => {
     return await useFetch(`${API_ENDPOINT}${url}`, {
       method: 'PUT',
-      headers: header == null ? { 'Content-Type': 'application/json' } : header,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.accessToken}`
+      },
       body: JSON.stringify(body)
     });
   };
 
-  const del = async (url, header) => {
+  const del = async (url) => {
     return await useFetch(`${API_ENDPOINT}${url}`, {
       method: 'DELETE',
-      headers: header == null ? { 'Content-Type': 'application/json' } : header
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.accessToken}`
+      },
     });
   };
 

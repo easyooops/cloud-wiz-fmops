@@ -10,7 +10,7 @@ class AgentService:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_all_agents(self, agent_id: Optional[UUID] = None, user_id: Optional[int] = None):
+    def get_all_agents(self, agent_id: Optional[UUID] = None, user_id: Optional[UUID] = None):
         statement = select(Agent)
         if agent_id:
             statement = statement.where(Agent.agent_id == agent_id)

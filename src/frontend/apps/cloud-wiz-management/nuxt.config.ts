@@ -1,3 +1,5 @@
+import { defineNuxtConfig } from 'nuxt/config';
+
 export default defineNuxtConfig({
     // buildDir: '../../dist/apps/cloud-wiz-menagement/.nuxt',
     css: ["@/assets/scss/app.scss"],
@@ -20,6 +22,7 @@ export default defineNuxtConfig({
                     src: "https://www.paypal.com/sdk/js?client-id=test&currency=USD",
                 },
                 { src: "https://checkout.stripe.com/checkout.js" },
+                { src: 'https://accounts.google.com/gsi/client', async:true, defer:true}
             ],
         },
     },
@@ -67,6 +70,6 @@ export default defineNuxtConfig({
     },
     plugins: [
         { src: "~/plugins/plugins.js", mode: "client" },
-        { src: "./plugins/useBootstrap.client.ts", mode: "client" },
-    ],
+        { src: "./plugins/useBootstrap.client.ts", mode: "client" }
+    ]   
 });

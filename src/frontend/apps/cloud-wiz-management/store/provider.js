@@ -20,7 +20,7 @@ export const useProviderStore = defineStore({
         this.error = null;
         try {
           const { get } = restApi();
-          const response = await get(`/credential/?user_id=${userId}`, { 'accept': 'application/json' });
+          const response = await get(`/credential/?user_id=${userId}`);
           this.credential = response.data;
         } catch (error) {
           this.error = error;
@@ -33,7 +33,7 @@ export const useProviderStore = defineStore({
         this.error = null;
         try {
             const { get } = restApi();
-            const response = await get(`/credential/${credentialId}`, { 'accept': 'application/json' });
+            const response = await get(`/credential/${credentialId}`);
             this.credential = response.data;
             if (!this.credential) {
                 throw new Error('Credential not found');
@@ -50,7 +50,7 @@ export const useProviderStore = defineStore({
         this.error = null;
         try {
           const { get } = restApi();
-          const response = await get('/provider/', null, { 'accept': 'application/json' });
+          const response = await get('/provider/', null);
           this.providers = response.data;
         } catch (error) {
           this.error = error;
@@ -63,7 +63,7 @@ export const useProviderStore = defineStore({
         this.error = null;
         try {
           const { get } = restApi();
-          const response = await get(`/provider/?type=${type}`, null, { 'accept': 'application/json' });
+          const response = await get(`/provider/?type=${type}`, null);
           this.providers = response.data;
         } catch (error) {
           this.error = error;
@@ -112,7 +112,7 @@ export const useProviderStore = defineStore({
         this.error = null;
         try {
           const { get } = restApi();
-          const response = await get('/model/', null, { 'accept': 'application/json' });
+          const response = await get('/model/', null);
           this.models = response.data;
         } catch (error) {
           this.error = error;
