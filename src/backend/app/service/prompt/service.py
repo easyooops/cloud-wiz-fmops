@@ -372,28 +372,17 @@ class PromptService:
 
             if _d_agent.fm_provider_type == "T":
                 bedrock_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
-                bedrock_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    top_p=_d_agent.fm_top_p,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
             elif _d_agent.fm_provider_type == "C":
                 bedrock_component = ChatBedrockComponent(aws_access_key, aws_secret_access_key, aws_region)
-                bedrock_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    top_p=_d_agent.fm_top_p,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
             else:
-                bedrock_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
-                bedrock_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    top_p=_d_agent.fm_top_p,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
+                bedrock_component = ChatBedrockComponent(aws_access_key, aws_secret_access_key, aws_region)
+
+            bedrock_component.build(
+                model_id=_d_model.model_name,
+                temperature=_d_agent.fm_temperature,
+                top_p=_d_agent.fm_top_p,
+                max_tokens=_d_agent.fm_response_token_limit
+            )
             llm_instance = bedrock_component.model_instance
 
             qa_chain = RetrievalQA.from_chain_type(llm=llm_instance, chain_type="stuff", retriever=retriever)
