@@ -76,9 +76,9 @@ export default {
     async handleCallback(response){
       if (response && response.credential) {
         const token = response.credential
-        const base64Payload = token.split('.')[1]
-        const payload = atob(base64Payload);
-        const result = JSON.parse(payload);
+        // const base64Payload = token.split('.')[1]
+        // const payload = atob(base64Payload);
+        // const result = JSON.parse(payload);
 
         await this.loginWithGoogle(token)
 
