@@ -109,6 +109,7 @@
 <script>
 import { ref, watch, onMounted, computed } from 'vue';
 import { useProviderStore } from '@/store/provider';
+import { useAuthStore } from '@/store/auth';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -131,7 +132,7 @@ export default {
         const loading = ref(false);
         const errorMessage = ref(null);
         const successMessage = ref(null);
-        const userId = ref('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+        const userId = ref(useAuthStore().userId);
 
         const fetchAllProviders = async () => {
             loading.value = true;

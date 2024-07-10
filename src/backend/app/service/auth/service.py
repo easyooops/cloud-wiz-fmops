@@ -1,31 +1,64 @@
-from fastapi import Depends, HTTPException
+import logging
+import os
+from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
-import boto3
-
-from app.core.factories import get_database
-from app.core.interface.service import ServiceType
-from app.service.user.service import UserService
-from app.core.config import settings
-from sqlmodel import Session
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
+from google.auth.transport import requests
+from google.oauth2 import id_token
+from fastapi import Depends, HTTPException
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+load_dotenv()
 
-def get_cognito_client():
-    return boto3.client("cognito-idp", region_name=settings.COGNITO_REGION)
+class AuthService:
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")    # 구글 클라이언트 ID로 교체
+    AUTH_SECRET_KEY = os.getenv("AUTH_SECRET_KEY")      # 비밀 키
+    ALGORITHM = "HS256"                                 # 사용할 알고리즘
+    ACCESS_TOKEN_EXPIRE_MINUTES = 30                    # 엑세스 토큰 유효 시간
+    REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-def get_user_from_token(token: str = Depends(oauth2_scheme), session: Session = Depends(get_database)):
-    try:
-        client = get_cognito_client()
-        response = client.get_user(AccessToken=token)
-        username = response["Username"]
-        email = next(attr["Value"] for attr in response["UserAttributes"] if attr["Name"] == "email")
-        
-        user_service = UserService(session)
-        user = user_service.get_user_by_username(username)
-        if not user:
-            user = user_service.create_user(username, email)
-        user_service.update_last_login(user)
-        return user
-    except JWTError:
-        raise HTTPException(status_code=403, detail="Invalid token")
+    @staticmethod
+    def verify_google_token(token: str):
+        try:
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), AuthService.GOOGLE_CLIENT_ID)
+
+            if idinfo['aud'] != AuthService.GOOGLE_CLIENT_ID:
+                raise ValueError('Invalid client ID.')
+            
+            user_id = idinfo['sub']
+            email = idinfo['email']
+            name = idinfo['family_name']
+
+            return {'user_id': user_id, 'email': email, 'name': name}
+        except ValueError as e:
+            raise HTTPException(status_code=403, detail="Invalid token")
+
+    @staticmethod
+    def create_access_token(data: dict):
+        to_encode = data.copy()
+        expire = datetime.utcnow() + timedelta(minutes=AuthService.ACCESS_TOKEN_EXPIRE_MINUTES)
+        to_encode.update({"exp": expire})
+        encoded_jwt = jwt.encode(to_encode, AuthService.AUTH_SECRET_KEY, algorithm=AuthService.ALGORITHM)
+        return encoded_jwt
+
+    @staticmethod
+    def create_refresh_token(data: dict):
+        to_encode = data.copy()
+        expire = datetime.utcnow() + timedelta(days=AuthService.REFRESH_TOKEN_EXPIRE_DAYS)
+        to_encode.update({"exp": expire})
+        return jwt.encode(to_encode, AuthService.AUTH_SECRET_KEY, algorithm=AuthService.ALGORITHM)
+
+    @staticmethod
+    def verify_jwt_token(token: str):
+        try:
+            payload = jwt.decode(token, AuthService.AUTH_SECRET_KEY, algorithms=[AuthService.ALGORITHM])
+            user_id: str = payload.get("user_id")
+            if user_id is None:
+                raise HTTPException(status_code=401, detail="Invalid credentials")
+            return payload
+        except JWTError:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    return AuthService.verify_jwt_token(token)

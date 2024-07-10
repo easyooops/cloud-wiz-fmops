@@ -18,7 +18,7 @@ export const useProcessingStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get('/processing/', null, { 'accept': 'application/json' });
+        const response = await get('/processing/', null);
         this.processings = response.data;
       } catch (error) {
         this.error = error;
@@ -31,7 +31,7 @@ export const useProcessingStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/processing/?user_id=${userId}`, null, { 'accept': 'application/json' });
+        const response = await get(`/processing/?user_id=${userId}`, null);
         this.processings = response.data;
       } catch (error) {
         this.error = error;
@@ -44,7 +44,7 @@ export const useProcessingStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/processing/?processing_type=${processing_type}`, null, { 'accept': 'application/json' });
+        const response = await get(`/processing/?processing_type=${processing_type}`, null);
         this.processings = response.data;
       } catch (error) {
         this.error = error;

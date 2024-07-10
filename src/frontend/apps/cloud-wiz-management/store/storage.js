@@ -19,7 +19,7 @@ export const useStorageStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get('/store/', { 'accept': 'application/json' });
+        const response = await get('/store/');
         this.storages = response.data;
       } catch (error) {
         this.error = error;
@@ -27,19 +27,15 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
-    async fetchStorageById(storageId) {
+    async fetchStorageById({ userId }) {
       this.loading = true;
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/store/${storageId}`, { 'accept': 'application/json' });
-        this.storageDetail = response.data;
-        if (!this.storageDetail) {
-          throw new Error('Storage not found');
-        }
+        const response = await get(`/store/?user_id=${userId}`, null);
+        this.storages = response.data;
       } catch (error) {
         this.error = error;
-        router.push('/store/list');
       } finally {
         this.loading = false;
       }

@@ -43,6 +43,7 @@
 <script>
 import { ref } from 'vue';
 import { useStorageStore } from '@/store/storage';
+import { useAuthStore } from '@/store/auth';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -55,7 +56,7 @@ export default {
         const isLoading = ref(false);
         const errorMessage = ref(null);
         const successMessage = ref(null);
-        const userId = ref('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+        const userId = ref(useAuthStore().userId);
 
         const createStorage = async () => {
         isLoading.value = true;

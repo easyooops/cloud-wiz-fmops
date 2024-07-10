@@ -51,7 +51,7 @@ def get_agents_by_id(
 @router.get("/", response_model=List[Agent])
 def get_agents(
     agent_id: Optional[UUID] = None,
-    user_id: Optional[int] = None,
+    user_id: Optional[UUID] = None,
     session: Session = Depends(get_database)
 ):
     try:

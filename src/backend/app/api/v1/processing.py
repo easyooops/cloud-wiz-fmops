@@ -11,6 +11,7 @@ from app.service.processing.service import ProcessingService
 from app.service.processing.model import Processing
 from app.api.v1.schemas.processing import ProcessingCreate, ProcessingUpdate
 from app.core.exception import internal_server_error
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 

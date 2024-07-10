@@ -81,6 +81,7 @@
   
   <script>
   import { useAgentStore } from '@/store/agent';
+  import { useAuthStore } from '@/store/auth';
   import { mapState, mapActions } from 'pinia';
   
   export default {
@@ -95,7 +96,7 @@
           { type: 'I', name: 'Image', active: false, icon: 'image', id: 'top-image', label: 'image-tab' }
         ],
         loading: false,        
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+        userId: useAuthStore().userId
       };
     },
     computed: {
@@ -114,7 +115,7 @@
       }
     },
     methods: {
-      ...mapActions(useAgentStore, ['fetchAgents']),
+      ...mapActions(useAgentStore, ['fetchAgentByUserId']),
       active(item) {
         this.tab.forEach(a => (a.active = false));
         item.active = true;
@@ -181,7 +182,7 @@
         try {
           this.loading = true;
           useAgentStore().agents = [];
-          await this.fetchAgents({ userId: this.userId });
+          await this.fetchAgentByUserId({ userId: this.userId });
           this.loading = false;
 
         } catch (error) {

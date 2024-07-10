@@ -104,6 +104,7 @@
 
 <script>
 import { useAgentStore } from '@/store/agent';
+import { useAuthStore } from '@/store/auth';
 import { mapState, mapActions } from 'pinia';
 
 export default {
@@ -114,7 +115,7 @@ export default {
             filtered: false,
             text: "",
             loading: false,            
-            userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+            userId: useAuthStore().userId
         }
     },
     computed: {
@@ -139,7 +140,7 @@ export default {
         }      
     },
     methods: {
-        ...mapActions(useAgentStore, ['fetchAgents', 'fetchLLMS']),
+        ...mapActions(useAgentStore, ['fetchAgentByUserId', 'fetchLLMS']),
         active(item) {
             this.activeclass = item
         },
@@ -233,7 +234,7 @@ export default {
           try {
             this.loading = true;
             useAgentStore().agents = [];
-            await this.fetchAgents({ userId: this.userId });
+            await this.fetchAgentByUserId({ userId: this.userId });
             this.loading = false;
 
           } catch (error) {

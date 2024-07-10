@@ -54,6 +54,7 @@
   
 <script>
   import { useProcessingStore } from '@/store/processing';
+  import { useAuthStore } from '@/store/auth';
   import { mapState, mapActions } from 'pinia';
   
   export default {
@@ -66,7 +67,7 @@
           { type: 'post', name: 'Post-Processing', active: false, icon: 'chevrons-right', id: 'top-post', label: 'post-tab' }
         ],
         loading: false,        
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+        userId: useAuthStore().userId
       };
     },
     computed: {
@@ -80,7 +81,7 @@
       }
     },
     methods: {
-      ...mapActions(useProcessingStore, ['fetchProcessings']),
+      ...mapActions(useProcessingStore, ['fetchProcessingsById']),
       active(item) {
         this.tab.forEach(a => (a.active = false));
         item.active = true;
@@ -108,7 +109,7 @@
         try {
           this.loading = true;
           useProcessingStore().processings = [];
-          await this.fetchProcessings({ userId: this.userId });
+          await this.fetchProcessingsById({ userId: this.userId });
           this.loading = false;
 
         } catch (error) {

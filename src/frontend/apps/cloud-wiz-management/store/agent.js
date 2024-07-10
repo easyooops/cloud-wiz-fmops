@@ -20,7 +20,7 @@ export const useAgentStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get('/agent/', { 'accept': 'application/json' });
+        const response = await get('/agent/');
         this.agents = response.data;
       } catch (error) {
         this.error = error;
@@ -33,7 +33,7 @@ export const useAgentStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/agent/${agentId}`, { 'accept': 'application/json' });
+        const response = await get(`/agent/${agentId}`);
         this.agent = response.data;
         if (!this.agent) {
           throw new Error('Agent not found');
@@ -45,6 +45,19 @@ export const useAgentStore = defineStore({
         this.loading = false;
       }
     },
+    async fetchAgentByUserId({ userId }) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { get } = restApi();
+        const response = await get(`/agent/?user_id=${userId}`, null);
+        this.agents = response.data;
+      } catch (error) {
+        this.error = error;
+      } finally {
+        this.loading = false;
+      }
+    },     
     async createAgent(agentData) {
       this.loading = true;
       this.error = null;
@@ -87,7 +100,7 @@ export const useAgentStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/agent/prompt/${agentId}?query=${encodeURIComponent(query)}`, { 'accept': 'application/json' });
+        const response = await get(`/agent/prompt/${agentId}?query=${encodeURIComponent(query)}`);
         this.llmsResponse = response.data;
       } catch (error) {
         this.error = error;

@@ -1,21 +1,70 @@
-from fastapi import APIRouter, Depends
-from fastapi.responses import RedirectResponse
-
+import logging
+import requests
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session
 from app.core.exception import authentication_error
-from app.service.auth.service import get_user_from_token
+from app.service.auth.service import AuthService
 from app.service.user.model import User
-
+from app.api.v1.schemas.auth import UserCreate  # Adjust the import if necessary
+from app.core.factories import get_database
+from app.service.user.service import UserService
+from app.service.init.service import InitDataService
 
 router = APIRouter()
 
-@router.get("/me", response_model=User)
-def read_users_me(current_user: User = Depends(get_user_from_token)):
-    return current_user
+@router.post("/")
+async def authenticate_with_google(
+    auth: UserCreate, 
+    session: Session = Depends(get_database)
+):
+    auth_service = AuthService()
+    user_service = UserService(session)
 
-@router.post("/auth")
-def authenticate(token: str):
     try:
-        get_user_from_token(token)
-        return RedirectResponse(url="/dashboard")
+        user_info = auth_service.verify_google_token(auth.token)
+
+        user = user_service.get_user_by_email(user_info['email'])
+
+        jwt_token = auth_service.create_access_token(user_info)
+
+        if not user:
+            user = user_service.create_user(user_info['name'], user_info['email'])
+            data_service = InitDataService(session, user.user_id)
+            data_service.run()
+
+        user_service.update_last_login(user)
+
+        return {
+            "accessToken": jwt_token,
+            "userName": user.username,
+            "userId": user.user_id
+        }
+    
+    except Exception as e:
+        raise authentication_error(e)
+
+@router.post("/logout")
+async def logout(
+    auth: UserCreate,
+    session: Session = Depends(get_database)
+):
+    # Perform logout actions such as invalidating tokens, clearing sessions, etc.
+    try:
+        # Verify the token or extract user info as needed
+        # Example: auth_service.verify_google_token(token)
+
+        # Revoke the Google token using Google's OAuth 2.0 token revocation endpoint
+        revoke_token_url = "https://accounts.google.com/o/oauth2/revoke"
+        revoke_params = {
+            'token': auth.token
+        }
+        response = requests.post(revoke_token_url, params=revoke_params)
+
+        # Check if token revocation was successful
+        if response.status_code == 200:
+            return {"message": "Successfully logged out and revoked token"}
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to revoke token")
+
     except Exception as e:
         raise authentication_error(e)

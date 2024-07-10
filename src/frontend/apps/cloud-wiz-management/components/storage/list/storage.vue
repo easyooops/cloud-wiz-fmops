@@ -62,6 +62,7 @@
     
 <script>
 import { useStorageStore } from '@/store/storage';
+import { useAuthStore } from '@/store/auth';
 import { mapState, mapActions } from 'pinia';
 
 export default {
@@ -72,7 +73,7 @@ export default {
             { type: 'all', name: 'All', active: true, icon: 'target', id: 'top-all', label: 'all-tab' }
         ],
         loading: false,
-        userId: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+        userId: useAuthStore().userId
       };
     },
     computed: {
@@ -85,7 +86,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions(useStorageStore, ['fetchAllStorages']),
+        ...mapActions(useStorageStore, ['fetchStorageById']),
         active(item) {
             this.tab.forEach(a => (a.active = false));
             item.active = true;
@@ -112,7 +113,7 @@ export default {
           try {
             this.loading = true;
             useStorageStore().storages = [];
-            await this.fetchAllStorages({ userId: this.userId });
+            await this.fetchStorageById({ userId: this.userId });
             this.loading = false;
 
           } catch (error) {
