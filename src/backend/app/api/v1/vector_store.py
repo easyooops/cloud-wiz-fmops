@@ -90,6 +90,8 @@ async def rag_open_ai(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/rag-bedrock")
 async def rag_bedrock(
         query: str,
