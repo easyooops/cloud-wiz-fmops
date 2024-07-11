@@ -90,7 +90,7 @@ class PromptService:
                 span=None,
                 input_data=query,
                 output_data=response,
-                tags={"host": "cloudwiz-ai-fmops"},
+                tags=[{"host": "cloudwiz-ai-fmops"},{"input": query},{"output": response}],
             )
                 
             return ChatResponse(
