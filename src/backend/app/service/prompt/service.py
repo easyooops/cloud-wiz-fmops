@@ -90,7 +90,7 @@ class PromptService:
                 span=None,
                 input_data=query,
                 output_data=response,
-                tags={"input": query}
+                tags={"host":response, "input": query, "output": response, "status": "success"}
             )
                 
             return ChatResponse(
@@ -100,6 +100,12 @@ class PromptService:
                     )
 
         except Exception as e:
+            LLMObs.annotate(
+                span=None,
+                input_data=query,
+                output_data=response,
+                tags={"host":response, "input": query, "output": response, "status": "fail", "error": e}
+            )            
             raise HTTPException(status_code=500, detail=str(e))
 
     def _get_agent_data(self, agent_id: UUID):
