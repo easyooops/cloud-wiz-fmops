@@ -136,7 +136,7 @@ export default {
         const processingType = ref('pre');
         const processingName = ref('');
         const processingDesc = ref('');
-        const textareaTemplate = ref('"""\nQuestion: {question}\nContext: Summarize it\nAnswer: Let`s think step by step.\n"""');
+        const textareaTemplate = ref('"""\n<Question>{question}</Question>\n<Context>Summarize it<Context>\n<Answer>Let`s think step by step.</Answer>\n"""');
         const textareaStopword = ref('CLOUDWIZ|AI|FMOPS');
         const loading = ref(false);
         const errorMessage = ref(null);

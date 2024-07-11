@@ -85,16 +85,14 @@ class PromptService:
 
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
-
-            with LLMObs.workflow() as span:
-                LLMObs.annotate(
-                    span=span,
-                    input_data="INPUT",
-                    output_data="OUTPUT",
-                    metadata={},
-                    metrics={"input_tokens": 15, "output_tokens": 24},
-                    tags={},
-                )
+            
+            LLMObs.annotate(
+                input_data="<ARGUMENT>",
+                output_data="<OUTPUT>",
+                metadata={},
+                metrics={"input_tokens": 15, "output_tokens": 24},
+                tags={},
+            )
                 
             return ChatResponse(
                         answer=response,
