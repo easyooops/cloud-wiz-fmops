@@ -85,7 +85,7 @@ class PromptService:
 
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
-            
+
             LLMObs.annotate(
                 input_data="<ARGUMENT>",
                 output_data="<OUTPUT>",
@@ -103,7 +103,6 @@ class PromptService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    @task
     def _get_agent_data(self, agent_id: UUID):
         EmbeddingModel = aliased(Model)
         statement = (
@@ -143,12 +142,10 @@ class PromptService:
 
         return result
 
-    @task
     def _get_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
 
-    @task
     def _set_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
@@ -167,7 +164,6 @@ class PromptService:
     def _replace_question(self, template: str, question: str) -> str:
         return template.format(question=question)
 
-    @task
     def _preprocess_query(self, agent_data, query: str):
 
         _d_agent = agent_data['Agent']
@@ -213,7 +209,6 @@ class PromptService:
             chunks.append(encoding.decode(chunk_tokens))
         return chunks
 
-    @task
     async def _run_embedding(self, agent_data, query):
 
         _d_provider = agent_data['Provider']
@@ -253,7 +248,6 @@ class PromptService:
         else:
             return await self._run_embedding_openai_model(agent_data, chunks)
 
-    @task
     def _run_provider(self, agent_data, query, history):
 
         _d_provider = agent_data['Provider']
@@ -281,7 +275,6 @@ class PromptService:
         db = await FAISS.afrom_documents(documents, OpenAIEmbeddings(api_key=openai_api_key))
         return db
 
-    @task
     async def run_rag_openai(self, agent_data, query: str, db, top_k: int = 5):
         try:
             _d_agent = agent_data['Agent']
@@ -364,7 +357,6 @@ class PromptService:
         db = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
         return db
 
-    @task
     async def run_rag_bedrock(self, agent_data, query: str, db, top_k: int = 5):
         try:
             _d_agent = agent_data['Agent']
@@ -519,7 +511,6 @@ class PromptService:
 
         return response
 
-    @task
     def _get_token_counts(self, agent_id: UUID, query: Optional[str] = None, text: Optional[str] = None):
         try:
 
