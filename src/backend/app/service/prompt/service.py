@@ -29,6 +29,7 @@ from app.core.util.token import TokenUtilityService
 from app.api.v1.schemas.chat import ChatResponse
 from app.service.store.service import StoreService
 from ddtrace.llmobs.decorators import workflow, task
+from ddtrace.llmobs import LLMObs
 from app.core.util.logging import LoggingConfigurator
 from app.service.processing.model import Processing
 from app.core.util.piimasking import PiiMaskingService
@@ -85,6 +86,16 @@ class PromptService:
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
 
+            with LLMObs.workflow() as span:
+                LLMObs.annotate(
+                    span=span,
+                    input_data="INPUT",
+                    output_data="OUTPUT",
+                    metadata={},
+                    metrics={"input_tokens": 15, "output_tokens": 24},
+                    tags={},
+                )
+                
             return ChatResponse(
                         answer=response,
                         tokens=tokens['token_counts'],
@@ -213,8 +224,9 @@ class PromptService:
         storage_object_id = str(agent_data['Agent'].storage_object_id)
         storage_store = agent_data['Store']
         store_name = storage_store.store_name
+        user_id = storage_store.user_id
 
-        file_metadata_list = store_service.list_files(store_name)
+        file_metadata_list = store_service.list_files(user_id, store_name)
         files = [file_metadata['Key'] for file_metadata in file_metadata_list]
 
         if not files:

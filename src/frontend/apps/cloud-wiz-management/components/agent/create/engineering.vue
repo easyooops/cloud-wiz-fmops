@@ -554,7 +554,7 @@ export default {
         },
         async loadFiles(storeName) {
           try {
-            const files = await useStorageStore().fetchFiles(storeName);
+            const files = await useStorageStore().fetchFiles(this.userId, storeName);
             this.filteredFiles = files;
           } catch (error) {
             console.error('Error loading files:', error);
@@ -578,7 +578,7 @@ export default {
                 useProviderStore().fetchCredential({ userId: this.userId }),
                 useProviderStore().fetchModels(),
                 useProcessingStore().fetchProcessingsById({ userId: this.userId }),
-                useStorageStore().fetchAllStorages({ userId: this.userId })            
+                useStorageStore().fetchAllStorages(this.userId)            
             ];
 
             await Promise.all(tasks);
