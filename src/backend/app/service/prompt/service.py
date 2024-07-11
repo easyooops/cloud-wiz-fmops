@@ -40,7 +40,7 @@ class PromptService:
     def __init__(self, session: Session):
         self.session = session
 
-    @workflow
+    @workflow(name="cloudwiz-ai-fmops")
     @LoggingConfigurator.log_method
     def get_prompt(self, agent_id: UUID, query: Optional[str] = None) -> ChatResponse:
 
@@ -86,15 +86,12 @@ class PromptService:
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
 
-            with LLMObs.workflow() as span:
-                LLMObs.annotate(
-                    span=span,
-                    input_data="INPUT",
-                    output_data="OUTPUT",
-                    metadata={},
-                    metrics={"input_tokens": 15, "output_tokens": 24},
-                    tags={},
-                )
+            LLMObs.annotate(
+                span=None,
+                input_data=query,
+                output_data=response,
+                tags={"host":response, "input": query, "output": response, "status": "success"}
+            )
                 
             return ChatResponse(
                         answer=response,
@@ -103,9 +100,14 @@ class PromptService:
                     )
 
         except Exception as e:
+            LLMObs.annotate(
+                span=None,
+                input_data=query,
+                output_data=response,
+                tags={"host":response, "input": query, "output": response, "status": "fail", "error": e}
+            )            
             raise HTTPException(status_code=500, detail=str(e))
 
-    @task
     def _get_agent_data(self, agent_id: UUID):
         EmbeddingModel = aliased(Model)
         statement = (
@@ -145,12 +147,10 @@ class PromptService:
 
         return result
 
-    @task
     def _get_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
 
-    @task
     def _set_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
@@ -169,7 +169,6 @@ class PromptService:
     def _replace_question(self, template: str, question: str) -> str:
         return template.format(question=question)
 
-    @task
     def _preprocess_query(self, agent_data, query: str):
 
         _d_agent = agent_data['Agent']
@@ -215,7 +214,6 @@ class PromptService:
             chunks.append(encoding.decode(chunk_tokens))
         return chunks
 
-    @task
     async def _run_embedding(self, agent_data, query):
 
         _d_provider = agent_data['Provider']
@@ -255,7 +253,6 @@ class PromptService:
         else:
             return await self._run_embedding_openai_model(agent_data, chunks)
 
-    @task
     def _run_provider(self, agent_data, query, history):
 
         _d_provider = agent_data['Provider']
@@ -283,7 +280,6 @@ class PromptService:
         db = await FAISS.afrom_documents(documents, OpenAIEmbeddings(api_key=openai_api_key))
         return db
 
-    @task
     async def run_rag_openai(self, agent_data, query: str, db, top_k: int = 5):
         try:
             _d_agent = agent_data['Agent']
@@ -366,7 +362,6 @@ class PromptService:
         db = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
         return db
 
-    @task
     async def run_rag_bedrock(self, agent_data, query: str, db, top_k: int = 5):
         try:
             _d_agent = agent_data['Agent']
@@ -521,7 +516,6 @@ class PromptService:
 
         return response
 
-    @task
     def _get_token_counts(self, agent_id: UUID, query: Optional[str] = None, text: Optional[str] = None):
         try:
 
