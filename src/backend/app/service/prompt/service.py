@@ -40,7 +40,7 @@ class PromptService:
     def __init__(self, session: Session):
         self.session = session
 
-    @workflow(name="cloudwiz-ai-fmops-prompt")
+    @workflow(name="ml_obs")
     @LoggingConfigurator.log_method
     def get_prompt(self, agent_id: UUID, query: Optional[str] = None) -> ChatResponse:
 
@@ -87,11 +87,10 @@ class PromptService:
             tokens = self._get_token_counts(agent_id, query, response)
 
             LLMObs.annotate(
+                span="ml_obs",
                 input_data=[{"role": "user", "content": query}],
                 output_data=[{"role": "assistant", "content": response}],
-                metadata={},
-                metrics={},
-                tags={"host": "cloudwiz-ai-fmops"},
+                tags=[{"host": "cloudwiz-ai-fmops"},{"query": query},{"response": response}],
             )
                 
             return ChatResponse(
