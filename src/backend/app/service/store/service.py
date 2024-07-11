@@ -30,25 +30,26 @@ class StoreService(S3Service):
         except Exception as e:
             raise HTTPException(status_code=500, detail="Error retrieving stores")
 
-    def get_store_directory_info(self, directory_name: str):
+    def get_store_directory_info(self, user_id: UUID, directory_name: str):
         try:
-            return self.get_directory_info(directory_name)
+            full_directory_name = f"{user_id}/{directory_name}"
+            return self.get_directory_info(full_directory_name)
         except Exception as e:
             raise HTTPException(status_code=500, detail="Error retrieving directory info")
 
-    def create_store(self, store_data: StoreCreate):
+    def create_store(self, store_data: StoreCreate, user_id: UUID):
         try:
             new_store = Store(**store_data.model_dump())
             self.session.add(new_store)
             self.session.commit()
             self.session.refresh(new_store)
-            print(f"store creating directory: {new_store.store_name}")
-            self.retry(lambda: self.create_directory(new_store.store_name))
+            full_directory_name = f"{user_id}/{new_store.store_name}"
+            self.retry(lambda: self.create_directory(full_directory_name))
             return new_store
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error creating store: {str(e)}")
 
-    def update_store(self, store_id: UUID, store_update: StoreUpdate):
+    def update_store(self, store_id: UUID, store_update: StoreUpdate, user_id: UUID):
         try:
             store = self.session.get(Store, store_id)
             if not store:
@@ -64,22 +65,24 @@ class StoreService(S3Service):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error updating store: {str(e)}")
 
-    def delete_store(self, store_id: UUID):
+    def delete_store(self, store_id: UUID, user_id: UUID):
         try:
             store = self.session.get(Store, store_id)
             if not store:
                 raise HTTPException(status_code=404, detail="Store not found")
             self.session.delete(store)
             self.session.commit()
-            self.delete_directory(store.store_name)
+            full_directory_name = f"{user_id}/{store.store_name}"
+            self.delete_directory(full_directory_name)
         except HTTPException as e:
             raise e  # Re-raise the HTTPException if it was already raised
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error deleting store: {str(e)}")
 
-    def list_files(self, store_name: str) -> List[Dict[str, Any]]:
+    def list_files(self, user_id: UUID, store_name: str) -> List[Dict[str, Any]]:
         try:
-            objects = self.list_all_objects(store_name)
+            full_directory_name = f"{user_id}/{store_name}"
+            objects = self.list_all_objects(full_directory_name)
             logging.info(f"Objects listed from S3: {objects}")
             files = []
             for obj in objects:
@@ -102,13 +105,12 @@ class StoreService(S3Service):
             logging.error(f"Error uploading file: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
 
-    def upload_file_to_store(self, store_name: str, file: UploadFile):
+    def upload_file_to_store(self, user_id: UUID, store_name: str, file: UploadFile):
         try:
-            file_location = f"{store_name}/{file.filename}"
+            file_location = f"{user_id}/{store_name}/{file.filename}"
             self.upload_file(file.file, file_location)
         except Exception as e:
-            logging.error(f"Error uploading file to store: {str(e)}")
-            raise HTTPException(status_code=500, detail="Error uploading file to store")
+            raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
 
     def delete_directory(self, store_name: str):
         try:
@@ -174,4 +176,3 @@ class StoreService(S3Service):
         except Exception as e:
             logging.error(f"Error in load_documents: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
-

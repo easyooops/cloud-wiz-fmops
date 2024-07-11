@@ -14,12 +14,12 @@ export const useStorageStore = defineStore({
     getStorageById: (state) => (id) => state.storages.find(storage => storage.id === id)
   },
   actions: {
-    async fetchAllStorages() {
+    async fetchAllStorages(userId) {
       this.loading = true;
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get('/store/');
+        const response = await get(`/store/${userId}`);
         this.storages = response.data;
       } catch (error) {
         this.error = error;
@@ -27,13 +27,13 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
-    async fetchStorageById({ userId }) {
+    async fetchStorageById(userId, storageId) {
       this.loading = true;
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/store/?user_id=${userId}`, null);
-        this.storages = response.data;
+        const response = await get(`/store/${userId}/${storageId}`);
+        this.storageDetail = response.data;
       } catch (error) {
         this.error = error;
       } finally {
@@ -45,38 +45,38 @@ export const useStorageStore = defineStore({
       this.error = null;
       try {
         const { post } = restApi();
-        await post('/store/', storageData);
+        await post(`/store/${storageData.user_id}`, storageData);
       } catch (error) {
         throw error;
       } finally {
         this.loading = false;
       }
     },
-    async updateStorage(storageData) {
+    async updateStorage(userId, storageData) {
       this.loading = true;
       this.error = null;
       try {
         const { put } = restApi();
-        await put(`/store/${storageData.id}`, storageData);
+        await put(`/store/${userId}/${storageData.id}`, storageData);
       } catch (error) {
         throw error;
       } finally {
         this.loading = false;
       }
     },
-    async deleteStorage(storageId) {
+    async deleteStorage(userId, storageId) {
       this.loading = true;
       this.error = null;
       try {
         const { del } = restApi();
-        await del(`/store/${storageId}`);
+        await del(`/store/${userId}/${storageId}`);
       } catch (error) {
         throw error;
       } finally {
         this.loading = false;
       }
     },
-    async uploadFile(file, storeName) {
+    async uploadFile(userId, file, storeName) {
       this.loading = true;
       this.error = null;
       try {
@@ -84,7 +84,7 @@ export const useStorageStore = defineStore({
         formData.append('file', file);
         
         const { post } = restApi();
-        await post(`/store/${storeName}/upload`, formData, {
+        await post(`/store/${userId}/${storeName}/upload`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -95,12 +95,12 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
-    async fetchFiles(storeName) {
+    async fetchFiles(userId, storeName) {
       this.loading = true;
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/store/${storeName}/files`, {
+        const response = await get(`/store/${userId}/${storeName}/files`, {
           headers: {
             'accept': 'application/json'
           }
@@ -112,18 +112,17 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
-    async deleteFile(storeName, fileKey) {
+    async deleteFile(userId, storeName, fileKey) {
       this.loading = true;
       this.error = null;
       try {
         const { del } = restApi();
-        await del(`/store/${storeName}/files/${fileKey}`);
+        await del(`/store/${userId}/${storeName}/files/${fileKey}`);
       } catch (error) {
         throw error;
       } finally {
         this.loading = false;
       }
     },
-    
   }
 });

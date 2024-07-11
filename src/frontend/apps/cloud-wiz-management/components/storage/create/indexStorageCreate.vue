@@ -56,28 +56,28 @@ export default {
         const isLoading = ref(false);
         const errorMessage = ref(null);
         const successMessage = ref(null);
-        const userId = ref(useAuthStore().userId);
+        const userId = useAuthStore().userId;
 
         const createStorage = async () => {
-        isLoading.value = true;
-        errorMessage.value = null;
-        successMessage.value = null;
+            isLoading.value = true;
+            errorMessage.value = null;
+            successMessage.value = null;
 
-        try {
-            await storageStore.createStorage({
-                user_id: userId.value,
-                store_name: storageName.value,
-                description: storageDescription.value,
-                creator_id: userId.value,
-                updater_id: userId.value
-            });
-            successMessage.value = 'Storage created successfully.';
-            router.push('/storage/list');
-        } catch (error) {
-            errorMessage.value = 'An error occurred while creating the storage.';
-        } finally {
-            isLoading.value = false;
-        }
+            try {
+                await storageStore.createStorage({
+                    user_id: userId,
+                    store_name: storageName.value,
+                    description: storageDescription.value,
+                    creator_id: userId,
+                    updater_id: userId
+                });
+                successMessage.value = 'Storage created successfully.';
+                router.push('/storage/list');
+            } catch (error) {
+                errorMessage.value = 'An error occurred while creating the storage.';
+            } finally {
+                isLoading.value = false;
+            }
         };
 
         return {
@@ -91,3 +91,4 @@ export default {
     }
 };
 </script>
+

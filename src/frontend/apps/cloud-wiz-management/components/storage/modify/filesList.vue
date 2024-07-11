@@ -60,32 +60,33 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useStorageStore } from '@/store/storage';
+import { useAuthStore } from '@/store/auth';
 import { useRouter } from 'vue-router';
 
 export default {
     name: 'ModifyStorage',    
     data() {
         return {
-            files: [],
             customClass: 'custom-dropzone-item'
         };
     },
     setup() {
-        const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT+'/api/v1';
+        const userId = useAuthStore().userId;
+        const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT + '/api/v1';
         const storageStore = useStorageStore();
         const router = useRouter();         
-        const storeName = ref('default');
+        const storeName = ref('');
         const storeId = ref('');
         storeName.value = String(router.currentRoute.value.query.storeName);
         storeId.value = String(router.currentRoute.value.query.storeId);
-        const uploadUrl = API_ENDPOINT+'/store/'+encodeURIComponent(storeName.value)+'/upload';
+        const uploadUrl = API_ENDPOINT + '/store/'+ userId +'/'+ encodeURIComponent(storeName.value) + '/upload';
         const files = ref([]);
         const loading = ref(false);
 
         const fetchFiles = async () => {
             loading.value = true;
             try {
-                const fetchedFiles = await storageStore.fetchFiles(storeName.value);
+                const fetchedFiles = await storageStore.fetchFiles(userId, storeName.value);
                 files.value = fetchedFiles;
             } catch (error) {
                 console.error('An error occurred while fetching the file list.', error);
@@ -133,7 +134,6 @@ export default {
                 await fetchFiles();
             } catch (error) {
                 console.error('An error occurred while uploading the file.', error);
-            } finally {
             }
         };
 
@@ -156,14 +156,9 @@ export default {
                 word: ['doc', 'docx'],
                 excel: ['xls', 'xlsx', 'csv'],
                 powerpoint: ['ppt', 'pptx'],
-                // photo: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
-                // picture: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
                 image: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
                 zip: ['zip', 'rar', '7z'],
-                archive: ['zip', 'rar', '7z'],
-                // sound: ['mp3', 'wav', 'ogg', 'flac'],
                 audio: ['mp3', 'wav', 'ogg', 'flac'],
-                // movie: ['mp4', 'avi', 'mkv', 'mov'],
                 video: ['mp4', 'avi', 'mkv', 'mov'],
                 code: ['html', 'css', 'js', 'java', 'py', 'cpp', 'c', 'php', 'rb', 'swift', 'json', 'xml']
             };
@@ -180,7 +175,7 @@ export default {
         const deleteFile = async (file) => {
             loading.value = true;
             try {
-                await storageStore.deleteFile(storeName.value, getFileName(file.Key));
+                await storageStore.deleteFile(userId, storeName.value, getFileName(file.Key));
                 await fetchFiles();
             } catch (error) {
                 console.error('An error occurred while deleting the file.', error);
@@ -192,7 +187,7 @@ export default {
         const deleteStorage = async () => {
             loading.value = true;
             try {
-                await storageStore.deleteStorage(storeId.value);
+                await storageStore.deleteStorage(userId, storeId.value);
                 router.push('/storage/list');
             } catch (error) {
                 console.error('An error occurred while deleting the storage.', error);
@@ -219,6 +214,7 @@ export default {
     },
 };
 </script>
+
     
 <style scoped>
 .dropzone__item--style img {
