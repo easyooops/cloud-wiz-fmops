@@ -12,7 +12,7 @@ class OpenAILLMComponent(BaseLLMComponent):
         if not model_id:
             model_id="gpt-3.5-turbo-instruct"
 
-        self.llm = OpenAI(
+        self.model_instance = OpenAI(
             openai_api_key=self.openai_api_key, 
             model=model_id,
             temperature=temperature,
@@ -22,6 +22,6 @@ class OpenAILLMComponent(BaseLLMComponent):
         )
 
     def run(self, prompt):
-        if self.llm is None:
+        if self.model_instance is None:
             raise ValueError("LLM is not initialized. Call the build method first.")
-        return self.llm.invoke(prompt)   
+        return self.model_instance.invoke(prompt)   
