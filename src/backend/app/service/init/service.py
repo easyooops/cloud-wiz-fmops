@@ -61,7 +61,7 @@ class InitDataService:
         )
 
         service = StoreService(self.session)
-        service.create_store(store_data)
+        service.create_store(store_data, self.user_id)
 
     def create_processing_data(self, processing_data):
         # self.clear_processing_table()

@@ -166,23 +166,26 @@ class PromptService:
         processing_data = self._get_processing_data(pre_processing_id)
 
         # pii mask
-        pii_options = self._parse_options(processing_data.pii_masking)
-        pii_masking_service = PiiMaskingService()
-        query = pii_masking_service.mask_pii(query, pii_options)
+        if processing_data.pii_masking:
+            pii_options = self._parse_options(processing_data.pii_masking)
+            pii_masking_service = PiiMaskingService()
+            query = pii_masking_service.mask_pii(query, pii_options)
 
         # normalize text
-        normalize_options = self._parse_options(processing_data.normalization)
-        text_normalization_service = TextNormalizationService()
-        query = text_normalization_service.normalize_text(query, normalize_options)
+        if processing_data.normalization:
+            normalize_options = self._parse_options(processing_data.normalization)
+            text_normalization_service = TextNormalizationService()
+            query = text_normalization_service.normalize_text(query, normalize_options)
 
         # stopword removal
-        stopwords = set(self._convert_list(processing_data.stopword_removal))
-        # query = ' '.join([word for word in query.split() if word.lower() not in stopwords])
-        for stopword in stopwords:
-            query = query.replace(stopword, '')
+        if processing_data.stopword_removal:
+            stopwords = set(self._convert_list(processing_data.stopword_removal))
+            for stopword in stopwords:
+                query = query.replace(stopword, '')
 
         # template
-        query = self._replace_question(processing_data.template, query)
+        if processing_data.template:
+            query = self._replace_question(processing_data.template, query)
 
         return query
 
@@ -487,20 +490,22 @@ class PromptService:
         processing_data = self._get_processing_data(post_processing_id)
 
         # pii mask
-        pii_options = self._parse_options(processing_data.pii_masking)
-        pii_masking_service = PiiMaskingService()
-        response = pii_masking_service.mask_pii(response, pii_options)
+        if processing_data.pii_masking:
+            pii_options = self._parse_options(processing_data.pii_masking)
+            pii_masking_service = PiiMaskingService()
+            response = pii_masking_service.mask_pii(response, pii_options)
 
         # normalize text
-        normalize_options = self._parse_options(processing_data.normalization)
-        text_normalization_service = TextNormalizationService()
-        response = text_normalization_service.normalize_text(response, normalize_options)
+        if processing_data.normalization:
+            normalize_options = self._parse_options(processing_data.normalization)
+            text_normalization_service = TextNormalizationService()
+            response = text_normalization_service.normalize_text(response, normalize_options)
 
         # stopword removal
-        stopwords = set(self._convert_list(processing_data.stopword_removal))
-        # response = ' '.join([word for word in response.split() if word.lower() not in stopwords])
-        for stopword in stopwords:
-            response = response.replace(stopword, '')
+        if processing_data.stopword_removal:
+            stopwords = set(self._convert_list(processing_data.stopword_removal))
+            for stopword in stopwords:
+                response = response.replace(stopword, '')
 
         return response
 

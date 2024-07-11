@@ -61,84 +61,84 @@
   </template>
     
 <script>
-import { useStorageStore } from '@/store/storage';
-import { useAuthStore } from '@/store/auth';
-import { mapState, mapActions } from 'pinia';
-
-export default {
-    name: 'ListStorage',
-    data() {
-      return {
-        tab: [
-            { type: 'all', name: 'All', active: true, icon: 'target', id: 'top-all', label: 'all-tab' }
-        ],
-        loading: false,
-        userId: useAuthStore().userId
-      };
-    },
-    computed: {
-        ...mapState(useStorageStore, ['storages']),
-        filteredData() {
-            if (this.activeTab.type === 'all') return this.storages;
-        },
-        activeTab() {
-            return this.tab.find(t => t.active);
-        }
-    },
-    methods: {
-        ...mapActions(useStorageStore, ['fetchStorageById']),
-        active(item) {
-            this.tab.forEach(a => (a.active = false));
-            item.active = true;
-        },
-        navigateToEdit(storeId, storeName) {
-            this.$router.push({ path: '/storage/modify', query: { storeId: storeId, storeName: storeName } });
-        },   
-        formatFileSize(sizeInBytes) {
-            if (sizeInBytes < 1024) {
-                return sizeInBytes.toFixed(1) + ' B';
-            } else if (sizeInBytes < 1024 * 1024) {
-                return (sizeInBytes / 1024).toFixed(1) + ' KB';
-            } else {
-                return (sizeInBytes / (1024 * 1024)).toFixed(1) + ' MB';
-            }
-        }, 
-        onMouseOver(event) {
-            event.currentTarget.classList.add('hover');
-        },
-        onMouseLeave(event) {
-            event.currentTarget.classList.remove('hover');
-        },
-        async fetchData() {
-          try {
-            this.loading = true;
-            useStorageStore().storages = [];
-            await this.fetchStorageById({ userId: this.userId });
-            this.loading = false;
-
-          } catch (error) {
-            console.error('Error fetching data:', error);
+  import { useStorageStore } from '@/store/storage';
+  import { useAuthStore } from '@/store/auth';
+  import { mapState, mapActions } from 'pinia';
+  
+  export default {
+      name: 'ListStorage',
+      data() {
+        return {
+          tab: [
+              { type: 'all', name: 'All', active: true, icon: 'target', id: 'top-all', label: 'all-tab' }
+          ],
+          loading: false,
+          userId: useAuthStore().userId
+        };
+      },
+      computed: {
+          ...mapState(useStorageStore, ['storages']),
+          filteredData() {
+              if (this.activeTab.type === 'all') return this.storages;
+          },
+          activeTab() {
+              return this.tab.find(t => t.active);
           }
-        },
-        convertISODateToCustomFormat(isoDate) {
-          const date = new Date(isoDate);
-
-          const year = date.getFullYear();
-          const month = ('0' + (date.getMonth() + 1)).slice(-2);
-          const day = ('0' + date.getDate()).slice(-2);
-          const hours = ('0' + date.getHours()).slice(-2);
-          const minutes = ('0' + date.getMinutes()).slice(-2);
-          const seconds = ('0' + date.getSeconds()).slice(-2);
-
-          const customFormat = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-
-          return customFormat;
-        }        
-    },
-    async mounted() {
-      await this.fetchData();
-    }
-};
+      },
+      methods: {
+          ...mapActions(useStorageStore, ['fetchAllStorages']),
+          active(item) {
+              this.tab.forEach(a => (a.active = false));
+              item.active = true;
+          },
+          navigateToEdit(storeId, storeName) {
+              this.$router.push({ path: '/storage/modify', query: { storeId: storeId, storeName: storeName } });
+          },   
+          formatFileSize(sizeInBytes) {
+              if (sizeInBytes < 1024) {
+                  return sizeInBytes.toFixed(1) + ' B';
+              } else if (sizeInBytes < 1024 * 1024) {
+                  return (sizeInBytes / 1024).toFixed(1) + ' KB';
+              } else {
+                  return (sizeInBytes / (1024 * 1024)).toFixed(1) + ' MB';
+              }
+          }, 
+          onMouseOver(event) {
+              event.currentTarget.classList.add('hover');
+          },
+          onMouseLeave(event) {
+              event.currentTarget.classList.remove('hover');
+          },
+          async fetchData() {
+            try {
+              this.loading = true;
+              useStorageStore().storages = [];
+              await this.fetchAllStorages(this.userId);
+              this.loading = false;
+            } catch (error) {
+              console.error('Error fetching data:', error);
+              this.loading = false;
+            }
+          },
+          convertISODateToCustomFormat(isoDate) {
+            const date = new Date(isoDate);
+  
+            const year = date.getFullYear();
+            const month = ('0' + (date.getMonth() + 1)).slice(-2);
+            const day = ('0' + date.getDate()).slice(-2);
+            const hours = ('0' + date.getHours()).slice(-2);
+            const minutes = ('0' + date.getMinutes()).slice(-2);
+            const seconds = ('0' + date.getSeconds()).slice(-2);
+  
+            const customFormat = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  
+            return customFormat;
+          }        
+      },
+      async mounted() {
+        await this.fetchData();
+      }
+  };
 </script>
 
 <style scoped>
