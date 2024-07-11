@@ -86,12 +86,12 @@ class PromptService:
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
 
-            LLMObs.annotate(
-                span=None,
-                input_data=query,
-                output_data=response,
-                tags=[{"host": "cloudwiz-ai-fmops"}],
-            )
+            # LLMObs.annotate(
+            #     span=None,
+            #     input_data=query,
+            #     output_data=response,
+            #     tags={"host": "cloudwiz-ai-fmops"},
+            # )
                 
             return ChatResponse(
                         answer=response,
