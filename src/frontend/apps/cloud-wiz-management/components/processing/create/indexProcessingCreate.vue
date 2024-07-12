@@ -50,7 +50,7 @@
                 </div>
 
                 <!-- Template -->
-                <div class="card" v-if="processingType === 'pre'">
+                <!-- <div class="card" v-if="processingType === 'pre'">
                     <div class="card-body">                  
                         <div class="row">
                             <div class="col-sm-12">
@@ -59,7 +59,7 @@
                             </div>
                         </div> 
                     </div>
-                </div>
+                </div> -->
 
                 <!-- PII Masking -->
                 <div class="card">
@@ -136,7 +136,7 @@ export default {
         const processingType = ref('pre');
         const processingName = ref('');
         const processingDesc = ref('');
-        const textareaTemplate = ref('"""\n<Question>{question}</Question>\n<Context>Summarize it</Context>\n<Answer>\nSummarize within 250 characters.\nTranslate into Korean.\nIf you don`t know, say you don`t know. Don`t make things up.\n</Answer>\n"""');
+        // const textareaTemplate = ref('"""\n<Question>{question}</Question>\n<Context>Summarize it</Context>\n<Answer>\nSummarize within 250 characters.\nTranslate into Korean.\nIf you don`t know, say you don`t know. Don`t make things up.\n</Answer>\n"""');
         const textareaStopword = ref('CLOUDWIZ|AI|FMOPS');
         const loading = ref(false);
         const errorMessage = ref(null);
@@ -181,7 +181,7 @@ export default {
                     processingType.value = processing.processing_type;
                     processingName.value = processing.processing_name;
                     processingDesc.value = processing.processing_desc;
-                    textareaTemplate.value = processing.template;
+                    // textareaTemplate.value = processing.template;
                     textareaStopword.value = processing.stopword_removal;
 
                     // Update piiMaskingOptions and normalizationOptions based on processing data
@@ -221,7 +221,7 @@ export default {
                         processing_type: processingType.value,
                         processing_name: processingName.value,
                         processing_desc: processingDesc.value,
-                        template: textareaTemplate.value,
+                        // template: textareaTemplate.value,
                         pii_masking: selectedPiiMaskingIds,
                         normalization: selectedNormalizationIds,
                         stopword_removal: textareaStopword.value,
@@ -234,7 +234,7 @@ export default {
                         processing_type: processingType.value,
                         processing_name: processingName.value,
                         processing_desc: processingDesc.value,
-                        template: textareaTemplate.value,
+                        // template: textareaTemplate.value,
                         pii_masking: selectedPiiMaskingIds,
                         normalization: selectedNormalizationIds,
                         stopword_removal: textareaStopword.value,
@@ -285,7 +285,7 @@ export default {
             processingType,
             processingName,
             processingDesc,
-            textareaTemplate,
+            // textareaTemplate,
             textareaStopword,
             piiMaskingOptions,
             normalizationOptions,

@@ -3,24 +3,24 @@
         "processing_type": "pre",
         "processing_name": "Default Pre-Processing",
         "processing_desc": "Default Pre-Processing by Cloudwiz AI FMOps",
-        "template": "\"\"\"\n<Question>{question}</Question>\n<Context>Summarize it</Context>\n<Answer>\nSummarize within 250 characters.\nTranslate into Korean.\nIf you don`t know, say you don`t know. Don`t make things up.\n</Answer>\n\"\"\"",
+        "template": "",
         "pii_masking": "",
         "normalization": "",
         "stopword_removal": "CLOUDWIZ|AI|FMOPS",        
-        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
-        "updater_id": "2e9279bc33104a7ba53d342dafba7841",
-        "user_id": "2e9279bc33104a7ba53d342dafba7841"
+        "creator_id": "",
+        "updater_id": "",
+        "user_id": ""
     },
     {
         "processing_type": "post",
         "processing_name": "Default Post-Processing",
         "processing_desc": "Default Post-Processing by Cloudwiz AI FMOps",
-        "template": "\"\"\"\n<Question>{question}</Question>\n<Context>Summarize it</Context>\n<Answer>\nSummarize within 250 characters.\nTranslate into Korean.\nIf you don`t know, say you don`t know. Don`t make things up.\n</Answer>\n\"\"\"",
+        "template": "",
         "pii_masking": "",
         "normalization": "",
         "stopword_removal": "CLOUDWIZ|AI|FMOPS",        
-        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
-        "updater_id": "2e9279bc33104a7ba53d342dafba7841",
-        "user_id": "2e9279bc33104a7ba53d342dafba7841"
+        "creator_id": "",
+        "updater_id": "",
+        "user_id": ""
     }    
 ]

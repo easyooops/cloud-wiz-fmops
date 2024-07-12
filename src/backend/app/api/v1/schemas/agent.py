@@ -23,6 +23,8 @@ class AgentCreate(BaseModel):
     processing_enabled: bool = False
     pre_processing_id: Optional[UUID] = None
     post_processing_id: Optional[UUID] = None
+    template_enabled: bool = False
+    template: Optional[str] = None
     expected_request_count: int = 0
     expected_token_count: int = 0
     expected_cost: float = 0.0
@@ -60,6 +62,8 @@ class AgentUpdate(BaseModel):
     processing_enabled: Optional[bool] = None
     pre_processing_id: Optional[UUID] = None
     post_processing_id: Optional[UUID] = None
+    template_enabled: bool = False
+    template: Optional[str] = None    
     expected_request_count: Optional[int] = None
     expected_token_count: Optional[int] = None
     expected_cost: Optional[float] = None

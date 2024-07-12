@@ -24,6 +24,8 @@ class Agent(SQLModel, table=True):
     processing_enabled: bool = Field(default=False)
     pre_processing_id: Optional[UUID] = None
     post_processing_id: Optional[UUID] = None
+    template_enabled: bool = Field(default=False)
+    template: Optional[str] = None
     expected_request_count: int = Field(default=0)
     expected_token_count: int = Field(default=0)
     expected_cost: float = Field(default=0.0)

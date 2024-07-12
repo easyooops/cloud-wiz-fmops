@@ -109,7 +109,7 @@
     },
     {
         "provider_name": "OpenAI",
-        "model_name": "davinci-002",
+        "model_name": "text-moderation-007",
         "provider_id": "",
         "model_type": "T",
         "sort_order": 1,
@@ -118,46 +118,10 @@
     },
     {
         "provider_name": "OpenAI",
-        "model_name": "babbage-002",
-        "provider_id": "",
-        "model_type": "T",
-        "sort_order": 2,
-        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
-        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
-    },
-    {
-        "provider_name": "OpenAI",
-        "model_name": "text-moderation-007",
-        "provider_id": "",
-        "model_type": "T",
-        "sort_order": 3,
-        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
-        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
-    },
-    {
-        "provider_name": "OpenAI",
-        "model_name": "text-moderation-stable",
-        "provider_id": "",
-        "model_type": "T",
-        "sort_order": 4,
-        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
-        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
-    },
-    {
-        "provider_name": "OpenAI",
-        "model_name": "text-moderation-latest",
-        "provider_id": "",
-        "model_type": "T",
-        "sort_order": 5,
-        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
-        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
-    },
-    {
-        "provider_name": "OpenAI",
         "model_name": "gpt-3.5-turbo-instruct",
         "provider_id": "",
         "model_type": "T",
-        "sort_order": 6,
+        "sort_order": 2,
         "creator_id": "2e9279bc33104a7ba53d342dafba7841",
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },

@@ -58,6 +58,10 @@ class PromptService:
             if _d_agent.processing_enabled:
                 query = self._preprocess_query(agent_data, query)
 
+            # template
+            if _d_agent.template_enabled:
+                query = self._replace_question(_d_agent.template, query)
+
             # embedding
             if _d_agent.embedding_enabled:
                 try:
@@ -192,10 +196,6 @@ class PromptService:
             stopwords = set(self._convert_list(processing_data.stopword_removal))
             for stopword in stopwords:
                 query = query.replace(stopword, '')
-
-        # template
-        if processing_data.template:
-            query = self._replace_question(processing_data.template, query)
 
         return query
 
