@@ -14,6 +14,8 @@ class CredentialBase(BaseModel):
     access_token: Optional[str] = None
     api_key: Optional[str] = None
     api_endpoint: Optional[str] = None
+    client_id: Optional[str] = None
+    auth_secret_key: Optional[str] = None
     provider_name: Optional[str] = None
     provider_company: Optional[str] = None
     provider_desc: Optional[str] = None
@@ -39,6 +41,8 @@ class CredentialCreate(BaseModel):
     access_token: Optional[str] = None
     api_key: Optional[str] = None
     api_endpoint: Optional[str] = None
+    client_id: Optional[str] = None
+    auth_secret_key: Optional[str] = None
     is_deleted: bool = False
     creator_id: UUID
     created_at: datetime = datetime.now()
@@ -53,6 +57,8 @@ class CredentialUpdate(BaseModel):
     access_token: Optional[str] = None
     api_key: Optional[str] = None
     api_endpoint: Optional[str] = None
+    client_id: Optional[str] = None
+    auth_secret_key: Optional[str] = None
     is_deleted: Optional[bool] = None
     creator_id: Optional[UUID] = None
     created_at: Optional[datetime] = None
