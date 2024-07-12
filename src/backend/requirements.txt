@@ -1,6 +1,6 @@
 # default
-redis
-types-redis
+# redis
+# types-redis
 uvicorn 
 pytest
 httpx
@@ -55,7 +55,7 @@ pandas
 docx2txt
 openpyxl
 
-# Datadog
+# # Datadog
 ddtrace
 
 # Google

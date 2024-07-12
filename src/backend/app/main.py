@@ -109,12 +109,12 @@ def create_app():
     app.add_middleware(AddHeaderMiddleware)    
     app.add_middleware(CustomErrorHandlerMiddleware)
 
-    alembic_cfg = Config("alembic.ini")
+    # alembic_cfg = Config("alembic.ini")
 
     @app.on_event("startup")
     def on_startup():
         create_db_and_tables()
-        command.upgrade(alembic_cfg, "head")
+        # command.upgrade(alembic_cfg, "head")
 
         # Pre-create database connections
         # with next(get_database()) as db:
