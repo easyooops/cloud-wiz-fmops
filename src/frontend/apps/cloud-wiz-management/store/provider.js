@@ -6,6 +6,7 @@ export const useProviderStore = defineStore({
     state: () => ({
       providers: [],
       credential: [],
+      credentials: [],
       models:[],
       loading: false,
       error: null
@@ -21,7 +22,7 @@ export const useProviderStore = defineStore({
         try {
           const { get } = restApi();
           const response = await get(`/credential/?user_id=${userId}`);
-          this.credential = response.data;
+          this.credentials = response.data;
         } catch (error) {
           this.error = error;
         } finally {

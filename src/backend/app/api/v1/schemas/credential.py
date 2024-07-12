@@ -16,6 +16,8 @@ class CredentialBase(BaseModel):
     api_endpoint: Optional[str] = None
     client_id: Optional[str] = None
     auth_secret_key: Optional[str] = None
+    inner_used: bool = False
+    limit_cnt: float = 0.0
     provider_name: Optional[str] = None
     provider_company: Optional[str] = None
     provider_desc: Optional[str] = None
@@ -30,6 +32,7 @@ class CredentialProviderJoin(CredentialBase):
     provider_logo: Optional[str] = None
     provider_type: Optional[str] = None
     provider_ord: Optional[int] = None
+    expected_count: float = 0.0
 
 class CredentialCreate(BaseModel):
     user_id: UUID
@@ -43,7 +46,7 @@ class CredentialCreate(BaseModel):
     api_endpoint: Optional[str] = None
     client_id: Optional[str] = None
     auth_secret_key: Optional[str] = None
-    is_deleted: bool = False
+    inner_used: bool = False
     creator_id: UUID
     created_at: datetime = datetime.now()
     updater_id: UUID
@@ -58,7 +61,7 @@ class CredentialUpdate(BaseModel):
     api_key: Optional[str] = None
     api_endpoint: Optional[str] = None
     client_id: Optional[str] = None
-    auth_secret_key: Optional[str] = None
+    auth_secret_key: Optional[str] = None    
     is_deleted: Optional[bool] = None
     creator_id: Optional[UUID] = None
     created_at: Optional[datetime] = None

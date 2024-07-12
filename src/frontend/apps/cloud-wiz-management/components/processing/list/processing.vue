@@ -110,11 +110,11 @@
           this.loading = true;
           useProcessingStore().processings = [];
           await this.fetchProcessingsById({ userId: this.userId });
-          this.loading = false;
-
         } catch (error) {
           console.error('Error fetching data:', error);
-        }
+        } finally {
+          this.loading = false;
+        } 
       }        
     },
     async mounted() {

@@ -126,7 +126,7 @@ CREATE TABLE credentials (
     client_id VARCHAR(255),
     auth_secret_key VARCHAR(255),
     inner_used BOOLEAN NOT NULL DEFAULT 0,
-    limit_cnt INTEGER,
+    limit_cnt FLOAT NOT NULL,
 	is_deleted BOOLEAN NOT NULL DEFAULT 0, 
 	creator_id CHAR(36) NOT NULL, 
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
