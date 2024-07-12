@@ -37,7 +37,11 @@ async def authenticate_with_google(
         return {
             "accessToken": jwt_token,
             "userName": user.username,
-            "userId": user.user_id
+            "userId": user.user_id,
+            "refreshToken": user_info.get('refresh_token'),
+            "clientId": user_info.get('client_id'),
+            "clientSecret": user_info.get('client_secret'),
+            "tokenUri": user_info.get('token_uri')
         }
     
     except Exception as e:

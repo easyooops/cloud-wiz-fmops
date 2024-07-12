@@ -31,8 +31,12 @@ class AuthService:
             user_id = idinfo['sub']
             email = idinfo['email']
             name = idinfo['family_name']
+            refresh_token = idinfo.get('refresh_token')
+            client_id = idinfo.get('client_id')
+            client_secret = idinfo.get('client_secret')
+            token_uri = "https://oauth2.googleapis.com/token"
 
-            return {'user_id': user_id, 'email': email, 'name': name}
+            return {'user_id': user_id, 'email': email, 'name': name, 'refresh_token': refresh_token, 'client_id': client_id, 'client_secret': client_secret, 'token_uri': token_uri}
         except ValueError as e:
             raise HTTPException(status_code=403, detail="Invalid token")
 
