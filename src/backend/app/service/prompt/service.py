@@ -28,7 +28,7 @@ from app.components.LLM.Bedrock import BedrockLLMComponent
 from app.core.util.token import TokenUtilityService
 from app.api.v1.schemas.chat import ChatResponse
 from app.service.store.service import StoreService
-from ddtrace.llmobs.decorators import workflow, task
+from ddtrace.llmobs.decorators import workflow
 from ddtrace.llmobs import LLMObs
 from app.core.util.logging import LoggingConfigurator
 from app.service.processing.model import Processing
@@ -86,12 +86,12 @@ class PromptService:
             # tokens, cost
             tokens = self._get_token_counts(agent_id, query, response)
 
-            # LLMObs.annotate(
-            #     span=None,
-            #     input_data=query,
-            #     output_data=response,
-            #     tags={"host":_d_agent.agent_id, "result": "success"}
-            # )
+            LLMObs.annotate(
+                span=None,
+                input_data=query,
+                output_data=response,
+                tags={"host":_d_agent.agent_id, "result": "success"}
+            )
                 
             return ChatResponse(
                         answer=response,
@@ -100,12 +100,12 @@ class PromptService:
                     )
 
         except Exception as e:
-            # LLMObs.annotate(
-            #     span=None,
-            #     input_data=query,
-            #     output_data=response,
-            #     tags={"host":_d_agent.agent_id, "result": "fail", "error": e}
-            # )            
+            LLMObs.annotate(
+                span=None,
+                input_data=query,
+                output_data=response,
+                tags={"host":_d_agent.agent_id, "result": "fail", "error": e}
+            )            
             raise HTTPException(status_code=500, detail=str(e))
 
     def _get_agent_data(self, agent_id: UUID):
@@ -173,7 +173,7 @@ class PromptService:
 
         _d_agent = agent_data['Agent']
         pre_processing_id = _d_agent.pre_processing_id
-        processing_data = self._get_processing_data(pre_processing_id)
+        processing_data = self._get_processing_data(pre_processing_id)[0]
 
         # pii mask
         if processing_data.pii_masking:
@@ -494,7 +494,7 @@ class PromptService:
 
         _d_agent = agent_data['Agent']
         post_processing_id = _d_agent.post_processing_id
-        processing_data = self._get_processing_data(post_processing_id)
+        processing_data = self._get_processing_data(post_processing_id)[0]
 
         # pii mask
         if processing_data.pii_masking:
