@@ -258,6 +258,34 @@
                             </div>
                         </div>
 
+                        <!-- Template -->
+                        <div class="card-body" v-if="'3' == item.activeTab">
+                            <div class="form theme-form">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="media mb-3">
+                                            <label class="col-form-label m-r-10">Template Enable</label>
+                                            <div class="media-body text-end">
+                                                <label class="switch">
+                                                    <input type="checkbox" v-model="templateEnabled"><span class="switch-state"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card" :class="{ 'disabled-card': !templateEnabled }">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <label class="col-form-label"><h5>Template</h5></label>
+                                                <textarea v-model="textareaTemplate" class="form-control form-control-primary" id="textareaTemplate" rows="25"></textarea>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                     
                     </div>
                 </div>
             </div>
@@ -312,6 +340,8 @@ export default {
             selectedPostProcessing: '',
             embeddingEnabled: false,
             processingEnabled: false,
+            templateEnabled: false,
+            textareaTemplate: '"""\n<Question>{question}</Question>\n<Context>\nSummarize it\n</Context>\n<Answer>\nSummarize within 250 characters.\nAnswer in Korean.\nIf you don`t know, say you don`t know. Don`t make things up.\n</Answer>\n"""',
             data: {
                 "data": [
                     {
@@ -331,6 +361,12 @@ export default {
                         "class": "fa fa-cogs",
                         "menu": "Processing",
                         "description": "Processing involves preparing input data for models (preprocessing) and handling model outputs (postprocessing) for effective communication or analysis.",
+                    },
+                    {
+                        "activeTab": "3",
+                        "class": "fa fa-file-code-o",
+                        "menu": "Template",
+                        "description": "Templates are predefined structures that guide the creation of input prompts for models, ensuring consistency and improving response quality.",
                     },
                 ],
             },
@@ -471,6 +507,8 @@ export default {
                     this.selectedObject = agentInfo.storage_object_id;
                     this.selectedVectorDB = agentInfo.vector_db_provider_id;
                     this.processingEnabled = agentInfo.processing_enabled;
+                    this.templateEnabled = agentInfo.template_enabled;
+                    this.textareaTemplate = agentInfo.template; 
                     this.selectedPreProcessing = agentInfo.pre_processing_id;
                     this.selectedPostProcessing = agentInfo.post_processing_id;                    
                 } catch (error) {
@@ -528,6 +566,8 @@ export default {
                     processing_enabled: this.processingEnabled,
                     pre_processing_id: this.selectedPreProcessing,
                     post_processing_id: this.selectedPostProcessing,
+                    template_enabled: this.templateEnabled,
+                    template: this.textareaTemplate,      
                     creator_id: this.userId,
                     updater_id: this.userId
                 };

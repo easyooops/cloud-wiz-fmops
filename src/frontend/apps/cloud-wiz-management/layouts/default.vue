@@ -40,10 +40,10 @@
                     <Footer></Footer>
                 </div>
             </div>
-            <Customizer />
+            <!-- <Customizer />
             <Teleport to="body">
                 <TapTop />
-            </Teleport>
+            </Teleport> -->
         </div>
     </div>
 </template>
