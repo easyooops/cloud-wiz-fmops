@@ -52,7 +52,11 @@
                           <div class="col-6" v-if="dataItem.access_token"> <span>Access Token</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.access_token">{{ mask(dataItem.access_token) }}</div>
                           <div class="col-6" v-if="dataItem.api_key"> <span>API Key</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.api_key">{{ mask(dataItem.api_key) }}</div>                                                      
+                          <div class="col-6 font-primary" v-if="dataItem.api_key">{{ mask(dataItem.api_key) }}</div>
+                          <div class="col-6" v-if="dataItem.client_id"><span>Google Client ID</span></div>
+                          <div class="col-6 font-primary" v-if="dataItem.client_id">{{ mask(dataItem.client_id) }}</div>
+                          <div class="col-6" v-if="dataItem.auth_secret_key"><span>Auth Secret Key</span></div>
+                          <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ mask(dataItem.auth_secret_key) }}</div>
                       </div>
                   </div>
               </div>
@@ -118,6 +122,7 @@ export default {
         this.loading = true;
         useProviderStore().credential = [];
         await this.fetchCredential({ userId: this.userId });
+        console.log(this.credential)
         this.loading = false;
 
       } catch (error) {

@@ -66,6 +66,20 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row" v-else-if="isGoogleDrive">
+                                  <div class="col">
+                                    <div class="mb-3">
+                                      <label>Google Client ID</label>
+                                      <input v-model="clientId" class="form-control" type="text" placeholder="Client ID *">
+                                    </div>
+                                  </div>
+                                  <div class="col">
+                                    <div class="mb-3">
+                                      <label>Auth Secret Key</label>
+                                      <input v-model="authSecret" class="form-control" type="text" placeholder="Client Secret *">
+                                    </div>
+                                  </div>
+                                </div>
                                 <div class="row" v-else-if="isGitOrNotion">
                                     <div class="col">
                                         <div class="mb-3">
@@ -123,6 +137,8 @@ export default {
         const accessToken = ref('');
         const apiKey = ref('');
         const apiEndpoint = ref('');
+        const clientId = ref('');
+        const authSecret = ref('');
         const allProviders = ref([]);
         const providers = ref([]);
         const selectedCompany = ref(null);
@@ -155,6 +171,8 @@ export default {
                 accessToken.value = credential.access_token;
                 apiKey.value = credential.api_key;
                 apiEndpoint.value = credential.api_endpoint;
+                clientId.value = credential.client_id;
+                authSecret.value = credential.auth_secret_key;
 
                 filterProvidersByType(selectedType.value);
             } catch (error) {
@@ -183,6 +201,10 @@ export default {
             return selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion'));
         });
 
+        const isGoogleDrive = computed(() => {
+          return selectedCompany.value && selectedCompany.value.includes('Google');
+        });
+
         const updateCredential = async () => {
             loading.value = true;
             errorMessage.value = null;
@@ -198,6 +220,8 @@ export default {
                     access_token: accessToken.value,
                     api_key: apiKey.value,
                     api_endpoint: apiEndpoint.value,
+                    client_id: clientId.value,
+                    auth_secret_key: authSecret.value,
                     updater_id: userId.value
                 });
                 successMessage.value = 'Credential updated successfully.';
@@ -251,9 +275,12 @@ export default {
             accessToken,
             apiKey,
             apiEndpoint,
+            clientId,
+            authSecret,
             providers,
             isAmazonWebServices,
             isGitOrNotion,
+            isGoogleDrive,
             loading,
             errorMessage,
             successMessage,

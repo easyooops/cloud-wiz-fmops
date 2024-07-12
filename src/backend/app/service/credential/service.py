@@ -36,6 +36,8 @@ class CredentialService:
             access_token=credential.access_token,
             api_key=credential.api_key,
             api_endpoint=credential.api_endpoint,
+            client_id=credential.client_id,
+            auth_secret_key=credential.auth_secret_key,
             provider_name=provider.name,
             provider_company=provider.company,
             provider_desc=provider.description,

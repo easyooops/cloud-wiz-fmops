@@ -67,6 +67,20 @@
                                         </div>
                                     </div>
                                 </div>
+                               <div class="row" v-else-if="isGoogleDrive">
+                                 <div class="col">
+                                   <div class="mb-3">
+                                     <label>Google Client ID</label>
+                                     <input v-model="clientId" class="form-control" type="text" placeholder="Client ID *">
+                                   </div>
+                                 </div>
+                                 <div class="col">
+                                   <div class="mb-3">
+                                     <label>Auth Secret Key</label>
+                                     <input v-model="authSecret" class="form-control" type="text" placeholder="Client Secret *">
+                                   </div>
+                                 </div>
+                               </div>
                                 <div class="row" v-else-if="isGitOrNotion">
                                     <div class="col">
                                         <div class="mb-3">
@@ -133,6 +147,8 @@ export default {
         const errorMessage = ref(null);
         const successMessage = ref(null);
         const userId = ref(useAuthStore().userId);
+        const clientId = ref('');
+        const authSecret = ref('');
 
         const fetchAllProviders = async () => {
             loading.value = true;
@@ -164,6 +180,10 @@ export default {
             return selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion'));
         });
 
+        const isGoogleDrive = computed(() => {
+          return selectedCompany.value && selectedCompany.value.includes('Google');
+        });
+
         const createCredential = async () => {
             loading.value = true;
             errorMessage.value = null;
@@ -180,6 +200,8 @@ export default {
                     access_token: accessToken.value,
                     api_key: apiKey.value,
                     api_endpoint: apiEndpoint.value,
+                    client_id: clientId.value,
+                    auth_secret_key: authSecret.value,
                     creator_id: userId.value,
                     updater_id: userId.value
                 });
@@ -217,10 +239,13 @@ export default {
             accessToken,
             apiKey,
             apiEndpoint,
+            clientId,
+            authSecret,
             allProviders,
             providers,
             isAmazonWebServices,
             isGitOrNotion,
+            isGoogleDrive,
             loading,
             errorMessage,
             successMessage,
