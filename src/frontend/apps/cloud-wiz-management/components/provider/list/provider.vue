@@ -34,7 +34,7 @@
             <div class="row">
               <div class="col-lg-4 col-md-6" v-for="(dataItem, dataIndex) in filteredData" :key="dataIndex">
                   <div class="project-box" @click="navigateToEdit(dataItem.credential_id)" @mouseover="onMouseOver" @mouseleave="onMouseLeave">
-                    <span class="badge badge-primary" v-if="dataItem.provider_type==='M'">{{ dataItem.provider_type }}</span>
+                    <span class="badge" :class="getBadgeClass(dataItem.provider_type)">{{ getBadgeLabel(dataItem.provider_type) }}</span>
                       <h6>{{ dataItem.credential_name }}</h6>
                       <div class="d-flex mb-3"><img class="img-20 me-2 rounded-circle" :src="`/images/provider/${dataItem.provider_logo}`" alt="" data-original-title="" title="">
                           <div class="flex-grow-1 project-box-item">
@@ -42,7 +42,7 @@
                           </div>
                       </div>
                       <p>{{ dataItem.provider_desc }}</p>
-                      <div class="row details">
+                      <div class="row details" v-if="!dataItem.inner_used">
                           <div class="col-6" v-if="dataItem.access_key"><span>Access Key </span></div>
                           <div class="col-6 font-primary" v-if="dataItem.access_key">{{ mask(dataItem.access_key) }} </div>
                           <div class="col-6" v-if="dataItem.secret_key"> <span>Secret Access Key</span></div>
@@ -58,6 +58,24 @@
                           <div class="col-6" v-if="dataItem.auth_secret_key"><span>Auth Secret Key</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ mask(dataItem.auth_secret_key) }}</div>
                       </div>
+
+                      <div class="row details" v-if="dataItem.inner_used">
+                          <div class="col-6"><span>Used </span></div>
+                          <div class="col-6 font-primary">{{ formatTokenSize(dataItem.expected_count) }} </div>
+                          <div class="col-6"> <span>Limit</span></div>
+                          <div class="col-6 font-primary">{{ formatTokenSize(dataItem.limit_cnt) }}</div>
+                      </div>
+
+                      <div class="project-status mt-4">
+                        <div class="d-flex mb-0">
+                            <p>{{ calculatePercentage(dataItem.expected_count, dataItem.limit_cnt) }}% </p>
+                            <div class="flex-grow-1 text-end"><span>Expiry</span></div>
+                        </div>
+                        <div class="progress" style="height: 5px">
+                            <div class="progress-bar-animated  progress-bar-striped" :class="'badge-secondary'" role="progressbar"
+                                :style="{ 'width': calculatePercentage(dataItem.expected_count, dataItem.limit_cnt)+'%' }" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>                      
                   </div>
               </div>
             </div>
@@ -89,10 +107,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(useProviderStore, ['credential']),
+    ...mapState(useProviderStore, ['credentials']),
     filteredData() {
-      if (this.activeTab.type === 'all') return this.credential;
-      return this.credential.filter(provider => provider.provider_type === this.activeTab.type);
+      if (this.activeTab.type === 'all') return this.credentials;
+      return this.credentials.filter(provider => provider.provider_type === this.activeTab.type);
     },
     activeTab() {
       return this.tab.find(t => t.active);
@@ -117,14 +135,50 @@ export default {
     onMouseLeave(event) {
       event.currentTarget.classList.remove('hover');
     },
+    getBadgeClass(type) {
+      switch (type) {
+        case 'M':
+          return 'badge-primary';
+        case 'S':
+          return 'badge-secondary';
+        case 'V':
+          return 'badge-info';            
+        default:
+          return '';
+      }
+    },
+    getBadgeLabel(type) {
+      switch (type) {
+        case 'M':
+          return 'model';
+        case 'S':
+          return 'storage';
+        case 'V':
+          return 'vector';
+        default:
+          return '';
+      }
+    },
+    calculatePercentage(expectedCount, limitCnt) {
+      if (limitCnt === 0) {
+        return 0;
+      } else {
+        return ((expectedCount / limitCnt) * 100).toFixed(3);
+      }
+    },
+    formatTokenSize(bytes) {
+      if (bytes === 0) return '0 B';
+      const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const decimalPlaces = 3;
+      const k = 1024;
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(decimalPlaces)) + ' ' + units[i];
+    },
     async fetchData() {
       try {
         this.loading = true;
-        useProviderStore().credential = [];
+        useProviderStore().credentials = [];
         await this.fetchCredential({ userId: this.userId });
-        console.log(this.credential)
-        this.loading = false;
-
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {

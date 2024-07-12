@@ -42,67 +42,70 @@
                                     <div class="col">
                                         <div class="mb-3">
                                             <label>Provider Name</label>
-                                            <input v-model="providerName" class="form-control" type="text" placeholder="Provider Name *" required>
+                                            <input v-model="providerName" class="form-control" type="text" placeholder="Provider Name *" required  disabled>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row" v-if="isAmazonWebServices">
+
+                                <div v-if="innerUsed">
+                                    <div class="row" v-if="isAmazonWebServices">
+                                        <div class="col">
+                                            <div class="mb-3">
+                                                <label>Access Key</label>
+                                                <input v-model="accessKey" class="form-control" type="text" placeholder="Access Key *">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="mb-3">
+                                                <label>Secret Access Key</label>
+                                                <input v-model="secretAccessKey" class="form-control" type="text" placeholder="Secret Access Key *">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="mb-3">
+                                                <label>Session Key</label>
+                                                <input v-model="sessionKey" class="form-control" type="text" placeholder="Session Key *">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" v-else-if="isGoogleDrive">
                                     <div class="col">
                                         <div class="mb-3">
-                                            <label>Access Key</label>
-                                            <input v-model="accessKey" class="form-control" type="text" placeholder="Access Key *">
+                                        <label>Google Client ID</label>
+                                        <input v-model="clientId" class="form-control" type="text" placeholder="Client ID *">
                                         </div>
                                     </div>
                                     <div class="col">
                                         <div class="mb-3">
-                                            <label>Secret Access Key</label>
-                                            <input v-model="secretAccessKey" class="form-control" type="text" placeholder="Secret Access Key *">
+                                        <label>Auth Secret Key</label>
+                                        <input v-model="authSecret" class="form-control" type="text" placeholder="Client Secret *">
                                         </div>
                                     </div>
-                                    <div class="col">
-                                        <div class="mb-3">
-                                            <label>Session Key</label>
-                                            <input v-model="sessionKey" class="form-control" type="text" placeholder="Session Key *">
+                                    </div>
+                                    <div class="row" v-else-if="isGitOrNotion">
+                                        <div class="col">
+                                            <div class="mb-3">
+                                                <label>Access Token</label>
+                                                <input v-model="accessToken" class="form-control" type="text" placeholder="Access Token *">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row" v-else-if="isGoogleDrive">
-                                  <div class="col">
-                                    <div class="mb-3">
-                                      <label>Google Client ID</label>
-                                      <input v-model="clientId" class="form-control" type="text" placeholder="Client ID *">
-                                    </div>
-                                  </div>
-                                  <div class="col">
-                                    <div class="mb-3">
-                                      <label>Auth Secret Key</label>
-                                      <input v-model="authSecret" class="form-control" type="text" placeholder="Client Secret *">
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="row" v-else-if="isGitOrNotion">
-                                    <div class="col">
-                                        <div class="mb-3">
-                                            <label>Access Token</label>
-                                            <input v-model="accessToken" class="form-control" type="text" placeholder="Access Token *">
+                                    <div class="row" v-else>
+                                        <div class="col">
+                                            <div class="mb-3">
+                                                <label>API Key</label>
+                                                <input v-model="apiKey" class="form-control" type="text" placeholder="API Key *">
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="row" v-else>
-                                    <div class="col">
-                                        <div class="mb-3">
-                                            <label>API Key</label>
-                                            <input v-model="apiKey" class="form-control" type="text" placeholder="API Key *">
-                                        </div>
-                                    </div>
-                                </div>   
+                                    </div>     
+                                </div>       
                                 <div class="row">
-                                    <div class="col">
+                                    <div class="col mt-3">
                                         <button type="submit" class="btn btn-primary me-2">Update</button>
                                         <button @click="deleteCredential" class="btn btn-danger me-2">Delete</button>
                                         <router-link to="/provider/list" class="btn btn-secondary">Back to List</router-link>
                                     </div>
-                                </div>                       
+                                </div>                                              
                             </div>
                         </form>
 
@@ -147,8 +150,11 @@ export default {
         const successMessage = ref(null);
         const userId = ref(useAuthStore().userId);
         const credentialId = ref(null);
+        const innerUsed = ref(null);
+        const limitCnt = ref(null);
 
         const fetchAllProviders = async () => {
+            loading.value = true;
             try {
                 await providerStore.fetchProviders();
                 allProviders.value = providerStore.allProviders;
@@ -157,7 +163,7 @@ export default {
         };
 
         const fetchCredentialData = async () => {
-            loading.value = true;
+            
             try {
                 credentialId.value = String(router.currentRoute.value.query.credentialId);
                 await providerStore.fetchCredentialById(credentialId.value);
@@ -173,6 +179,8 @@ export default {
                 apiEndpoint.value = credential.api_endpoint;
                 clientId.value = credential.client_id;
                 authSecret.value = credential.auth_secret_key;
+                innerUsed.value = credential.inner_used;
+                limitCnt.value = credential.limit_cnt;
 
                 filterProvidersByType(selectedType.value);
             } catch (error) {
@@ -249,9 +257,9 @@ export default {
             }
         };
 
-        onMounted(() => {
-            fetchAllProviders();
-            fetchCredentialData();
+        onMounted(async () => {
+            await fetchAllProviders();
+            await fetchCredentialData();
         });
 
         watch(selectedType, (newType) => {
@@ -277,6 +285,8 @@ export default {
             apiEndpoint,
             clientId,
             authSecret,
+            innerUsed,
+            limitCnt,
             providers,
             isAmazonWebServices,
             isGitOrNotion,

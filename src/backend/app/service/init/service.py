@@ -29,10 +29,6 @@ class InitDataService:
             provider_name = data.pop("credential_name")
             provider = self.session.execute(select(Provider).where(Provider.name == provider_name)).first()
 
-            logging.warning('=== create_credential_data()  =====================================')
-            logging.warning(provider)
-            logging.warning(provider[0].provider_id)
-                        
             if provider:
                 provider_id = provider[0].provider_id
             else:
