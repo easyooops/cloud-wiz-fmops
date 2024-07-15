@@ -11,6 +11,7 @@ from app.core.exception import internal_server_error
 from app.service.agent.model import Agent
 from app.api.v1.schemas.chat import ChatResponse
 from app.service.prompt.service import PromptService
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 
@@ -18,7 +19,8 @@ router = APIRouter()
 def get_agents_prompt(
     agent_id: UUID,    
     query: Optional[str] = None,
-    session: Session = Depends(get_database)    
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)    
 ):
     try:
         service = PromptService(session)
@@ -32,7 +34,8 @@ def get_agents_prompt(
 @router.get("/{agent_id}", response_model=Agent)
 def get_agents_by_id(
     agent_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = AgentService(session)
@@ -52,7 +55,8 @@ def get_agents_by_id(
 def get_agents(
     agent_id: Optional[UUID] = None,
     user_id: Optional[UUID] = None,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = AgentService(session)
@@ -63,7 +67,8 @@ def get_agents(
 @router.post("/", response_model=Agent)
 def create_agent(
     agent: AgentCreate, 
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = AgentService(session)
@@ -75,7 +80,8 @@ def create_agent(
 def update_agent(
     agent_id: UUID,
     agent_update: AgentUpdate,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = AgentService(session)
@@ -86,7 +92,8 @@ def update_agent(
 @router.delete("/{agent_id}")
 def delete_agent(
     agent_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = AgentService(session)

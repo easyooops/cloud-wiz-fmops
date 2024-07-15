@@ -2,19 +2,20 @@ from typing import Any, Dict, List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlmodel import Session
-from app.core.interface.service import ServiceType
 from app.core.factories import get_database
 from app.service.store.service import StoreService
 from app.api.v1.schemas.store import StoreCreate, StoreUpdate, StoreWithDirectory
 from app.core.exception import internal_server_error
 from app.service.store.model import Store
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 
 @router.get("/{user_id}", response_model=List[StoreWithDirectory])
 def get_stores(
     user_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = StoreService(session)
@@ -43,7 +44,8 @@ def get_stores(
 def create_store(
     store: StoreCreate,
     user_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = StoreService(session)
@@ -56,7 +58,8 @@ def update_store(
     store_id: UUID,
     store_update: StoreUpdate,
     user_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = StoreService(session)
@@ -68,7 +71,8 @@ def update_store(
 def delete_store(
     store_id: UUID,
     user_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = StoreService(session)
@@ -81,7 +85,8 @@ def delete_store(
 def get_store_files(
     store_name: str,
     user_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = StoreService(session)
@@ -94,7 +99,8 @@ def upload_file_to_store(
     store_name: str,
     user_id: UUID,
     file: UploadFile = File(...),
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = StoreService(session)
@@ -109,7 +115,8 @@ def delete_file_from_store(
     store_name: str,
     file_name: str,
     user_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = StoreService(session)

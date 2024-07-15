@@ -3,12 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from app.core.interface.service import ServiceType
 from app.core.factories import get_database
 from app.service.provider.service import ProviderService
 from app.service.provider.model import Provider
 from app.api.v1.schemas.provider import ProviderCreate, ProviderUpdate
 from app.core.exception import internal_server_error
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 
@@ -17,7 +17,8 @@ router = APIRouter()
 def get_provider(
     type: Optional[str] = None,
     name: Optional[str] = None,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ProviderService(session)
@@ -29,7 +30,8 @@ def get_provider(
 @router.post("/", response_model=Provider)
 def create_provider(
     provider: ProviderCreate, 
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ProviderService(session)
@@ -42,7 +44,8 @@ def create_provider(
 def update_provider(
     provider_id: UUID,
     provider_update: ProviderUpdate,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ProviderService(session)
@@ -54,7 +57,8 @@ def update_provider(
 @router.delete("/{provider_id}")
 def delete_provider(
     provider_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ProviderService(session)

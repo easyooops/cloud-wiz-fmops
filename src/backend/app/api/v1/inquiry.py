@@ -2,12 +2,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from app.core.interface.service import ServiceType
 from app.core.factories import get_database
 from app.core.exception import internal_server_error
 from app.service.inquiry.service import InquiryService
 from app.service.inquiry.model import Inquiry
 from app.api.v1.schemas.inquiry import InquiryCreate, InquiryUpdate
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 
@@ -16,7 +16,8 @@ router = APIRouter()
 def get_inquiry(
     inquiry_type: Optional[str] = None,
     title: Optional[str] = None,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = InquiryService(session)
@@ -28,7 +29,8 @@ def get_inquiry(
 @router.post("/", response_model=Inquiry)
 def create_inquiry(
     inquiry: InquiryCreate, 
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = InquiryService(session)
@@ -41,7 +43,8 @@ def create_inquiry(
 def update_inquiry(
     inquiry_id: int,
     inquiry_update: InquiryUpdate,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = InquiryService(session)
@@ -53,7 +56,8 @@ def update_inquiry(
 @router.delete("/{inquiry_id}")
 def delete_inquiry(
     inquiry_id: int,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = InquiryService(session)

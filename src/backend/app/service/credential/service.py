@@ -54,20 +54,25 @@ class CredentialService(S3Service):
 
         return result
     
+    def mask_sensitive_data(self, data: Optional[str]) -> Optional[str]:
+        if data is None or len(data) <= 14:
+            return data
+        return data[:2] + '*' * (len(data) - 14) + data[-2:]
+    
     def _map_to_credential_out(self, credential: Credential, provider: Provider, expected_count: int) -> CredentialProviderJoin:
         return CredentialProviderJoin(
             credential_id=credential.credential_id,
             user_id=credential.user_id,
             provider_id=credential.provider_id,
             credential_name=credential.credential_name,
-            access_key=credential.access_key,
-            secret_key=credential.secret_key,
-            session_key=credential.session_key,
-            access_token=credential.access_token,
-            api_key=credential.api_key,
+            access_key=self.mask_sensitive_data(credential.access_key),
+            secret_key=self.mask_sensitive_data(credential.secret_key),
+            session_key=self.mask_sensitive_data(credential.session_key),
+            access_token=self.mask_sensitive_data(credential.access_token),
+            api_key=self.mask_sensitive_data(credential.api_key),
             api_endpoint=credential.api_endpoint,
-            client_id=credential.client_id,
-            auth_secret_key=credential.auth_secret_key,
+            client_id=self.mask_sensitive_data(credential.client_id),
+            auth_secret_key=self.mask_sensitive_data(credential.auth_secret_key),
             inner_used=credential.inner_used,
             limit_cnt=credential.limit_cnt,
             provider_name=provider.name,

@@ -2,13 +2,13 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from app.core.interface.service import ServiceType
 from app.core.factories import get_database
 
 from app.service.chain.model import Chain
 from app.service.chain.service import ChainService
 from app.api.v1.schemas.chain import ChainCreate, ChainUpdate
 from app.core.exception import internal_server_error
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 
@@ -16,7 +16,8 @@ router = APIRouter()
 @router.get("/", response_model=List[Chain])
 def get_chains(
     provider_id: Optional[int] = None,
-    session: Session = Depends(get_database) 
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ChainService(session)
@@ -28,7 +29,8 @@ def get_chains(
 @router.post("/", response_model=Chain)
 def create_chain(
     chain: ChainCreate, 
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = ChainService(session)
@@ -41,7 +43,8 @@ def create_chain(
 def update_chain(
     chain_id: int,
     chain_update: ChainUpdate,
-    session: Session = Depends(get_database) 
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = ChainService(session)
@@ -53,7 +56,8 @@ def update_chain(
 @router.delete("/{chain_id}")
 def delete_chain(
     chain_id: int,
-    session: Session = Depends(get_database) 
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ChainService(session)

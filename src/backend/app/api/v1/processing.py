@@ -20,7 +20,8 @@ router = APIRouter()
 def get_processings(
     user_id: Optional[UUID] = None,
     processing_type: Optional[str] = None,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     start_time = time.time()
     try:
@@ -36,7 +37,8 @@ def get_processings(
 @router.post("/", response_model=Processing)
 def create_processing(
     processing: ProcessingCreate, 
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)    
 ):
     try:
         service = ProcessingService(session)
@@ -49,7 +51,8 @@ def create_processing(
 def update_processing(
     processing_id: UUID,
     processing_update: ProcessingUpdate,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = ProcessingService(session)
@@ -61,7 +64,8 @@ def update_processing(
 @router.delete("/{processing_id}")
 def delete_processing(
     processing_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         service = ProcessingService(session)

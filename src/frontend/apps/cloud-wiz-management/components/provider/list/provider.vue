@@ -44,19 +44,19 @@
                       <p>{{ dataItem.provider_desc }}</p>
                       <div class="row details" v-if="!dataItem.inner_used">
                           <div class="col-6" v-if="dataItem.access_key"><span>Access Key </span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.access_key">{{ mask(dataItem.access_key) }} </div>
+                          <div class="col-6 font-primary" v-if="dataItem.access_key">{{ dataItem.access_key }} </div>
                           <div class="col-6" v-if="dataItem.secret_key"> <span>Secret Access Key</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.secret_key">{{ mask(dataItem.secret_key) }}</div>
+                          <div class="col-6 font-primary" v-if="dataItem.secret_key">{{ dataItem.secret_key }}</div>
                           <div class="col-6" v-if="dataItem.session_key"> <span>Session Key</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.session_key">{{ mask(dataItem.session_key) }}</div>
+                          <div class="col-6 font-primary" v-if="dataItem.session_key">{{ dataItem.session_key }}</div>
                           <div class="col-6" v-if="dataItem.access_token"> <span>Access Token</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.access_token">{{ mask(dataItem.access_token) }}</div>
+                          <div class="col-6 font-primary" v-if="dataItem.access_token">{{ dataItem.access_token }}</div>
                           <div class="col-6" v-if="dataItem.api_key"> <span>API Key</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.api_key">{{ mask(dataItem.api_key) }}</div>
+                          <div class="col-6 font-primary" v-if="dataItem.api_key">{{ dataItem.api_key }}</div>
                           <div class="col-6" v-if="dataItem.client_id"><span>Google Client ID</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.client_id">{{ mask(dataItem.client_id) }}</div>
+                          <div class="col-6 font-primary" v-if="dataItem.client_id">{{ dataItem.client_id }}</div>
                           <div class="col-6" v-if="dataItem.auth_secret_key"><span>Auth Secret Key</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ mask(dataItem.auth_secret_key) }}</div>
+                          <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ dataItem.auth_secret_key }}</div>
                       </div>
 
                       <div class="row details" v-if="dataItem.inner_used">
@@ -66,7 +66,7 @@
                           <div class="col-6 font-primary">{{ formatTokenSize(dataItem.limit_cnt) }}</div>
                       </div>
 
-                      <div class="project-status mt-4">
+                      <div class="project-status mt-4" v-if="dataItem.inner_used">
                         <div class="d-flex mb-0">
                             <p>{{ calculatePercentage(dataItem.expected_count, dataItem.limit_cnt) }}% </p>
                             <div class="flex-grow-1 text-end"><span>Expiry</span></div>
