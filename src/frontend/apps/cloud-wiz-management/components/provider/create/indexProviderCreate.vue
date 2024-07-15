@@ -60,12 +60,12 @@
                                             <input v-model="secretAccessKey" class="form-control" type="text" placeholder="Secret Access Key *">
                                         </div>
                                     </div>
-                                    <div class="col">
+                                    <!-- <div class="col">
                                         <div class="mb-3">
                                             <label>Session Key</label>
                                             <input v-model="sessionKey" class="form-control" type="text" placeholder="Session Key *">
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                                <div class="row" v-else-if="isGoogleDrive">
                                  <div class="col">

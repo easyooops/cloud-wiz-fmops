@@ -2,11 +2,11 @@ import logging
 import os
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
+from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta
 from google.auth.transport import requests
 from google.oauth2 import id_token
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Security
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 load_dotenv()
@@ -57,8 +57,10 @@ class AuthService:
             if user_id is None:
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             return payload
+        except ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Security(oauth2_scheme)):
     return AuthService.verify_jwt_token(token)

@@ -10,7 +10,7 @@ from app.core.exception import internal_server_error
 from app.service.model.model import Model
 from app.api.v1.schemas.model import ModelCreate, ModelUpdate
 from app.core.factories import get_database
-from app.core.interface.service import ServiceType
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 
@@ -24,7 +24,10 @@ SERVICE_CLASSES = {
 }
 
 @router.get("/{model_name}/models")
-def get_models(model_name: str):
+def get_models(
+    model_name: str,
+    token: str = Depends(get_current_user) 
+):
     try:
         service_class = SERVICE_CLASSES.get(model_name.lower())
         if not service_class:
@@ -38,7 +41,8 @@ def get_models(model_name: str):
 @router.get("/", response_model=List[Model])
 def get_models(
     provider_id: Optional[UUID] = None,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ModelService(session)
@@ -50,7 +54,8 @@ def get_models(
 @router.post("/", response_model=Model)
 def create_model(
     model: ModelCreate,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ModelService(session)
@@ -63,7 +68,8 @@ def create_model(
 def update_model(
     model_id: UUID,
     model: ModelUpdate,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ModelService(session)
@@ -75,7 +81,8 @@ def update_model(
 @router.delete("/{model_id}", response_model=Model)
 def delete_model(
     model_id: UUID,
-    session: Session = Depends(get_database)
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         service = ModelService(session)

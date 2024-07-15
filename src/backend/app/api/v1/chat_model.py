@@ -5,11 +5,11 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session
 from typing import Optional
 
-from app.core.interface.service import ServiceType
 from app.core.factories import get_database
 from app.core.exception import internal_server_error
-from app.api.v1.schemas.chat import ChatResponse, ChatRequest
+from app.api.v1.schemas.chat import ChatResponse
 from app.service.chat.service import ChatService
+from app.service.auth.service import get_current_user
 
 router = APIRouter()
 load_dotenv()
@@ -17,8 +17,9 @@ load_dotenv()
 # OpenAI
 @router.post("/chat-openai", response_model=ChatResponse)
 def get_openai_chat_answer(
-        query: Optional[str] = None,
-        session: Session = Depends(get_database) 
+    query: Optional[str] = None,
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
 ):
     try:
         if not query:
@@ -33,9 +34,10 @@ def get_openai_chat_answer(
 # Bedrock
 @router.post("/chat-bedrock", response_model=ChatResponse)
 def get_bedrock_chat_answer(
-        query: Optional[str] = None,
-        model: str = None,
-        session: Session = Depends(get_database)
+    query: Optional[str] = None,
+    model: str = None,
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         if not query or not model:
@@ -50,10 +52,11 @@ def get_bedrock_chat_answer(
 # OpenAI + Bedrock Chaining
 @router.post("/chat-chaining", response_model=ChatResponse)
 def get_openai_bedrock_chaining(
-        query: Optional[str] = None,
-        model: str = None,
-        service_type: str = "openai",
-        session: Session = Depends(get_database)
+    query: Optional[str] = None,
+    model: str = None,
+    service_type: str = "openai",
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user)
 ):
     try:
         if not query:

@@ -82,7 +82,7 @@
                                                 <div class="col-form-label">Provider *</div>
                                                 <select class="form-select form-control-primary" v-model="selectedProvider">
                                                     <option value="" disabled hidden>Select Provider</option>
-                                                    <option v-for="provider in filteredProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
+                                                    <option v-for="provider in filteredProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
                                                 </select>
                                             </div> 
                                             <div class="col-xl-4 mb-3">
@@ -164,7 +164,7 @@
                                     <div class="col-form-label">Embedding Provider *</div>
                                     <select class="form-select form-control-primary" v-model="selectedEmbeddingProvider">
                                       <option value="" disabled hidden>Select Embedding Provider</option>
-                                      <option v-for="provider in filteredEmbeddingProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
+                                      <option v-for="provider in filteredEmbeddingProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
                                     </select>
                                   </div>
                                   <div class="col-xl-6 mb-3">
@@ -184,7 +184,7 @@
                                   <div class="col-form-label">Storage *</div>
                                   <select class="form-select form-control-primary" v-model="selectedStorageProvider">
                                     <option value="" disabled hidden>Select Storage Provider</option>
-                                    <option v-for="provider in filteredStorageProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
+                                    <option v-for="provider in filteredStorageProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
                                   </select>
                                 </div>
                                 <div v-if="isS3ProviderSelected" class="mb-3">
@@ -210,7 +210,7 @@
                                   <div class="col-form-label">Vector DB</div>
                                   <select class="form-select form-control-primary" v-model="selectedVectorDB">
                                     <option value="" disabled hidden>FAISS</option>
-                                    <option v-for="provider in filteredVectorDBProviders" :key="provider.provider_id" :value="provider.provider_id">{{ provider.credential_name }}</option>
+                                    <option v-for="provider in filteredVectorDBProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
                                   </select>
                                 </div>
                               </div>
@@ -389,24 +389,34 @@ export default {
         menu() {
             return this.data.data
         },
-        ...mapState(useProviderStore, ['credential', 'models']),
+        ...mapState(useProviderStore, ['credentials', 'models']),
         ...mapState(useStorageStore, ['storages']),  
         ...mapState(useAgentStore, ['agent']),
         ...mapState(useProcessingStore, ['processings']),
         filteredProviders() {
-            return this.credential.filter(provider => provider.provider_type === "M");
+            return this.credentials.filter(provider => provider.provider_type === "M");
         },
         filteredModels() {
-            return this.models.filter(model => model.model_type === this.modelType && model.provider_id == this.selectedProvider);
+            let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedProvider);
+            let provider_id = '';
+            if (credentials.length > 0) {
+                provider_id = credentials[0].provider_id
+            }
+            return this.models.filter(model => model.model_type === this.modelType && model.provider_id == provider_id);
         },
         filteredEmbeddingProviders() {
-            return this.credential.filter(provider => provider.provider_type === "M");
+            return this.credentials.filter(provider => provider.provider_type === "M");
         },
         filteredEmbeddingModels() {
-            return this.models.filter(model => model.model_type === "E" && model.provider_id == this.selectedEmbeddingProvider);
+            let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedEmbeddingProvider);
+            let provider_id = '';
+            if (credentials.length > 0) {
+                provider_id = credentials[0].provider_id
+            }            
+            return this.models.filter(model => model.model_type === "E" && model.provider_id == provider_id);
         },
         filteredStorageProviders() {
-            return this.credential.filter(provider => provider.provider_type === "S");
+            return this.credentials.filter(provider => provider.provider_type === "S");
         },
         filteredObjects() {
             return this.storages;
@@ -414,12 +424,17 @@ export default {
         filteredFiles(){
             return this.filteredFiles;
         },
-        isS3ProviderSelected() {
-            const selectedProvider = this.credential.find(provider => provider.provider_id === this.selectedStorageProvider);
+        isS3ProviderSelected() {          
+            let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedStorageProvider);
+            let provider_id = '';
+            if (credentials.length > 0) {
+                provider_id = credentials[0].provider_id
+            }                  
+            let selectedProvider = this.credentials.find(provider => provider.provider_id === provider_id);
             return selectedProvider && selectedProvider.credential_name.includes('S3');
         },
         filteredVectorDBProviders() {
-            return this.credential.filter(provider => provider.provider_type === "V");
+            return this.credentials.filter(provider => provider.provider_type === "V");
         },
         filteredPreProcessings() {
             return this.processings.filter(processing => processing.processing_type === 'pre');
@@ -437,25 +452,29 @@ export default {
             if (newValue > 5000) this.responseToken = 5000
             else if (newValue < 0) this.responseToken = 0
         },
-        selectedProvider(newProviderId) {
+        selectedProvider() {
             if (this.models.length > 0) {
-                const filteredModels = this.models.filter(model => model.model_type === this.modelType && model.provider_id == newProviderId);
+                let filteredModels = this.models.filter(model => model.model_type === this.modelType && model.model_id == this.selectedFoundationModel);
                 if (filteredModels.length > 0) {
                     this.selectedFoundationModel = filteredModels[0].model_id;
                 }
             }
         },
         modelType(newModelType) {
-            if (this.models.length > 0) {
-                const filteredModels = this.models.filter(model => model.model_type === newModelType && model.provider_id == this.selectedProvider);
-                if (filteredModels.length > 0) {
-                    this.selectedFoundationModel = filteredModels[0].model_id;
-                }
+            let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedProvider);
+            if (credentials.length > 0) {
+                if (this.models.length > 0) {
+                    let filteredModels = this.models.filter(model => model.model_type === newModelType && model.provider_id == credentials[0].provider_id);
+                    if (filteredModels.length > 0) {
+                        this.selectedFoundationModel = filteredModels[0].model_id;
+                    }
+                }                
             }
         },
-        selectedEmbeddingProvider(newProviderId) {
+        selectedEmbeddingProvider() {
             if (this.models.length > 0) {
-                const filteredEmbeddingModels = this.models.filter(model => model.model_type === "E" && model.provider_id == newProviderId);
+                let filteredEmbeddingModels = this.models.filter(model => model.model_type === "E" && model.model_id == this.selectedEmbeddingModel);
+                console.log(filteredEmbeddingModels)
                 if (filteredEmbeddingModels.length > 0) {
                     this.selectedEmbeddingModel = filteredEmbeddingModels[0].model_id;
                 }
@@ -623,10 +642,10 @@ export default {
 
             await Promise.all(tasks);
 
-            if (this.credential.length > 0) {
-                this.selectedProvider = this.filteredProviders[0]?.provider_id || '';
-                this.selectedEmbeddingProvider = this.filteredEmbeddingProviders[0]?.provider_id || '';
-                this.selectedStorageProvider = this.filteredStorageProviders[0]?.provider_id || '';
+            if (this.credentials.length > 0) {
+                this.selectedProvider = this.filteredProviders[0]?.credentials_id || '';
+                this.selectedEmbeddingProvider = this.filteredEmbeddingProviders[0]?.credentials_id || '';
+                this.selectedStorageProvider = this.filteredStorageProviders[0]?.credentials_id || '';
                 
             }
             if (this.processings.length > 0) {
@@ -634,17 +653,17 @@ export default {
                 this.selectedPostProcessing = this.filteredPostProcessings[0]?.processing_id || '';
             }
             if (this.storages.length > 0) {
-            this.selectedObject = this.filteredObjects[0]?.store_id || '';
-            const firstStore = this.filteredObjects[0];
-            if (firstStore?.store_name) {
-                await this.loadFiles(firstStore.store_name);
-            }
+                this.selectedObject = this.filteredObjects[0]?.store_id || '';
+                const firstStore = this.filteredObjects[0];
+                if (firstStore?.store_name) {
+                    await this.loadFiles(firstStore.store_name);
+                }
             }
             if (this.router.currentRoute.query.agentId || this.agentId) {
                 await this.fetchAgentData();
             }
-            if (this.credential.length > 0) {
-                this.selectedVectorDB = this.filteredVectorDBProviders[0]?.provider_id || '';
+            if (this.credentials.length > 0) {
+                this.selectedVectorDB = this.filteredVectorDBProviders[0]?.credentials_id || '';
             }                         
         } catch (error) {
             console.error('Error agents loading:', error);

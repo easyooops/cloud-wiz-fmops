@@ -51,9 +51,21 @@ class PromptService:
             agent_data = self._get_agent_data(agent_id)
             _d_agent = agent_data['Agent']
 
+            # check limit
+            _d_credential = agent_data['Credential']            
+            if _d_credential.inner_used:
+                if _d_agent.expected_token_count > _d_credential.limit_cnt:
+                    return ChatResponse(
+                            answer="Token usage limits. Please ask your system administrator.",
+                            tokens=0,
+                            cost=0
+                        )
+
+            # verify                
+            self._verify_query(agent_data)
+
             # get history
             history = self._get_history(agent_id)
-            self._verify_query(query)
 
             # pre-processing
             if _d_agent.processing_enabled:
@@ -117,12 +129,13 @@ class PromptService:
         EmbeddingModel = aliased(Model)
         statement = (
             select(
-                Agent, Model, Provider, Store,
+                Agent, Model, Credential, Provider, Store,
                 EmbeddingModel.model_name.label('embedding_model_name'),
                 Provider.name.label('embedding_provider_name')
             )
             .join(Model, Agent.fm_model_id == Model.model_id)
-            .join(Provider, Agent.fm_provider_id == Provider.provider_id)
+            .join(Credential, Agent.fm_provider_id == Credential.credential_id)
+            .join(Provider, Credential.provider_id == Provider.provider_id)
             .join(Store, Agent.storage_object_id == Store.store_id)
             .outerjoin(EmbeddingModel, Agent.embedding_model_id == EmbeddingModel.model_id)
         )
@@ -133,11 +146,13 @@ class PromptService:
         if not result:
             raise HTTPException(status_code=404, detail="Agent not found")
 
-        agent_data, model_data, provider_data, store_data, embedding_model_name, embedding_provider_name = result
+        agent_data, model_data, credential_data, provider_data, store_data, embedding_model_name, embedding_provider_name = result
+
         return {
             "Agent": agent_data,
-            "Provider": provider_data,
             "Model": model_data,
+            "Credential": credential_data,
+            "Provider": provider_data,
             "Store": store_data,
             "EmbeddingModelName": embedding_model_name,
             "EmbeddingProviderName": embedding_provider_name
@@ -146,16 +161,6 @@ class PromptService:
     def _get_processing_data(self, processing_id: UUID):
 
         statement = select(Processing).where(Processing.processing_id == processing_id)
-        result = self.session.execute(statement).first()
-
-        if not result:
-            raise HTTPException(status_code=404, detail="Agent not found")
-
-        return result
-
-    def _get_credential_data(self, provider_id: UUID):
-
-        statement = select(Credential).where(Credential.provider_id == provider_id)
         result = self.session.execute(statement).first()
 
         if not result:
@@ -171,8 +176,7 @@ class PromptService:
         # Logic to retrieve history
         return None
 
-    def _verify_query(self, query: str):
-        # Logic to verify query
+    def _verify_query(self, agent_data):
         pass
 
     def _parse_options(self, data: str) -> Dict[str, bool]:
@@ -280,17 +284,11 @@ class PromptService:
         _d_agent = agent_data['Agent']
         embedding_model_name = agent_data['EmbeddingModelName']
 
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-
-        _d_provider = agent_data['Provider']
-
-        _d_credential = self._get_credential_data(_d_provider.provider_id)[0]
-        if not _d_credential.inner_used:
-            openai_api_key = _d_credential.api_key
+        openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
 
         if not openai_api_key:
-            raise ValueError("OpenAI API key is not in the environment variables")
-
+            return "OpenAI API key is not set in the provider information."
+        
         embed_component = OpenAIEmbeddingComponent(openai_api_key)
         embed_component.build(
             model_id=embedding_model_name
@@ -312,16 +310,12 @@ class PromptService:
                 raise ValueError("No matching documents found")
 
             retriever = db.as_retriever()
-            openai_api_key = os.getenv("OPENAI_API_KEY")
-
-            _d_provider = agent_data['Provider']
-
-            _d_credential = self._get_credential_data(_d_provider.provider_id)[0]
-            if not _d_credential.inner_used:
-                openai_api_key = _d_credential.api_key
-
+            
+            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
+            
             if not openai_api_key:
-                raise ValueError("OpenAI API key is not set in the environment variables")
+                return "OpenAI API key is not set in the provider information."
+                    
             if _d_agent.fm_provider_type == "T":
                 openai_component = OpenAILLMComponent(openai_api_key)
                 openai_component.build(
@@ -372,19 +366,12 @@ class PromptService:
         _d_agent = agent_data['Agent']
         embedding_model_name = agent_data['EmbeddingModelName']
 
-        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_region = os.getenv("AWS_REGION")
-
-        _d_provider = agent_data['Provider']
-
-        _d_credential = self._get_credential_data(_d_provider.provider_id)[0]
-        if not _d_credential.inner_used:
-            aws_access_key = _d_credential.access_key
-            aws_secret_access_key = _d_credential.secret_key
+        aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+        aws_region = self._get_credential_info(agent_data, "AWS_REGION")
 
         if not all([aws_access_key, aws_secret_access_key, aws_region]):
-            raise ValueError("AWS credentials or region are not set in the environment variables")
+            return "AWS credentials or region are not set in the provider information."
 
         embed_component = BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
         embed_component.build(embedding_model_name)
@@ -406,19 +393,13 @@ class PromptService:
                 raise ValueError("No matching documents found")
 
             retriever = db.as_retriever()
-            aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-            aws_region = os.getenv("AWS_REGION")
 
-            _d_provider = agent_data['Provider']
-
-            _d_credential = self._get_credential_data(_d_provider.provider_id)[0]
-            if not _d_credential.inner_used:
-                aws_access_key = _d_credential.access_key
-                aws_secret_access_key = _d_credential.secret_key
+            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
 
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
-                raise ValueError("AWS credentials are not set in the environment variables")
+                return "AWS credentials are not set in the provider information."
 
             if _d_agent.fm_provider_type == "T":
                 bedrock_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
@@ -461,21 +442,16 @@ class PromptService:
 
     def _run_openai_model(self, agent_data, query):
 
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-
-        if not openai_api_key:
-            raise ValueError("OpenAI API key is not set in the environment variables")
-
         llms_component = None
 
         _d_agent = agent_data['Agent']
         _d_model = agent_data['Model']
-        _d_provider = agent_data['Provider']
 
-        _d_credential = self._get_credential_data(_d_provider.provider_id)[0]
-        if not _d_credential.inner_used:
-            openai_api_key = _d_credential.api_key
+        openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
 
+        if not openai_api_key:
+            return "OpenAI API key is not set in the provider information."
+        
         if _d_agent.fm_provider_type == "T":
             llms_component = OpenAILLMComponent(openai_api_key)
             llms_component.build(
@@ -504,28 +480,17 @@ class PromptService:
 
     def _run_bedrock_model(self, agent_data, query):
 
-        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_region = os.getenv("AWS_REGION")
-
-        if not aws_access_key:
-            raise ValueError("aws_access_key is not set in the environment variables")
-        if not aws_secret_access_key:
-            raise ValueError("aws_secret_access_key is not set in the environment variables")
-        if not aws_region:
-            raise ValueError("aws_region is not set in the environment variables")
-
         llms_component = None
         _d_agent = agent_data['Agent']
         _d_model = agent_data['Model']
-        _d_provider = agent_data['Provider']
+ 
+        aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+        aws_region = self._get_credential_info(agent_data, "AWS_REGION")
 
-        _d_credential = self._get_credential_data(_d_provider.provider_id)[0]
-        if not _d_credential.inner_used:
-            aws_access_key = _d_credential.access_key
-            aws_secret_access_key = _d_credential.secret_key
-
-
+        if not all([aws_access_key, aws_secret_access_key, aws_region]):
+            return "AWS credentials or region are not set in the provider information."
+        
         if _d_agent.fm_provider_type == "T":
             llms_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
         elif _d_agent.fm_provider_type == "C":
@@ -573,15 +538,7 @@ class PromptService:
 
             agent_data = self._get_agent_data(agent_id)
             _d_agent = agent_data['Model']
-            # _d_provider = agent_data['Provider']
-
-            # if _d_provider.name == "OpenAI":
-            #     token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
-            # elif _d_provider.name == "Bedrock":
-            #     token_counts = self._get_bedrock_token_counts(text, _d_agent.model_name)
-            # else:
-            #     token_counts = self._get_openai_token_counts(text, _d_agent.model_name)
-
+            
             logging.warning('=== _get_token_counts()  =====================================')
 
             logging.warning(query)
@@ -640,11 +597,11 @@ class PromptService:
         aws_region = os.getenv("AWS_REGION")
 
         if not aws_access_key:
-            raise ValueError("aws_access_key is not set in the environment variables")
+            return "aws_access_key is not set in the environment variables"
         if not aws_secret_access_key:
-            raise ValueError("aws_secret_access_key is not set in the environment variables")
+            return "aws_secret_access_key is not set in the environment variables"
         if not aws_region:
-            raise ValueError("aws_region is not set in the environment variables")
+            return "aws_region is not set in the environment variables"
 
         token_component = TokenUtilityService(aws_access_key, aws_secret_access_key, aws_region)
         return token_component.get_bedrock_token_count(
@@ -665,3 +622,19 @@ class PromptService:
         except Exception as e:
             self.session.rollback()
             raise HTTPException(status_code=500, detail=str(e))
+        
+    def _get_credential_info(self, agent_data, key):
+
+        _d_credential = agent_data['Credential']
+
+        if not _d_credential.inner_used:
+            if key == "AWS_ACCESS_KEY_ID":
+                return _d_credential.access_key
+            elif key == "AWS_SECRET_ACCESS_KEY":
+                return _d_credential.secret_key
+            elif key == "AWS_REGION":
+                return os.getenv(key)
+            elif key == "OPENAI_API_KEY":
+                return _d_credential.api_key
+        else:
+            return os.getenv(key)

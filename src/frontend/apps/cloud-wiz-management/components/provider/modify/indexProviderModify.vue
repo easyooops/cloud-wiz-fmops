@@ -47,38 +47,38 @@
                                     </div>
                                 </div>
 
-                                <div v-if="innerUsed">
+                                <div v-if="!innerUsed">
                                     <div class="row" v-if="isAmazonWebServices">
                                         <div class="col">
                                             <div class="mb-3">
                                                 <label>Access Key</label>
-                                                <input v-model="accessKey" class="form-control" type="text" placeholder="Access Key *">
+                                                <input v-model="accessKey" class="form-control" type="text" placeholder="Access Key *" disabled>
                                             </div>
                                         </div>
                                         <div class="col">
                                             <div class="mb-3">
                                                 <label>Secret Access Key</label>
-                                                <input v-model="secretAccessKey" class="form-control" type="text" placeholder="Secret Access Key *">
+                                                <input v-model="secretAccessKey" class="form-control" type="text" placeholder="Secret Access Key *" disabled>
                                             </div>
                                         </div>
-                                        <div class="col">
+                                        <!-- <div class="col">
                                             <div class="mb-3">
                                                 <label>Session Key</label>
                                                 <input v-model="sessionKey" class="form-control" type="text" placeholder="Session Key *">
                                             </div>
-                                        </div>
+                                        </div> -->
                                     </div>
                                     <div class="row" v-else-if="isGoogleDrive">
                                     <div class="col">
                                         <div class="mb-3">
                                         <label>Google Client ID</label>
-                                        <input v-model="clientId" class="form-control" type="text" placeholder="Client ID *">
+                                        <input v-model="clientId" class="form-control" type="text" placeholder="Client ID *" disabled>
                                         </div>
                                     </div>
                                     <div class="col">
                                         <div class="mb-3">
                                         <label>Auth Secret Key</label>
-                                        <input v-model="authSecret" class="form-control" type="text" placeholder="Client Secret *">
+                                        <input v-model="authSecret" class="form-control" type="text" placeholder="Client Secret *" disabled>
                                         </div>
                                     </div>
                                     </div>
@@ -86,7 +86,7 @@
                                         <div class="col">
                                             <div class="mb-3">
                                                 <label>Access Token</label>
-                                                <input v-model="accessToken" class="form-control" type="text" placeholder="Access Token *">
+                                                <input v-model="accessToken" class="form-control" type="text" placeholder="Access Token *" disabled>
                                             </div>
                                         </div>
                                     </div>
@@ -94,7 +94,7 @@
                                         <div class="col">
                                             <div class="mb-3">
                                                 <label>API Key</label>
-                                                <input v-model="apiKey" class="form-control" type="text" placeholder="API Key *">
+                                                <input v-model="apiKey" class="form-control" type="text" placeholder="API Key *" disabled>
                                             </div>
                                         </div>
                                     </div>     
