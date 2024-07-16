@@ -12,6 +12,9 @@ class UserService:
 
     def get_user_by_email(self, email: str) -> User:
         return self.session.query(User).filter(User.email == email).first()
+    
+    def get_user_by_Id(self, user_id: str) -> User:
+        return self.session.query(User).filter(User.user_id == user_id).first()    
 
     def create_user(self, name: str, email: str) -> User:
         try:
@@ -25,11 +28,12 @@ class UserService:
         except Exception as e:
             raise e
 
-    def update_last_login(self, user: User):
+    def update_last_login(self, user: User, google_token: str):
         try:
             user.last_login = datetime.now()
             user.updated_at = datetime.now()
-            user.updater_id = user.user_id            
+            user.updater_id = user.user_id
+            user.google_token = google_token  # google_token 값을 업데이트
             self.session.add(user)
             self.session.commit()
         except Exception as e:

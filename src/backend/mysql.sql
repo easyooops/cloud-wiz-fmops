@@ -37,7 +37,8 @@ DROP TABLE IF EXISTS user;
 CREATE TABLE user (
 	user_id CHAR(36) NOT NULL, 
 	username VARCHAR(128) NOT NULL, 
-	email VARCHAR(128) NOT NULL, 
+	email VARCHAR(128) NOT NULL,
+	google_token TEXT NOT NULL,
 	last_login DATETIME NOT NULL, 
 	is_deleted BOOLEAN NOT NULL DEFAULT 0, 
 	creator_id CHAR(36) NOT NULL, 

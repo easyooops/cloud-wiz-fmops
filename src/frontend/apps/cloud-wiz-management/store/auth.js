@@ -37,7 +37,7 @@ export const useAuthStore = defineStore({
         this.userId = response.data.userId;
 
         localStorage.setItem(TOKEN_KEY, this.accessToken);
-        localStorage.setItem(GOOGLE_TOKEN_KEY, token);
+        // localStorage.setItem(GOOGLE_TOKEN_KEY, token);
         localStorage.setItem(USER_KEY, JSON.stringify({ userName: this.userName, userId: this.userId }));
 
       } catch (error) {
@@ -55,13 +55,13 @@ export const useAuthStore = defineStore({
 
         this.auth = null;
         this.accessToken = '';
-        this.googleToken = '';
+        // this.googleToken = '';
         this.userName = '';
         this.userId = '';
 
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(GOOGLE_TOKEN_KEY);
+        // localStorage.removeItem(GOOGLE_TOKEN_KEY);
 
         // const { post } = restApi();
         // await post('/auth/logout', body);
