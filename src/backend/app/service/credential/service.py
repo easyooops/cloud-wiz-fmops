@@ -11,6 +11,7 @@ from app.service.provider.model import Provider
 from app.service.agent.model import Agent
 from app.core.interface.service import ServiceType, StorageService
 from app.core.manager import ServiceManager
+from app.service.user.model import User
 
 class CredentialService():
     def __init__(self, session: Session):
@@ -142,6 +143,8 @@ class CredentialService():
 
             credential, provider = result
 
+            user = self.session.get(User, credential.user_id)
+            
             if credential.inner_used:
                 config = {
                     'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
@@ -153,7 +156,8 @@ class CredentialService():
                     'database_id': os.getenv('NOTION_DATABASE_ID'),
                     'token': os.getenv('GITHUB_TOKEN'),
                     'repo': os.getenv('GITHUB_REPO'),
-                    'owner': os.getenv('GITHUB_OWNER')
+                    'owner': os.getenv('GITHUB_OWNER'),
+                    'refresh_token': os.getenv('REFRESH_TOKEN')
                 }
             else:
                 config = {
@@ -166,7 +170,8 @@ class CredentialService():
                     'database_id': credential.client_id,
                     'token': credential.auth_secret_key,
                     'repo': credential.session_key,
-                    'owner': credential.secret_key
+                    'owner': credential.secret_key,
+                    'refresh_token': credential.refresh_token
                 }
 
             if provider.pvd_key == "AS":

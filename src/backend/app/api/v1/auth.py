@@ -32,7 +32,7 @@ async def authenticate_with_google(
             data_service = InitDataService(session, user.user_id)
             data_service.run()
 
-        user_service.update_last_login(user)
+        user_service.update_last_login(user, auth.token)
 
         return {
             "accessToken": jwt_token,
