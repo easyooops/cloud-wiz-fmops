@@ -59,11 +59,11 @@
                           <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ dataItem.auth_secret_key }}</div>
                       </div>
 
-                      <div class="row details" v-if="dataItem.inner_used">
+                      <div class="row details">
                           <div class="col-6"><span>Used </span></div>
                           <div class="col-6 font-primary">{{ formatTokenSize(dataItem.expected_count) }} </div>
-                          <div class="col-6"> <span>Limit</span></div>
-                          <div class="col-6 font-primary">{{ formatTokenSize(dataItem.limit_cnt) }}</div>
+                          <div class="col-6" v-if="dataItem.inner_used"> <span>Limit</span></div>
+                          <div class="col-6 font-primary" v-if="dataItem.inner_used">{{ formatTokenSize(dataItem.limit_cnt) }}</div>
                       </div>
 
                       <div class="project-status mt-4" v-if="dataItem.inner_used">

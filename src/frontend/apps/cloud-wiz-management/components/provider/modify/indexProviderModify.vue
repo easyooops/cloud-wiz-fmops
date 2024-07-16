@@ -12,7 +12,7 @@
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-body">
-                        <form @submit.prevent="updateCredential">
+                        <form>
                             <div class="form theme-form">
                                 <div class="row">
                                     <div class="col-sm-4">
@@ -101,7 +101,7 @@
                                 </div>       
                                 <div class="row">
                                     <div class="col mt-3">
-                                        <button type="submit" class="btn btn-primary me-2">Update</button>
+                                        <!-- <button type="submit" class="btn btn-primary me-2">Update</button> -->
                                         <button @click="deleteCredential" class="btn btn-danger me-2">Delete</button>
                                         <router-link to="/provider/list" class="btn btn-secondary">Back to List</router-link>
                                     </div>

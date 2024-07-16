@@ -237,17 +237,18 @@ class PromptService:
 
         storage_object_id = str(agent_data['Agent'].storage_object_id)
         storage_store = agent_data['Store']
-        store_name = storage_store.store_name
+        store_id = storage_store.store_id
         user_id = storage_store.user_id
 
-        file_metadata_list = store_service.list_files(user_id, store_name)
+        file_metadata_list = store_service.list_files(user_id, store_id)
         files = [file_metadata['Key'] for file_metadata in file_metadata_list]
 
         if not files:
             logging.error("No files found in storage Object")
             raise HTTPException(status_code=500, detail="No files found in storage object")
 
-        documents = store_service.load_documents(files)
+        # documents = store_service.load_documents(files)
+        documents = store_service.load_documents_v2(storage_store.credential_id, files)
 
         if not documents:
             logging.error("No documents found in files")

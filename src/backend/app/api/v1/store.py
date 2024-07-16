@@ -18,14 +18,15 @@ def get_stores(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session)
-        stores = service.get_all_stores(user_id)
+        service = StoreService(session, user_id)
+        stores = service.get_all_stores(user_id, None)
     
         store_responses = []
         for store in stores:
-            directory_info = service.get_store_directory_info(user_id, store.store_name)
+            directory_info = service.get_store_directory_info(user_id, store.store_name, store.credential_id)
             store_with_directory = StoreWithDirectory(
                 store_id=store.store_id,
+                credential_id=store.credential_id,
                 store_name=store.store_name,
                 description=store.description,
                 created_at=store.created_at,
@@ -48,7 +49,7 @@ def create_store(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session)
+        service = StoreService(session, user_id)
         return service.create_store(store, user_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating store: {str(e)}")
@@ -62,7 +63,7 @@ def update_store(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session)
+        service = StoreService(session, user_id)
         return service.update_store(store_id, store_update, user_id)
     except Exception as e:
         raise internal_server_error(e)
@@ -75,53 +76,51 @@ def delete_store(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session)
+        service = StoreService(session, user_id)
         service.delete_store(store_id, user_id)
         return {"message": "Store deleted successfully"}
     except Exception as e:
         raise internal_server_error(e)
 
-@router.get("/{user_id}/{store_name}/files", response_model=List[Dict[str, Any]])
+@router.get("/{user_id}/{store_id}/files", response_model=List[Dict[str, Any]])
 def get_store_files(
-    store_name: str,
+    store_id: UUID,
     user_id: UUID,
     session: Session = Depends(get_database),
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session)
-        return service.list_files(user_id, store_name)
+        service = StoreService(session, user_id)
+        return service.list_files(user_id, store_id)
     except Exception as e:
         raise internal_server_error(e)
 
-@router.post("/{user_id}/{store_name}/upload")
+@router.post("/{user_id}/{store_id}/upload")
 def upload_file_to_store(
-    store_name: str,
+    store_id: UUID,
     user_id: UUID,
     file: UploadFile = File(...),
-    session: Session = Depends(get_database),
-    token: str = Depends(get_current_user) 
+    session: Session = Depends(get_database)
+    # token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session)
-        file_location = f"{user_id}/{store_name}/{file.filename}"
-        service.upload_file(file.file, file_location)
+        service = StoreService(session, user_id)
+        service.upload_file_to_store(user_id, store_id, file)
         return {"message": "File uploaded successfully"}
     except Exception as e:
         raise internal_server_error(e)
     
-@router.delete("/{user_id}/{store_name}/files/{file_name}")
+@router.delete("/{user_id}/{store_id}/files/{file_name}")
 def delete_file_from_store(
-    store_name: str,
+    store_id: UUID,
     file_name: str,
     user_id: UUID,
     session: Session = Depends(get_database),
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session)
-        file_location = f"{user_id}/{store_name}/{file_name}"
-        service.delete_file_from_store(file_location)
+        service = StoreService(session, user_id)
+        service.delete_file_from_store(user_id, store_id, file_name)
         return {"message": "File deleted successfully"}
     except Exception as e:
         raise internal_server_error(e)

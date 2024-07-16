@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Optional
 from sqlalchemy import func
@@ -8,14 +9,16 @@ from app.service.credential.model import Credential
 from app.api.v1.schemas.credential import CredentialCreate, CredentialProviderJoin, CredentialUpdate
 from app.service.provider.model import Provider
 from app.service.agent.model import Agent
-from app.core.provider.aws.s3 import S3Service
+from app.core.interface.service import ServiceType, StorageService
+from app.core.manager import ServiceManager
 
-class CredentialService(S3Service):
+class CredentialService():
     def __init__(self, session: Session):
         super().__init__()
         self.session = session
+        self.service_manager = ServiceManager()
         self.store_bucket = os.getenv("AWS_S3_BUCKET_STORE_NAME")
-
+    
     def get_all_credentials(self, user_id: Optional[UUID] = None, credential_id: Optional[UUID] = None, provider_id: Optional[UUID] = None) -> List[CredentialProviderJoin]:
         statement = select(Credential, Provider).join(Provider, Credential.provider_id == Provider.provider_id)
         if user_id:
@@ -31,13 +34,12 @@ class CredentialService(S3Service):
 
         credentials = []
         for credential, provider in results:
-            expected_count = self._calculate_expected_count(user_id, provider)
+            expected_count = self._calculate_expected_count(user_id, provider, credential)
             credentials.append(self._map_to_credential_out(credential, provider, expected_count))
         
         return credentials
 
-    def _calculate_expected_count(self, user_id: UUID, provider: Provider) -> int:
-
+    def _calculate_expected_count(self, user_id: UUID, provider: Provider, credential: Credential) -> int:
         result = 0
 
         if provider.type == 'M':
@@ -48,16 +50,27 @@ class CredentialService(S3Service):
             result = self.session.execute(agent_statement).scalar() or 0
         elif provider.type == 'S':
             full_directory_name = f"{user_id}"
-            result = self.get_directory_info(full_directory_name)['total_size']
+            try:
+                # 스토리지 서비스 가져오기
+                storage_service = self._set_storage_credential(credential_id=credential.credential_id)
+                if storage_service:
+                    # 스토리지 서비스 사용
+                    result = storage_service.get_directory_info(full_directory_name)['total_size']
+                else:
+                    result = 0
+            except Exception as e:
+                print(f"Error while getting storage information: {e}")
+                result = 0
         elif provider.type == 'V':
             result = 0
 
         return result
-    
+        
     def mask_sensitive_data(self, data: Optional[str]) -> Optional[str]:
         if data is None or len(data) <= 14:
             return data
-        return data[:2] + '*' * (len(data) - 14) + data[-2:]
+        half_length = (len(data) - 4) // 2
+        return data[:2] + '*' * half_length + data[-2:]
     
     def _map_to_credential_out(self, credential: Credential, provider: Provider, expected_count: int) -> CredentialProviderJoin:
         return CredentialProviderJoin(
@@ -113,3 +126,59 @@ class CredentialService(S3Service):
             self.session.commit()
         except Exception as e:
             raise e
+
+    def _set_storage_credential(self, credential_id: UUID) -> StorageService:
+        try:
+            credential_query = (
+                select(Credential, Provider)
+                .join(Provider, Credential.provider_id == Provider.provider_id)
+                .where(Credential.credential_id == credential_id)
+                .where(Provider.type == "S")
+            )
+            result = self.session.execute(credential_query).first()
+
+            if not result:
+                raise ValueError(f"Credential with id {credential_id} and provider type 'S' not found")
+
+            credential, provider = result
+
+            if credential.inner_used:
+                config = {
+                    'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+                    'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+                    'aws_region': os.getenv('AWS_REGION', 'us-east-1'),
+                    'bucket_name': self.store_bucket,
+                    'credentials_json': os.getenv('GOOGLE_DRIVE_CREDENTIALS_JSON'),
+                    'api_token': os.getenv('NOTION_API_TOKEN'),
+                    'database_id': os.getenv('NOTION_DATABASE_ID'),
+                    'token': os.getenv('GITHUB_TOKEN'),
+                    'repo': os.getenv('GITHUB_REPO'),
+                    'owner': os.getenv('GITHUB_OWNER')
+                }
+            else:
+                config = {
+                    'aws_access_key_id': credential.access_key,
+                    'aws_secret_access_key': credential.secret_key,
+                    'aws_region': os.getenv('AWS_REGION', 'us-east-1'),
+                    'bucket_name': self.store_bucket,
+                    'credentials_json': credential.api_key,
+                    'api_token': credential.access_token,
+                    'database_id': credential.client_id,
+                    'token': credential.auth_secret_key,
+                    'repo': credential.session_key,
+                    'owner': credential.secret_key
+                }
+
+            if provider.pvd_key == "AS":
+                return self.service_manager.get_service(ServiceType.S3, config)
+            elif provider.pvd_key == "GD":
+                return self.service_manager.get_service(ServiceType.GOOGLE_DRIVE, config)
+            elif provider.pvd_key == "NT":
+                return self.service_manager.get_service(ServiceType.NOTION, config)
+            elif provider.pvd_key == "GH":
+                return self.service_manager.get_service(ServiceType.GITHUB, config)
+            else:
+                raise ValueError(f"Unsupported provider key: {provider.pvd_key}")
+        except Exception as e:
+            print(f"Error while setting storage credential: {e}")
+            return None

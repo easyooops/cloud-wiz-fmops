@@ -139,9 +139,10 @@ DROP TABLE IF EXISTS store;
 CREATE TABLE store (
 	store_id CHAR(36) NOT NULL, 
 	user_id CHAR(36) NOT NULL, 
+	credential_id CHAR(36) NOT NULL, 
 	store_name VARCHAR(255) NOT NULL, 
 	description VARCHAR(255), 
-	is_deleted BOOLEAN NOT NULL DEFAULT 0, 
+	is_deleted BOOLEAN NOT NULL DEFAULT 0,
 	creator_id CHAR(36) NOT NULL, 
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
 	updater_id CHAR(36),

@@ -2,7 +2,8 @@
     {
         "company": "OpenAI",
         "name": "OpenAI",
-        "description": "인간과 유사한 텍스트 생성, 번역, 요약, 질의응답 등 다양한 응용 분야에서 사용됩니다.",
+        "pvd_key": "OA",
+        "description": "Used in various applications such as text generation, translation, summarization, and question answering that resemble human-like text.",
         "logo": "openai.png",
         "type": "M",
         "sort_order": 1,
@@ -13,7 +14,8 @@
     {
         "company": "Amazon Web Services",
         "name": "Bedrock",
-        "description": "AI21 Labs, Titan, Anthropic, Cohere, Meta, Mistral AI, Stability AI 등 다양한 언어 모델을 지원합니다.",
+        "pvd_key": "BR",
+        "description": "Supports various language models including AI21 Labs, Titan, Anthropic, Cohere, Meta, Mistral AI, and Stability AI.",
         "logo": "aws.png",
         "type": "M",
         "sort_order": 2,
@@ -22,9 +24,34 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "company": "Anthropic",
+        "name": "Anthropic",
+        "pvd_key": "AP",
+        "description": "Anthropic focuses on AI safety and research, aiming to develop human-friendly and reliable AI systems.",
+        "logo": "anthropic.png",
+        "type": "M",
+        "sort_order": 3,
+        "is_deleted": false,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
+        "company": "Google",
+        "name": "Gemini",
+        "pvd_key": "GN",
+        "description": "Gemini is Google's AI language model used for various tasks including conversational AI, text generation and analysis, and translation.",
+        "logo": "gemini.png",
+        "type": "M",
+        "sort_order": 4,
+        "is_deleted": false,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
         "company": "Amazon Web Services",
         "name": "Amazon S3",
-        "description": "다양한 파일 형식과 크기를 지원하며, 웹 기반으로 데이터를 쉽게 업로드 및 다운로드할 수 있습니다.",
+        "pvd_key": "AS",
+        "description": "Supports various file formats and sizes, allowing easy web-based upload and download of data.",
         "logo": "aws.png",
         "type": "S",
         "sort_order": 1,
@@ -35,19 +62,9 @@
     {
         "company": "Google LLC",
         "name": "Google Drive",
-        "description": "Google Workspace에 포함된 Google Drive는 모든 파일을 백업하고 어떤 기기에서든 액세스할 수 있는 안전한 장소입니다.",
+        "pvd_key": "GD",
+        "description": "Part of Google Workspace, Google Drive provides a secure place to back up and access all your files from any device.",
         "logo": "google-drive.png",
-        "type": "S",
-        "sort_order": 4,
-        "is_deleted": false,
-        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
-        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
-    },
-    {
-        "company": "GIT",
-        "name": "GITHub",
-        "description": "Git은 분산 버전 관리 시스템으로, 모든 개발자가 전체 코드베이스의 사본을 로컬에 저장할 수 있습니다.",
-        "logo": "openai.png",
         "type": "S",
         "sort_order": 2,
         "is_deleted": false,
@@ -55,10 +72,11 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
-        "company": "Notion Labs Inc",
-        "name": "Notion",
-        "description": "Notion은 메모, 문서 작성, 프로젝트 관리, 데이터베이스 관리 등을 하나의 플랫폼에서 할 수 있는 올인원 작업 공간을 제공합니다.",
-        "logo": "openai.png",
+        "company": "GIT",
+        "name": "GITHub",
+        "pvd_key": "GH",
+        "description": "Git is a distributed version control system that allows every developer to have a local copy of the entire codebase.",
+        "logo": "github.png",
         "type": "S",
         "sort_order": 3,
         "is_deleted": false,
@@ -66,10 +84,23 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "company": "Notion Labs Inc",
+        "name": "Notion",
+        "pvd_key": "NT",
+        "description": "Notion provides an all-in-one workspace where you can write, plan, manage projects, and maintain databases.",
+        "logo": "notion.png",
+        "type": "S",
+        "sort_order": 4,
+        "is_deleted": false,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
         "company": "ChromaWay",
         "name": "ChromaDB",
-        "description": "ChromaDB는 블록체인을 기반으로 한 데이터베이스로, 스마트 계약 및 탈중앙화 애플리케이션을 위한 데이터 저장 및 관리를 제공합니다.",
-        "logo": "openai.png",
+        "pvd_key": "CM",
+        "description": "ChromaDB is a blockchain-based database that provides data storage and management for smart contracts and decentralized applications.",
+        "logo": "chromadb.png",
         "type": "V",
         "sort_order": 1,
         "is_deleted": false,
@@ -79,12 +110,13 @@
     {
         "company": "Pinecone Systems Inc",
         "name": "Pinecone",
-        "description": "실시간 벡터 검색 및 유사성 검색을 위한 클라우드 기반 플랫폼으로, 대규모 데이터셋에서 빠르게 벡터 유사성을 탐색할 수 있습니다.",
-        "logo": "openai.png",
+        "pvd_key": "PC",
+        "description": "A cloud-based platform for real-time vector search and similarity search, enabling fast exploration of vector similarities in large datasets.",
+        "logo": "pinecone.png",
         "type": "V",
         "sort_order": 2,
         "is_deleted": false,
         "creator_id": "2e9279bc33104a7ba53d342dafba7841",
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
-    }    
+    }
 ]

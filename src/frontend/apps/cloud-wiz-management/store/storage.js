@@ -76,7 +76,7 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
-    async uploadFile(userId, file, storeName) {
+    async uploadFile(userId, file, storageId) {
       this.loading = true;
       this.error = null;
       try {
@@ -84,7 +84,7 @@ export const useStorageStore = defineStore({
         formData.append('file', file);
         
         const { post } = restApi();
-        await post(`/store/${userId}/${storeName}/upload`, formData, {
+        await post(`/store/${userId}/${storageId}/upload`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -95,12 +95,12 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
-    async fetchFiles(userId, storeName) {
+    async fetchFiles(userId, storageId) {
       this.loading = true;
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/store/${userId}/${storeName}/files`, {
+        const response = await get(`/store/${userId}/${storageId}/files`, {
           headers: {
             'accept': 'application/json'
           }
@@ -112,12 +112,12 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
-    async deleteFile(userId, storeName, fileKey) {
+    async deleteFile(userId, storageId, fileKey) {
       this.loading = true;
       this.error = null;
       try {
         const { del } = restApi();
-        await del(`/store/${userId}/${storeName}/files/${fileKey}`);
+        await del(`/store/${userId}/${storageId}/files/${fileKey}`);
       } catch (error) {
         throw error;
       } finally {

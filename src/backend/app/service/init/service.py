@@ -48,11 +48,20 @@ class InitDataService:
 
     def create_store_data(self):
         # self.clear_store_table()
+
+        store_provider = self.session.execute(
+                select(Credential)
+                .join(Provider, Credential.provider_id == Provider.provider_id)
+                .where(Provider.name == "Amazon S3")
+            ).first()
+        store_provider_id = store_provider[0].credential_id
+
         store_data = StoreCreate(
             store_name="Default Storage",
             description="Default Storage with Cloudwiz AI FMOps",
             creator_id=self.user_id,
             updater_id=self.user_id,
+            credential_id=store_provider_id,
             user_id=self.user_id
         )
 
@@ -76,10 +85,13 @@ class InitDataService:
         # self.clear_agent_table()
         agents = []
         for data in agent_data:
-            fm_provider = self.session.execute(select(Provider).where(Provider.name == "OpenAI")).first()
-            fm_provider_id = fm_provider[0].provider_id
+            fm_provider = self.session.execute(
+                    select(Credential)
+                    .join(Provider, Credential.provider_id == Provider.provider_id)
+                    .where(Provider.name == "OpenAI")
+                ).first()
+            fm_provider_id = fm_provider[0].credential_id
             if not self.validate_uuid(fm_provider_id):
-                print(fm_provider_id)
                 continue
 
             data["fm_provider_id"] = fm_provider_id
@@ -95,7 +107,6 @@ class InitDataService:
             fm_model = self.session.execute(select(Model).where(Model.model_name == model_name)).first()
             fm_model_id = fm_model[0].model_id
             if not self.validate_uuid(fm_model_id):
-                print(fm_model_id)
                 continue
 
             data["fm_provider_type"] = model_typ
@@ -104,15 +115,18 @@ class InitDataService:
             embedding_model = self.session.execute(select(Model).where(Model.model_name == "text-embedding-ada-002")).first()
             embedding_model_id = embedding_model[0].model_id
             if not self.validate_uuid(embedding_model_id):
-                print(embedding_model_id)
                 continue
 
             data["embedding_model_id"] = embedding_model_id
 
-            store_provider = self.session.execute(select(Provider).where(Provider.name == "Amazon S3")).first()
-            store_provider_id = store_provider[0].provider_id
+            store_provider = self.session.execute(
+                    select(Credential)
+                    .join(Provider, Credential.provider_id == Provider.provider_id)
+                    .where(Provider.name == "Amazon S3")
+                ).first()
+            store_provider_id = store_provider[0].credential_id
+
             if not self.validate_uuid(store_provider_id):
-                print(store_provider_id)
                 continue
 
             data["storage_provider_id"] = store_provider_id
@@ -120,7 +134,6 @@ class InitDataService:
             object_name = self.session.execute(select(Store).where(Store.store_name == "Default Storage")).first()
             object_name_id = object_name[0].store_id        
             if not self.validate_uuid(object_name_id):
-                print(object_name_id)
                 continue
 
             data["storage_object_id"] = object_name_id
@@ -128,7 +141,6 @@ class InitDataService:
             pre_processing = self.session.execute(select(Processing).where(Processing.processing_type == "pre")).first()
             pre_processing_id = pre_processing[0].processing_id
             if not self.validate_uuid(pre_processing_id):
-                print(pre_processing_id)
                 continue
 
             data["pre_processing_id"] = pre_processing_id
@@ -136,7 +148,6 @@ class InitDataService:
             post_processing = self.session.execute(select(Processing).where(Processing.processing_type == "post")).first()
             post_processing_id = post_processing[0].processing_id
             if not self.validate_uuid(post_processing_id):
-                print(post_processing_id)
                 continue
 
             data["post_processing_id"] = post_processing_id
