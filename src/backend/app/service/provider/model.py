@@ -6,7 +6,8 @@ from uuid import UUID, uuid4
 class Provider(SQLModel, table=True):
     provider_id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     name: str = Field(index=True)
-    company: str = Field(index=True)    
+    company: str = Field(index=True)
+    pvd_key: Optional[str] = Field(default=None)
     description: Optional[str] = Field(default=None, index=True)
     logo: Optional[str] = Field(default=None)
     type: str

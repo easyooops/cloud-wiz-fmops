@@ -79,14 +79,14 @@ export default {
         const storeId = ref('');
         storeName.value = String(router.currentRoute.value.query.storeName);
         storeId.value = String(router.currentRoute.value.query.storeId);
-        const uploadUrl = API_ENDPOINT + '/store/'+ userId +'/'+ encodeURIComponent(storeName.value) + '/upload';
+        const uploadUrl = API_ENDPOINT + '/store/'+ userId +'/'+ storeId.value + '/upload';
         const files = ref([]);
         const loading = ref(false);
 
         const fetchFiles = async () => {
             loading.value = true;
             try {
-                const fetchedFiles = await storageStore.fetchFiles(userId, storeName.value);
+                const fetchedFiles = await storageStore.fetchFiles(userId, storeId.value);
                 files.value = fetchedFiles;
             } catch (error) {
                 console.error('An error occurred while fetching the file list.', error);
@@ -175,7 +175,7 @@ export default {
         const deleteFile = async (file) => {
             loading.value = true;
             try {
-                await storageStore.deleteFile(userId, storeName.value, getFileName(file.Key));
+                await storageStore.deleteFile(userId, storeId.value, getFileName(file.Key));
                 await fetchFiles();
             } catch (error) {
                 console.error('An error occurred while deleting the file.', error);

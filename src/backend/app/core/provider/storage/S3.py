@@ -1,32 +1,16 @@
-import os
-import time
 from typing import Dict, List
-from dotenv import load_dotenv
 from boto3.session import Session
 from botocore.exceptions import ClientError
+from app.core.interface.service import ServiceFactory, StorageService
 
-class S3Service:
-    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region):
-        self.load_credentials(aws_access_key_id, aws_secret_access_key, aws_region)
-        self.load_bucket_name()
+class S3StorageService(StorageService):
+    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region, bucket_name):
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+        self.aws_region = aws_region
+        self.bucket_name = bucket_name
         self.s3_client = self.create_s3_client()
         self.create_bucket_if_not_exists()
-
-    def load_credentials(self, aws_access_key_id, aws_secret_access_key, aws_region):
-        load_dotenv()
-        self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-        self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        self.aws_region = os.getenv("AWS_REGION", "us-east-1")
-
-        if aws_access_key_id:
-            self.aws_access_key_id = aws_access_key_id
-        if aws_secret_access_key:
-            self.aws_secret_access_key = aws_secret_access_key
-        if aws_region:
-            self.aws_region = aws_region
-
-    def load_bucket_name(self):
-        self.bucket_name = os.getenv("AWS_S3_BUCKET_STORE_NAME")
 
     def create_s3_client(self):
         session = Session(
@@ -39,13 +23,25 @@ class S3Service:
 
     def create_bucket_if_not_exists(self):
         try:
+            # 버킷이 존재하는지 확인합니다.
             self.s3_client.head_bucket(Bucket=self.bucket_name)
+            print(f"Bucket {self.bucket_name} already exists.")
         except ClientError as e:
+
             error_code = e.response['Error']['Code']
             if error_code == '404':
-                self.retry(self.create_bucket)
-                print("Bucket created, waiting for stabilization...")
-                time.sleep(10)
+                # 버킷이 존재하지 않는 경우 생성합니다.
+                try:
+                    self.create_bucket()
+                    print("Bucket created, waiting for stabilization...")
+                    import time
+                    time.sleep(10)
+                except ClientError as e:
+                    print(f"Error while creating bucket: {e}")
+                    raise
+            elif error_code == '403':
+                print("Access to the bucket is forbidden. Check your AWS credentials and permissions.")
+                raise
             else:
                 print(f"Error while checking if bucket exists: {e}")
                 raise
@@ -72,6 +68,7 @@ class S3Service:
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {str(e)}")
                 if attempt < retries - 1:
+                    import time
                     time.sleep(delay)
                     delay *= backoff
                 else:
@@ -136,7 +133,14 @@ class S3Service:
             print(f"An error occurred: {e}")
             return []
 
-
+    def list_files(self, directory_name: str = '') -> List[Dict]:
+        try:
+            response = self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=directory_name)
+            return response.get('Contents', [])
+        except ClientError as e:
+            print(e)
+            return []
+        
     def get_directory_info(self, directory_name: str = ''):
         try:
             response = self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=directory_name)
@@ -190,4 +194,33 @@ class S3Service:
                 )
             self.s3_client.delete_object(Bucket=self.bucket_name, Key=f"{store_name}/")
         except ClientError as e:
-            print(e)        
+            print(e)     
+            
+    def download_file(self, s3_file_key: str, local_file_path: str):
+        try:
+            self.s3_client.download_file(self.bucket_name, s3_file_key, local_file_path)
+        except ClientError as e:
+            print(f"Error downloading file from S3: {str(e)}")
+            raise
+
+    def set_ready(self):
+        print("S3StorageService is ready")
+
+    def teardown(self):
+        print("S3StorageService is being torn down")
+
+
+class S3StorageServiceFactory(ServiceFactory):
+    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region, bucket_name):
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+        self.aws_region = aws_region
+        self.bucket_name = bucket_name
+
+    def create(self) -> S3StorageService:
+        return S3StorageService(
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_region=self.aws_region,
+            bucket_name=self.bucket_name
+        )
