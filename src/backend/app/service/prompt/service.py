@@ -52,14 +52,10 @@ class PromptService:
             _d_agent = agent_data['Agent']
 
             # check limit
-            _d_credential = agent_data['Credential']            
-            if _d_credential.inner_used:
-                if _d_agent.expected_token_count > _d_credential.limit_cnt:
-                    return ChatResponse(
-                            answer="Token usage limits. Please ask your system administrator.",
-                            tokens=0,
-                            cost=0
-                        )
+            _d_credential = agent_data['Credential']
+            limit_response = self._check_limit_token(_d_agent, _d_credential)
+            if limit_response:
+                return limit_response
 
             # verify                
             self._verify_query(agent_data)
@@ -77,6 +73,14 @@ class PromptService:
 
             # embedding
             if _d_agent.embedding_enabled:
+
+                # check storage limit
+                store_data = agent_data['Store']
+                user_id = _d_agent.user_id
+                storage_limit_response = self._check_storage_limit(user_id, store_data)
+                if storage_limit_response:
+                    return storage_limit_response
+                        
                 try:
                     documents = asyncio.run(self._run_embedding(agent_data, query))
                     if agent_data["Provider"].name == "OpenAI":
@@ -168,6 +172,37 @@ class PromptService:
 
         return result
     
+    def _check_limit_token(self, _d_agent, _d_credential) -> Optional[ChatResponse]:
+        if _d_credential.inner_used:
+            if _d_agent.expected_token_count > _d_credential.limit_cnt:
+                return ChatResponse(
+                        answer="Token usage limits. Please ask your system administrator.",
+                        tokens=0,
+                        cost=0
+                    )
+        return None
+    
+    def _check_storage_limit(self, user_id, store_data) -> Optional[ChatResponse]:
+
+        directory_name = store_data.store_name
+        credential_id = store_data.credential_id
+
+        service = StoreService(self.session, user_id)
+        storage_info = service.get_store_directory_info(user_id, directory_name, credential_id)
+        total_size = storage_info.get('total_size', 0)
+
+        credential = self.session.get(Credential, store_data.credential_id)
+        if not credential:
+            raise HTTPException(status_code=404, detail="Credential not found")
+        
+        if total_size > credential.limit_cnt:
+            return ChatResponse(
+                answer="Storage size limits exceeded. Please contact your system administrator.",
+                tokens=0,
+                cost=0
+            )
+        return None
+
     def _get_history(self, agent_id: UUID):
         # Logic to retrieve history
         return None
@@ -593,9 +628,9 @@ class PromptService:
 
     def _get_bedrock_token_counts(self, text: Optional[str] = None, model_name: Optional[str] = None):
 
-        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_region = os.getenv("AWS_REGION")
+        aws_access_key = os.getenv("INNER_AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("INNER_AWS_SECRET_ACCESS_KEY")
+        aws_region = os.getenv("INNER_AWS_REGION")
 
         if not aws_access_key:
             return "aws_access_key is not set in the environment variables"
