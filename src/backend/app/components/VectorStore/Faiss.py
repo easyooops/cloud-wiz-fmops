@@ -1,22 +1,37 @@
 import faiss
 import numpy as np
-import asyncio
-from app.components.Embedding.Base import AbstractEmbeddingComponent
+from app.components.VectorStore.Base import AbstractVectorStoreComponent
 
+class FaissVectorStoreComponent(AbstractVectorStoreComponent):
+    def __init__(self):
+        super().__init__()
+        self.dimension = None
 
-class FaissAsyncVectorStore:
-    def __init__(self, embedding_component):
-        self.embedding_component = embedding_component
-        self.index = None
-
-    async def initialize(self, dimension):
+    def initialize(self, dimension):
+        self.dimension = dimension
         self.index = faiss.IndexFlatL2(dimension)
 
-    async def add_embeddings(self, embeddings: list):
+    def add_embeddings(self, embeddings: list):
         vectors = np.array(embeddings).astype('float32')
         self.index.add(vectors)
 
-    async def query(self, query_vector: list[float], top_k: int):
+    def query(self, query_vector: list[float], top_k: int):
         query_vector_np = np.array([query_vector]).astype('float32')
         distances, indices = self.index.search(query_vector_np, top_k)
-        return indices[0]  # return the indices of the nearest neighbors
+        return indices[0]
+
+    def reset_index(self):
+        if self.dimension is not None:
+            self.index = faiss.IndexFlatL2(self.dimension)
+        else:
+            raise ValueError("Dimension not set. Initialize the index first.")
+
+    def save_index(self, file_path):
+        if self.index:
+            faiss.write_index(self.index, file_path)
+        else:
+            raise ValueError("Index is not initialized.")
+
+    def load_index(self, file_path):
+        self.index = faiss.read_index(file_path)
+

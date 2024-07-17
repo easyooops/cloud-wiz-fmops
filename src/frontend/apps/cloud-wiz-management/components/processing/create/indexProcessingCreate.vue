@@ -17,6 +17,7 @@
                         <div class="row">
                             <div class="col-sm-12">
                                 <button type="submit" class="btn btn-primary me-2">Submit</button>
+                                <button @click.prevent="deleteProcessing" class="btn btn-danger me-2">Delete</button>
                                 <router-link to="/processing/list" class="btn btn-secondary">Back to List</router-link>
                             </div>
                         </div>
@@ -267,6 +268,23 @@ export default {
             }
         };
 
+        const deleteProcessing = async () => {
+            loading.value = true;
+            errorMessage.value = null;
+            successMessage.value = null;
+
+            try {
+                const processingId = router.currentRoute.value.query.processingId;                
+                await processingStore.deleteProcessing(processingId);
+                successMessage.value = 'Processing deleted successfully.';
+            } catch (error) {
+                errorMessage.value = 'An error occurred while deleting the processing.';
+            } finally {
+                loading.value = false;
+                router.push('/processing/list');
+            }
+        };
+
         onMounted(() => {
             const processingId = router.currentRoute.value.query.processingId;
             if (processingId) {
@@ -294,6 +312,7 @@ export default {
             errorMessage,
             successMessage,
             createOrUpdateProcessing,
+            deleteProcessing,
             isEditMode
         };
     }

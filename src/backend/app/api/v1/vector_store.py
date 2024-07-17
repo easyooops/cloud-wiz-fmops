@@ -1,4 +1,5 @@
 import asyncio
+import json
 import boto3
 import os
 from dotenv import load_dotenv
@@ -17,7 +18,7 @@ from app.service.embedding.service import EmbeddingService
 from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.api.v1.schemas.embedding import EmbeddingMultipleResponse
 from app.service.store.service import StoreService
-from app.service.auth.service import get_current_user
+from app.service.auth.service import AuthService, get_current_user
 
 router = APIRouter()
 load_dotenv()
@@ -29,7 +30,9 @@ async def initialize_faiss_store(
     token: str = Depends(get_current_user)
 ):
     embedding_service = EmbeddingService(session)
-    openai_api_key = os.getenv("OPENAI_API_KEY")
+
+    openai_api_key = AuthService.get_openai_key()
+    
     embedding_component = OpenAIEmbeddingComponent(openai_api_key)
     embedding_component.build(model_id="text-embedding-ada-002")
     await embedding_service.initialize_faiss_store(embedding_component, dimension=2056)
@@ -69,7 +72,8 @@ async def rag_open_ai(
         if not docs:
             raise ValueError("No documents were split into chunks")
 
-        openai_api_key = os.getenv("OPENAI_API_KEY")
+        openai_api_key = AuthService.get_openai_key()
+
         if not openai_api_key:
             raise ValueError("OpenAI API key is not set in the environment")
         embeddings = OpenAIEmbeddings(api_key=openai_api_key)
@@ -123,9 +127,10 @@ async def rag_bedrock(
         else:
             docs = [Document(page_content=doc.page_content) for doc in split_docs]
 
-        aws_access_key = os.getenv("INNER_AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("INNER_AWS_SECRET_ACCESS_KEY")
-        aws_region = os.getenv("INNER_AWS_REGION")
+        aws = AuthService.get_aws_key()
+        aws_access_key = aws['aws_access_key']
+        aws_secret_access_key = aws['aws_secret_access_key']
+        aws_region = aws['aws_region']
 
         if not all([aws_access_key, aws_secret_access_key, aws_region]):
             raise ValueError("AWS credentials or region are not set in the environment variables")

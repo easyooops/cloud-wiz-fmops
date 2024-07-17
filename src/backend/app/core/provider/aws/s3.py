@@ -1,9 +1,13 @@
+import json
 import os
 import time
 from typing import Dict, List
 from dotenv import load_dotenv
 from boto3.session import Session
 from botocore.exceptions import ClientError
+
+from app.core.provider.aws.SecretManager import SecretManagerService
+from app.service.auth.service import AuthService
 
 class S3Service:
     def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region):
@@ -14,9 +18,11 @@ class S3Service:
 
     def load_credentials(self, aws_access_key_id, aws_secret_access_key, aws_region):
         load_dotenv()
-        self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-        self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        self.aws_region = os.getenv("AWS_REGION", "us-east-1")
+
+        aws = AuthService.get_aws_key()
+        self.aws_access_key_id = aws['aws_access_key']
+        self.aws_secret_access_key = aws['aws_secret_access_key']
+        self.aws_region = aws['aws_region']
 
         if aws_access_key_id:
             self.aws_access_key_id = aws_access_key_id

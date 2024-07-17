@@ -1,4 +1,4 @@
-import logging
+import json
 import os
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
@@ -6,14 +6,16 @@ from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta
 from google.auth.transport import requests
 from google.oauth2 import id_token
-from fastapi import Depends, HTTPException, Security
+from fastapi import HTTPException, Security
+
+from app.core.provider.aws.SecretManager import SecretManagerService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 load_dotenv()
 
 class AuthService:
-    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")    # 구글 클라이언트 ID로 교체
-    AUTH_SECRET_KEY = os.getenv("AUTH_SECRET_KEY")      # 비밀 키
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    AUTH_SECRET_KEY = os.getenv("AUTH_SECRET_KEY")
     ALGORITHM = "HS256"                                 # 사용할 알고리즘
     ACCESS_TOKEN_EXPIRE_MINUTES = 30                    # 엑세스 토큰 유효 시간
     REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -61,6 +63,38 @@ class AuthService:
             raise HTTPException(status_code=401, detail="Token has expired")
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    def get_openai_key():
+        # secret_manager = SecretManagerService()
+        # secret_name = os.getenv("SECRETS_MANAGER_NAME")
+        # secret_value  = secret_manager.get_secret(secret_name)
+        # secrets = json.loads(secret_value)
+        # return secrets.get("OPENAI_API_KEY")
+        return os.getenv("OPENAI_API_KEY")
 
+    def get_aws_key():
+        # secret_manager = SecretManagerService()
+        # secret_name = os.getenv("SECRETS_MANAGER_NAME")
+        # secret_value  = secret_manager.get_secret(secret_name)
+        # secrets = json.loads(secret_value)
+        # return {
+        #     'aws_access_key': secrets.get("AWS_ACCESS_KEY_ID"),
+        #     'aws_secret_access_key': secrets.get("AWS_SECRET_ACCESS_KEY"),
+        #     'aws_region': secrets.get("AWS_REGION")
+        # }
+        return {
+            'aws_access_key': os.getenv("AWS_ACCESS_KEY_ID"),
+            'aws_secret_access_key': os.getenv("AWS_SECRET_ACCESS_KEY"),
+            'aws_region': os.getenv("AWS_REGION")
+        }    
+    
+    def get_db_info():
+        # secret_manager = SecretManagerService()
+        # secret_name = os.getenv("SECRETS_MANAGER_NAME")
+        # secret_value  = secret_manager.get_secret(secret_name)
+        # secrets = json.loads(secret_value)
+        # return secrets.get("DATABASE_URL")
+        return os.getenv("DATABASE_URL")
+    
 def get_current_user(token: str = Security(oauth2_scheme)):
     return AuthService.verify_jwt_token(token)

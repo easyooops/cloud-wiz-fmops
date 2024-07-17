@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -19,6 +21,7 @@ from ddtrace.llmobs import LLMObs
 
 from app.core.util.logging import LoggingConfigurator
 from app.core.factories import get_database
+from app.service.auth.service import AuthService
 
 class AuthenticationMiddleware(TrustedHostMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -54,7 +57,7 @@ def get_workers(workers=None):
 
 def create_db_and_tables():
     engine = create_engine(
-        os.getenv("DATABASE_URL"), 
+        AuthService.get_db_info(), 
         echo=True, 
         pool_size=20, 
         max_overflow=10, 
@@ -82,7 +85,7 @@ def configure_datadog():
         site=os.getenv("DATADOG_SITE"),
         agentless_enabled=True,
         integrations_enabled=True,
-        )
+    )
     
 def create_app():
     

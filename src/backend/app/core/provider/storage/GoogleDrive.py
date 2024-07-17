@@ -1,15 +1,15 @@
+import json
 import os
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from app.core.interface.service import ServiceFactory, StorageService
 from typing import List, Dict
-from google.auth.transport import requests
-from google.oauth2 import id_token
+
+from app.core.provider.aws.SecretManager import SecretManagerService
 
 class GoogleDriveStorageService(StorageService):
     def __init__(self, refresh_token: str):
-        
         client_id = os.getenv("GOOGLE_CLIENT_ID")
         client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
         token_uri = "https://oauth2.googleapis.com/token"

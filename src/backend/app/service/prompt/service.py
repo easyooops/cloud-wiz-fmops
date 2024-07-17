@@ -1,5 +1,6 @@
 import asyncio
 from decimal import Decimal
+import json
 from langchain_core.documents import Document
 from sqlalchemy.orm import aliased
 import os
@@ -35,6 +36,7 @@ from app.service.processing.model import Processing
 from app.core.util.piimasking import PiiMaskingService
 from app.core.util.textNormailization import TextNormalizationService
 from app.service.credential.model import Credential
+from app.core.provider.aws.SecretManager import SecretManagerService
 
 
 class PromptService:

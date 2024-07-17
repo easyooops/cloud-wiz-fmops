@@ -9,6 +9,7 @@ from sqlmodel import Session, select
 
 from app.api.v1.schemas.model import ModelCreate, ModelUpdate
 from app.service.model.model import Model
+from app.service.auth.service import AuthService
 
 load_dotenv()
 
@@ -68,7 +69,8 @@ class BaseModelService:
 
 class OpenAIService(BaseModelService):
     def __init__(self):
-        super().__init__(api_key=os.getenv("OPENAI_API_KEY"), api_endpoint=os.getenv("OPENAI_API_ENDPOINT"))
+        openai_api_key = AuthService.get_openai_key()
+        super().__init__(api_key=openai_api_key, api_endpoint=os.getenv("OPENAI_API_ENDPOINT"))
 
     def get_models(self):
         openai.api_key = self.api_key

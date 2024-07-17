@@ -16,7 +16,7 @@
         "name": "Bedrock",
         "pvd_key": "BR",
         "description": "Supports various language models including AI21 Labs, Titan, Anthropic, Cohere, Meta, Mistral AI, and Stability AI.",
-        "logo": "aws.png",
+        "logo": "bedrock.png",
         "type": "M",
         "sort_order": 2,
         "is_deleted": false,

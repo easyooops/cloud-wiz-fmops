@@ -1,3 +1,4 @@
+import json
 import os
 from typing import List
 
@@ -9,7 +10,8 @@ from fastapi import HTTPException
 from app.components.Embedding.Base import AbstractEmbeddingComponent
 from app.components.Embedding.Bedrock import BedrockEmbeddingComponent
 from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
-from app.components.VectorStore.Faiss import FaissAsyncVectorStore
+from app.service.auth.service import AuthService
+from app.components.VectorStore.Faiss import FaissVectorStoreComponent
 
 
 class EmbeddingService:
@@ -22,7 +24,7 @@ class EmbeddingService:
 
     def get_openai_embedding(self, text: str) -> List[float]:
         try:
-            openai_api_key = os.getenv("OPENAI_API_KEY")
+            openai_api_key = AuthService.get_openai_key()
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
 
@@ -35,7 +37,7 @@ class EmbeddingService:
 
     def get_openai_embeddings(self, texts: list):
         try:
-            openai_api_key = os.getenv("OPENAI_API_KEY")
+            openai_api_key = AuthService.get_openai_key()
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
             embedding_component = OpenAIEmbeddingComponent(openai_api_key)
@@ -47,9 +49,11 @@ class EmbeddingService:
 
     def get_bedrock_embedding(self, model_id: str, text: str):
         try:
-            aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-            aws_region = os.getenv("AWS_REGION")
+            aws = AuthService.get_aws_key()
+            aws_access_key = aws['aws_access_key']
+            aws_secret_access_key = aws['aws_secret_access_key']
+            aws_region = aws['aws_region']
+
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
@@ -66,9 +70,11 @@ class EmbeddingService:
 
     def get_bedrock_embeddings(self, model_id: str, texts: list):
         try:
-            aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-            aws_region = os.getenv("AWS_REGION")
+            aws = AuthService.get_aws_key()
+            aws_access_key = aws['aws_access_key']
+            aws_secret_access_key = aws['aws_secret_access_key']
+            aws_region = aws['aws_region']
+
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
@@ -84,7 +90,7 @@ class EmbeddingService:
             raise HTTPException(status_code=500, detail=str(e))
 
     async def initialize_faiss_store(self, embedding_component: AbstractEmbeddingComponent, dimension: int):
-        self.faiss_store = FaissAsyncVectorStore(embedding_component)
+        self.faiss_store = FaissVectorStoreComponent()
         await self.faiss_store.initialize(dimension)
 
     async def add_to_faiss_store(self, texts: list):

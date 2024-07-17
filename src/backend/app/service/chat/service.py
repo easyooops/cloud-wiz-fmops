@@ -1,3 +1,4 @@
+import json
 import os
 from fastapi import HTTPException
 from sqlmodel import Session
@@ -5,6 +6,7 @@ from typing import Optional
 from app.components.Chat.OpenAI import ChatOpenAIComponent
 from app.components.Chat.Bedrock import ChatBedrockComponent
 from app.components.Chat.QueryTuning import QueryTuningComponent
+from app.service.auth.service import AuthService
 
 class ChatService:
     def __init__(self, session: Session):
@@ -12,7 +14,8 @@ class ChatService:
 
     def get_llm_openai_instance(self, model_id: str, max_tokens: int = 150, temperature: float = 0.7):
         try:
-            openai_api_key = os.getenv("OPENAI_API_KEY")
+            openai_api_key = AuthService.get_openai_key()
+            
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the environment variables")
 
@@ -28,9 +31,11 @@ class ChatService:
 
     def get_llm_bedrock_instance(self, model_id: str, max_tokens: int = 150, temperature: float = 0.7):
         try:
-            aws_access_key = os.getenv("INNER_AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = os.getenv("INNER_AWS_SECRET_ACCESS_KEY")
-            aws_region = os.getenv("INNER_AWS_REGION")
+            aws = AuthService.get_aws_key()
+            aws_access_key = aws['aws_access_key']
+            aws_secret_access_key = aws['aws_secret_access_key']
+            aws_region = aws['aws_region']
+
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
@@ -52,10 +57,12 @@ class ChatService:
     # QueryTuning (OpenAI + Bedrock)
     def openai_chaining(self, query: str, model_id: str, service_type: str = "openai", max_tokens: int = 150, temperature: float = 0.7):
         try:
-            openai_api_key = os.getenv("OPENAI_API_KEY")
-            aws_access_key = os.getenv("INNER_AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = os.getenv("INNER_AWS_SECRET_ACCESS_KEY")
-            aws_region = os.getenv("INNER_AWS_REGION")
+            openai_api_key = AuthService.get_openai_key()
+
+            aws = AuthService.get_aws_key()
+            aws_access_key = aws['aws_access_key']
+            aws_secret_access_key = aws['aws_secret_access_key']
+            aws_region = aws['aws_region']
 
             if not all([openai_api_key, aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("API keys or AWS credentials are not set in the environment variables")
