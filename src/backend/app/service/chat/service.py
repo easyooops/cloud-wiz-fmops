@@ -28,9 +28,9 @@ class ChatService:
 
     def get_llm_bedrock_instance(self, model_id: str, max_tokens: int = 150, temperature: float = 0.7):
         try:
-            aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-            aws_region = os.getenv("AWS_REGION")
+            aws_access_key = os.getenv("INNER_AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = os.getenv("INNER_AWS_SECRET_ACCESS_KEY")
+            aws_region = os.getenv("INNER_AWS_REGION")
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the environment variables")
 
@@ -53,9 +53,9 @@ class ChatService:
     def openai_chaining(self, query: str, model_id: str, service_type: str = "openai", max_tokens: int = 150, temperature: float = 0.7):
         try:
             openai_api_key = os.getenv("OPENAI_API_KEY")
-            aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-            aws_region = os.getenv("AWS_REGION")
+            aws_access_key = os.getenv("INNER_AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = os.getenv("INNER_AWS_SECRET_ACCESS_KEY")
+            aws_region = os.getenv("INNER_AWS_REGION")
 
             if not all([openai_api_key, aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("API keys or AWS credentials are not set in the environment variables")

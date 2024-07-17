@@ -3,6 +3,8 @@ from typing import Optional
 from pydantic import BaseModel
 from uuid import UUID
 
+from sqlalchemy import TEXT
+
 class CredentialBase(BaseModel):
     user_id: UUID
     provider_id: UUID
@@ -16,6 +18,7 @@ class CredentialBase(BaseModel):
     api_endpoint: Optional[str] = None
     client_id: Optional[str] = None
     auth_secret_key: Optional[str] = None
+    refresh_token: Optional[str] = None
     inner_used: bool = False
     limit_cnt: float = 0.0
     provider_name: Optional[str] = None
@@ -46,6 +49,7 @@ class CredentialCreate(BaseModel):
     api_endpoint: Optional[str] = None
     client_id: Optional[str] = None
     auth_secret_key: Optional[str] = None
+    refresh_token: Optional[str] = None
     inner_used: bool = False
     creator_id: UUID
     created_at: datetime = datetime.now()
@@ -61,7 +65,8 @@ class CredentialUpdate(BaseModel):
     api_key: Optional[str] = None
     api_endpoint: Optional[str] = None
     client_id: Optional[str] = None
-    auth_secret_key: Optional[str] = None    
+    auth_secret_key: Optional[str] = None
+    refresh_token: Optional[str] = None 
     is_deleted: Optional[bool] = None
     creator_id: Optional[UUID] = None
     created_at: Optional[datetime] = None

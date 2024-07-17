@@ -22,30 +22,6 @@ class StoreService():
         self.session = session
         self.credential_service = CredentialService(session)
         self.store_bucket = os.getenv("AWS_S3_BUCKET_STORE_NAME")
-
-    def _get_credential(self, store_id: Optional[str] = None, store_name: Optional[str] = None) -> S3Service:
-
-        statement = select(Credential)
-        statement = statement.join(Store, Store.credential_id == Credential.credential_id)
-        if store_id:
-            statement = statement.where(Store.store_id == store_id)
-        if store_name:
-            statement = statement.where(Store.store_name == store_name)
-
-        credential = self.session.execute(statement).first()[0]
-
-        if not credential:
-            raise HTTPException(status_code=404, detail="Agent not found")
-
-        access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_region = os.getenv("AWS_REGION")
-
-        if not credential.inner_used:
-            access_key = credential.access_key
-            secret_key = credential.secret_key
-        
-        return S3Service(access_key, secret_key, aws_region)
     
     def get_all_stores(self, user_id: Optional[UUID] = None, store_id: Optional[UUID] = None):
         try:

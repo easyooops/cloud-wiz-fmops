@@ -123,9 +123,9 @@ async def rag_bedrock(
         else:
             docs = [Document(page_content=doc.page_content) for doc in split_docs]
 
-        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_region = os.getenv("AWS_REGION")
+        aws_access_key = os.getenv("INNER_AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("INNER_AWS_SECRET_ACCESS_KEY")
+        aws_region = os.getenv("INNER_AWS_REGION")
 
         if not all([aws_access_key, aws_secret_access_key, aws_region]):
             raise ValueError("AWS credentials or region are not set in the environment variables")
