@@ -102,7 +102,7 @@
                                 <div class="row">
                                     <div class="col mt-3">
                                         <!-- <button type="submit" class="btn btn-primary me-2">Update</button> -->
-                                        <button @click="deleteCredential" class="btn btn-danger me-2">Delete</button>
+                                        <button @click.prevent="deleteCredential" class="btn btn-danger me-2">Delete</button>
                                         <router-link to="/provider/list" class="btn btn-secondary">Back to List</router-link>
                                     </div>
                                 </div>                                              
@@ -249,11 +249,11 @@ export default {
             try {
                 await providerStore.deleteCredential(credentialId.value);
                 successMessage.value = 'Credential deleted successfully.';
-                router.push('/provider/list');
             } catch (error) {
                 errorMessage.value = 'An error occurred while deleting the credential.';
             } finally {
                 loading.value = false;
+                router.push('/provider/list');
             }
         };
 

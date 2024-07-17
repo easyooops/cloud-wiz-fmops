@@ -48,6 +48,7 @@ langchain-openai
 
 # Vector store
 faiss-cpu
+langchain-chroma
 
 #Document Loader
 pypdf

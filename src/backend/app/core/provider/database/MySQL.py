@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
 from app.core.interface.service import Service, ServiceFactory
+from app.service.auth.service import AuthService
 
 class MySQLService(Service):
     def __init__(self, db_url: str):
@@ -33,4 +34,4 @@ class MySQLService(Service):
 
 class MySQLServiceFactory(ServiceFactory):
     def create(self) -> MySQLService:
-        return MySQLService(os.getenv("DATABASE_URL"))
+        return MySQLService(AuthService.get_db_info())

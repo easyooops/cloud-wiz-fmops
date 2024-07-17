@@ -15,8 +15,6 @@ class Credential(SQLModel, table=True):
     access_token: Optional[str] = None
     api_key: Optional[str] = None
     api_endpoint: Optional[str] = None
-    client_id: Optional[str] = None
-    auth_secret_key: Optional[str] = None
     refresh_token: Optional[str] = None
     inner_used: bool = Field(default=False)
     limit_cnt: float = Field(default=0.0)

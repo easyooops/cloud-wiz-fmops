@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 from typing import Optional
@@ -8,7 +9,7 @@ from app.api.v1.schemas.chat import ChatResponse
 from app.components.LLM.OpenAI import OpenAILLMComponent
 from app.components.LLM.Ollama import OllamaLLMComponent
 from app.components.LLM.Bedrock import BedrockLLMComponent
-from app.service.auth.service import get_current_user
+from app.service.auth.service import AuthService, get_current_user
 
 router = APIRouter()
 load_dotenv()
@@ -23,7 +24,8 @@ def get_llm_openai_answer(
     token: str = Depends(get_current_user)     
 ):
     try:
-        openai_api_key = os.getenv("OPENAI_API_KEY")
+        openai_api_key = AuthService.get_openai_key()
+                
         openai_component = OpenAILLMComponent(openai_api_key)
         openai_component.build(
                 model_id=model_id,

@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from typing import List, Optional
@@ -11,7 +12,7 @@ from app.service.provider.model import Provider
 from app.service.agent.model import Agent
 from app.core.interface.service import ServiceType, StorageService
 from app.core.manager import ServiceManager
-from app.service.user.model import User
+from app.service.auth.service import AuthService
 
 class CredentialService():
     def __init__(self, session: Session):
@@ -85,12 +86,11 @@ class CredentialService():
             access_token=self.mask_sensitive_data(credential.access_token),
             api_key=self.mask_sensitive_data(credential.api_key),
             api_endpoint=credential.api_endpoint,
-            client_id=self.mask_sensitive_data(credential.client_id),
-            auth_secret_key=self.mask_sensitive_data(credential.auth_secret_key),
             inner_used=credential.inner_used,
             limit_cnt=credential.limit_cnt,
             provider_name=provider.name,
             provider_company=provider.company,
+            provider_key=provider.pvd_key,
             provider_desc=provider.description,
             provider_logo=provider.logo,
             provider_type=provider.type,
@@ -143,13 +143,13 @@ class CredentialService():
 
             credential, provider = result
 
-            user = self.session.get(User, credential.user_id)
-            
+            aws = AuthService.get_aws_key()
+
             if credential.inner_used:
                 config = {
-                    'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
-                    'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
-                    'aws_region': os.getenv('AWS_REGION', 'us-east-1'),
+                    'aws_access_key_id': aws['aws_access_key'],
+                    'aws_secret_access_key': aws['aws_secret_access_key'],
+                    'aws_region': aws['aws_region'],
                     'bucket_name': self.store_bucket,
                     'credentials_json': os.getenv('GOOGLE_DRIVE_CREDENTIALS_JSON'),
                     'api_token': os.getenv('NOTION_API_TOKEN'),
@@ -163,7 +163,7 @@ class CredentialService():
                 config = {
                     'aws_access_key_id': credential.access_key,
                     'aws_secret_access_key': credential.secret_key,
-                    'aws_region': os.getenv('AWS_REGION', 'us-east-1'),
+                    'aws_region': aws['aws_region'],
                     'bucket_name': self.store_bucket,
                     'credentials_json': credential.api_key,
                     'api_token': credential.access_token,

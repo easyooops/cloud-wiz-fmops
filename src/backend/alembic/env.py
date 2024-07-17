@@ -11,6 +11,7 @@ from sqlmodel import SQLModel
 
 from dotenv import load_dotenv
 
+
 # .env 파일 로드
 load_dotenv()
 
@@ -24,7 +25,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # 환경 변수에서 DATABASE_URL 읽기
-database_url = os.getenv('DATABASE_URL')
+database_url = os.getenv("DATABASE_URL")
 if database_url:
     config.set_main_option('sqlalchemy.url', database_url)
 

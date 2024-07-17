@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
@@ -10,7 +11,7 @@ from app.service.embedding.service import EmbeddingService
 from app.api.v1.schemas.embedding import EmbeddingResponse, EmbeddingMultipleResponse
 from app.service.store.service import StoreService
 from app.service.prompt.service import PromptService
-from app.service.auth.service import get_current_user
+from app.service.auth.service import AuthService, get_current_user
 
 router = APIRouter()
 load_dotenv()
@@ -64,7 +65,8 @@ async def openai_file_embeddings(
 
         embedding_service = EmbeddingService(session)
 
-        openai_api_key = os.getenv("OPENAI_API_KEY")
+        openai_api_key = AuthService.get_openai_key()
+        
         if not openai_api_key:
             raise ValueError("OpenAI API key is not set in the environment variables")
 
@@ -106,7 +108,9 @@ async def openai_multi_files_embeddings(
             store_service.upload_file_to_store(store_name, file)
 
         embedding_service = EmbeddingService(session)
-        openai_api_key = os.getenv("OPENAI_API_KEY")
+
+        openai_api_key = AuthService.get_openai_key()
+
         if not openai_api_key:
             raise ValueError("OpenAI API key is not set in the environment variables")
 
