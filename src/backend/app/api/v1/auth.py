@@ -1,9 +1,10 @@
 import logging
 import requests
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session
 from app.core.exception import authentication_error
 from app.service.auth.service import AuthService
+from app.service.credential.service import CredentialService
 from app.service.user.model import User
 from app.api.v1.schemas.auth import UserCreate  # Adjust the import if necessary
 from app.core.factories import get_database
@@ -38,10 +39,6 @@ async def authenticate_with_google(
             "accessToken": jwt_token,
             "userName": user.username,
             "userId": user.user_id,
-            "refreshToken": user_info.get('refresh_token'),
-            "clientId": user_info.get('client_id'),
-            "clientSecret": user_info.get('client_secret'),
-            "tokenUri": user_info.get('token_uri')
         }
     
     except Exception as e:
@@ -72,3 +69,19 @@ async def logout(
 
     except Exception as e:
         raise authentication_error(e)
+
+
+@router.get("/google/callback")
+async def google_callback(request: Request, session: Session = Depends(get_database)):
+    code = request.query_params.get('code')
+    if not code:
+        raise HTTPException(status_code=400, detail="Authorization code not provided")
+
+    auth_service = AuthService()
+    tokens = auth_service.exchange_code_for_tokens(code)
+
+    # Extract tokens
+    access_token = tokens.get("access_token")
+    refresh_token = tokens.get("refresh_token")
+
+    return {"access_token": access_token, "refresh_token": refresh_token}

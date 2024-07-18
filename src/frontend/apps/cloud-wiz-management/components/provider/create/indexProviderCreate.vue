@@ -13,7 +13,7 @@
                 <div class="card">
                     <div class="card-body">
 
-                        <form @submit.prevent="createCredential">
+                        <form @submit.prevent="handleSubmit">
                             <div class="form theme-form">
                                 <div class="row">
                                     <div class="col-sm-4">
@@ -68,18 +68,6 @@
                                     </div> -->
                                 </div>
                                <div class="row" v-else-if="isGoogleDrive">
-                                 <div class="col">
-                                   <div class="mb-3">
-                                     <label>Google Client ID</label>
-                                     <input v-model="clientId" class="form-control" type="text" placeholder="Client ID *">
-                                   </div>
-                                 </div>
-                                 <div class="col">
-                                   <div class="mb-3">
-                                     <label>Auth Secret Key</label>
-                                     <input v-model="authSecret" class="form-control" type="text" placeholder="Client Secret *">
-                                   </div>
-                                 </div>
                                </div>
                                 <div class="row" v-else-if="isGitOrNotion">
                                     <div class="col">
@@ -124,133 +112,180 @@
 import { ref, watch, onMounted, computed } from 'vue';
 import { useProviderStore } from '@/store/provider';
 import { useAuthStore } from '@/store/auth';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 export default {
     name: 'createProvider',
     setup() {
-        const providerStore = useProviderStore();
-        const router = useRouter();
-        const selectedType = ref('M');
-        const selectedProvider = ref(null);
-        const providerName = ref('');
-        const accessKey = ref('');
-        const secretAccessKey = ref('');
-        const sessionKey = ref('');
-        const accessToken = ref('');
-        const apiKey = ref('');
-        const apiEndpoint = ref('');
-        const allProviders = ref([]);
-        const providers = ref([]);
-        const selectedCompany = ref(null);
-        const loading = ref(false);
-        const errorMessage = ref(null);
-        const successMessage = ref(null);
-        const userId = ref(useAuthStore().userId);
-        const clientId = ref('');
-        const authSecret = ref('');
+      const providerStore = useProviderStore();
+      const router = useRouter();
+      const route = useRoute();
+      const selectedType = ref('M');
+      const selectedProvider = ref(null);
+      const providerName = ref('');
+      const accessKey = ref('');
+      const secretAccessKey = ref('');
+      const sessionKey = ref('');
+      const accessToken = ref('');
+      const apiKey = ref('');
+      const apiEndpoint = ref('');
+      const allProviders = ref([]);
+      const providers = ref([]);
+      const selectedCompany = ref(null);
+      const loading = ref(false);
+      const errorMessage = ref(null);
+      const successMessage = ref(null);
+      const userId = ref(useAuthStore().userId);
 
-        const fetchAllProviders = async () => {
-            loading.value = true;
-            try {
-                await providerStore.fetchProviders();
-                allProviders.value = providerStore.allProviders;
-                filterProvidersByType(selectedType.value);
-            } finally {
-                loading.value = false;
+      const fetchAllProviders = async () => {
+        loading.value = true;
+        try {
+          await providerStore.fetchProviders();
+          allProviders.value = providerStore.allProviders;
+          filterProvidersByType(selectedType.value);
+        } finally {
+          loading.value = false;
+        }
+      };
+
+      const filterProvidersByType = (type) => {
+        providers.value = allProviders.value.filter(provider => provider.type === type);
+        if (providers.value.length > 0) {
+          selectedProvider.value = providers.value[0].provider_id;
+          selectedCompany.value = providers.value[0].company;
+        } else {
+          selectedProvider.value = null;
+          selectedCompany.value = null;
+        }
+      };
+
+      const redirectToGoogleAuth = () => {
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        const redirectUri = 'http://localhost:3006/google/callback';
+        const scope = 'https://www.googleapis.com/auth/drive';
+        const responseType = 'code';
+        const accessType = 'offline';
+        const prompt = 'consent';
+
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}&prompt=${prompt}`;
+
+        window.location.href = authUrl;
+      };
+
+      const isAmazonWebServices = computed(() => {
+        return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
+      });
+
+      const isGitOrNotion = computed(() => {
+        return selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion'));
+      });
+
+      const isGoogleDrive = computed(() => {
+        return selectedCompany.value && selectedCompany.value.includes('Google');
+      });
+
+      const createCredential = async (credentialData) => {
+        loading.value = true;
+        errorMessage.value = null;
+        successMessage.value = null;
+
+        try {
+          console.log("creadentialData:",credentialData)
+          await providerStore.createCredential(credentialData);
+          successMessage.value = 'Credential created successfully.';
+          router.push('/provider/list');
+        } catch (error) {
+          errorMessage.value = 'An error occurred while creating the credential.';
+        } finally {
+          loading.value = false;
+        }
+      };
+
+      const handleSubmit = async () => {
+
+        const selectedProviderObj = allProviders.value.find(provider => provider.provider_id === selectedProvider.value);
+
+        if (selectedProviderObj && selectedProviderObj.pvd_key === 'GD') {
+          sessionStorage.setItem('userId', userId.value);
+          sessionStorage.setItem('selectedProvider', selectedProvider.value);
+          sessionStorage.setItem('providerName', providerName.value);
+          redirectToGoogleAuth();
+        } else {
+          console.log("createCredential start")
+          await createCredential({
+            user_id: userId.value,
+            provider_id: selectedProvider.value,
+            credential_name: providerName.value,
+            access_key: accessKey.value,
+            secret_key: secretAccessKey.value,
+            session_key: sessionKey.value,
+            access_token: accessToken.value,
+            api_key: apiKey.value,
+            api_endpoint: apiEndpoint.value,
+            creator_id: userId.value,
+            updater_id: userId.value
+          });
+        }
+      };
+
+      const handleGoogleCallback = async () => {
+        const code = route.query.code;
+        if (code) {
+          try {
+            const selectedProviderObj = providers.value.find(provider => provider.provider_id === selectedProvider.value);
+            const providerNameValue = providerName.value;
+
+            if (!selectedProviderObj || !providerNameValue) {
+              errorMessage.value = 'Provider or provider name is not selected properly.';
+              return;
             }
-        };
+            providerStore.setUserId(userId.value);
+            providerStore.setSelectedProvider(selectedProvider.value);
+            providerStore.setProviderName(providerName.value);
+            await providerStore.createGoogleCredential(code, userId.value, selectedProviderObj.provider_id, providerNameValue);
+          } catch (error) {
+            errorMessage.value = 'Google Drive Authentication failed';
+          }
+        }
+      };
 
-        const filterProvidersByType = (type) => {
-            providers.value = allProviders.value.filter(provider => provider.type === type);
-            if (providers.value.length > 0) {
-                selectedProvider.value = providers.value[0].provider_id;
-                selectedCompany.value = providers.value[0].company;
-            } else {
-                selectedProvider.value = null;
-                selectedCompany.value = null;
-            }
-        };
 
-        const isAmazonWebServices = computed(() => {
-            return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
-        });
+      onMounted(() => {
+        fetchAllProviders();
+        handleGoogleCallback();
+      });
 
-        const isGitOrNotion = computed(() => {
-            return selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion'));
-        });
+      watch(selectedType, (newType) => {
+        filterProvidersByType(newType);
+      });
 
-        const isGoogleDrive = computed(() => {
-          return selectedCompany.value && selectedCompany.value.includes('Google');
-        });
+      watch(selectedProvider, (newProviderId) => {
+        const selectedProviderObj = providers.value.find(provider => provider.provider_id === newProviderId);
+        if (selectedProviderObj) {
+          selectedCompany.value = selectedProviderObj.company;
+        }
+      });
 
-        const createCredential = async () => {
-            loading.value = true;
-            errorMessage.value = null;
-            successMessage.value = null;
-
-            try {
-                await providerStore.createCredential({
-                    user_id: userId.value,
-                    provider_id: selectedProvider.value,
-                    credential_name: providerName.value,
-                    access_key: accessKey.value,
-                    secret_key: secretAccessKey.value,
-                    session_key: sessionKey.value,
-                    access_token: accessToken.value,
-                    api_key: apiKey.value,
-                    api_endpoint: apiEndpoint.value,
-                    client_id: clientId.value,
-                    auth_secret_key: authSecret.value,
-                    creator_id: userId.value,
-                    updater_id: userId.value
-                });
-                successMessage.value = 'Credential created successfully.';
-                router.push('/provider/list');
-            } catch (error) {
-                errorMessage.value = 'An error occurred while creating the credential.';
-            } finally {
-                loading.value = false;
-            }
-        };
-
-        onMounted(() => {
-            fetchAllProviders();
-        });
-
-        watch(selectedType, (newType) => {
-            filterProvidersByType(newType);
-        });
-
-        watch(selectedProvider, (newProviderId) => {
-            const selectedProviderObj = providers.value.find(provider => provider.provider_id === newProviderId);
-            if (selectedProviderObj) {
-                selectedCompany.value = selectedProviderObj.company;
-            }
-        });
-
-        return {
-            selectedType,
-            selectedProvider,
-            providerName,
-            accessKey,
-            secretAccessKey,
-            sessionKey,
-            accessToken,
-            apiKey,
-            apiEndpoint,
-            clientId,
-            authSecret,
-            allProviders,
-            providers,
-            isAmazonWebServices,
-            isGitOrNotion,
-            isGoogleDrive,
-            loading,
-            errorMessage,
-            successMessage,
-            createCredential,
-        };
+      return {
+        selectedType,
+        selectedProvider,
+        providerName,
+        accessKey,
+        secretAccessKey,
+        sessionKey,
+        accessToken,
+        apiKey,
+        apiEndpoint,
+        allProviders,
+        providers,
+        isAmazonWebServices,
+        isGitOrNotion,
+        isGoogleDrive,
+        loading,
+        errorMessage,
+        successMessage,
+        handleSubmit,
+      };
     }
 }
 </script>

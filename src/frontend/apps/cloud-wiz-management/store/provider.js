@@ -84,6 +84,16 @@ export const useProviderStore = defineStore({
               this.loading = false;
           }
       },
+      async exchangeCodeForTokens(code) {
+          try {
+              const { get } = restApi();
+              const response = await get(`/google/callback?code=${code}`);
+              return response.data;
+          } catch (error) {
+            throw error;
+          }
+      },
+
       async updateCredential(credentialData) {
         this.loading = true;
         this.error = null;
