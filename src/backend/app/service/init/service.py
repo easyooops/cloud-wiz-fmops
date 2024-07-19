@@ -26,8 +26,8 @@ class InitDataService:
         # self.clear_credential_table()
         credentials = []
         for data in credential_data:
-            provider_name = data.pop("credential_name")
-            provider = self.session.execute(select(Provider).where(Provider.name == provider_name)).first()
+            pvd_key = data.pop("pvd_key")
+            provider = self.session.execute(select(Provider).where(Provider.pvd_key == pvd_key)).first()
 
             if provider:
                 provider_id = provider[0].provider_id
@@ -35,8 +35,7 @@ class InitDataService:
                 provider_id = None  # 예외 처리 필요
 
             data["provider_id"] = provider_id
-            data["credential_name"] = 'Default ' + provider_name
-
+            data["credential_name"] = 'Default ' + provider[0].name
             data["creator_id"] = self.user_id
             data["updater_id"] = self.user_id
             data["user_id"] = self.user_id
@@ -52,9 +51,16 @@ class InitDataService:
         store_provider = self.session.execute(
                 select(Credential)
                 .join(Provider, Credential.provider_id == Provider.provider_id)
-                .where(Provider.name == "Amazon S3")
+                .where(Provider.pvd_key == "AS")
             ).first()
         store_provider_id = store_provider[0].credential_id
+
+        vector_store_provider = self.session.execute(
+                select(Credential)
+                .join(Provider, Credential.provider_id == Provider.provider_id)
+                .where(Provider.pvd_key == "CM")
+            ).first()
+        vector_store_provider_id = vector_store_provider[0].credential_id
 
         store_data = StoreCreate(
             store_name="Default Storage",
@@ -88,7 +94,7 @@ class InitDataService:
             fm_provider = self.session.execute(
                     select(Credential)
                     .join(Provider, Credential.provider_id == Provider.provider_id)
-                    .where(Provider.name == "OpenAI")
+                    .where(Provider.pvd_key == "OA")
                 ).first()
             fm_provider_id = fm_provider[0].credential_id
             if not self.validate_uuid(fm_provider_id):
@@ -122,7 +128,7 @@ class InitDataService:
             store_provider = self.session.execute(
                     select(Credential)
                     .join(Provider, Credential.provider_id == Provider.provider_id)
-                    .where(Provider.name == "Amazon S3")
+                    .where(Provider.pvd_key == "AS")
                 ).first()
             store_provider_id = store_provider[0].credential_id
 

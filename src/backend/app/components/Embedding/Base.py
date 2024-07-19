@@ -16,5 +16,8 @@ class AbstractEmbeddingComponent:
     def run_embed_query(self, input_text):
         raise NotImplementedError("The run_embed_query method needs to be implemented")
 
-    def run_embed_documents(self, documents: list):
+    async def run_embed_documents(self, documents: list):
+        raise NotImplementedError("The run_embed_documents method needs to be implemented")
+
+    async def embed_documents(self, documents: list):
         raise NotImplementedError("The run_embed_documents method needs to be implemented")

@@ -76,6 +76,18 @@ export const useStorageStore = defineStore({
         this.loading = false;
       }
     },
+    async createIndexing(embeddings) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const { put } = restApi();
+        await put(`/store/${embeddings.user_id}/${embeddings.storage_object_id}/indexing`, embeddings);
+      } catch (error) {
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },    
     async uploadFile(userId, file, storageId) {
       this.loading = true;
       this.error = null;
@@ -100,11 +112,7 @@ export const useStorageStore = defineStore({
       this.error = null;
       try {
         const { get } = restApi();
-        const response = await get(`/store/${userId}/${storageId}/files`, {
-          headers: {
-            'accept': 'application/json'
-          }
-        });
+        const response = await get(`/store/${userId}/${storageId}/files`);
         return response.data;
       } catch (error) {
         throw error;

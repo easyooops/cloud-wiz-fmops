@@ -1,22 +1,17 @@
 <template>
-    <Breadcrumbs main="Trace" title="Trace List" />
+    <Breadcrumbs main="Monitoring" title="Trace Log" />
 
     <div class="container-fluid">
-        <div class="row project-cards">
-            <traceFilter />
-            <traceLog />
-        </div>
+        <traceDatadog />
     </div>
 </template>
 
 <script>
-import traceFilter from './traceFilter.vue'
-import traceLog from './traceLog.vue'
+import traceDatadog from './traceDatadog.vue'
 export default {
     name: 'indexList',
     components: {
-        traceFilter,
-        traceLog
+        traceDatadog
     },
 }
 </script>

@@ -11,10 +11,13 @@
                 <div class="card-header">
                     <div class="media">
                         <div class="media-body text-end">
-                            <router-link to="/storage/list" class="btn btn-secondary">Back to List</router-link>
-                            <button class="btn btn-outline-danger ms-2" @click="deleteStorage()">
+                            <router-link to="/storage/list" class="btn btn-primary">Back to List</router-link>
+                            <button class="btn btn-outline-danger ms-2" @click.prevent="deleteStorage()">
                                 <vue-feather type="trash-2" class="text-top"></vue-feather> Delete Directory
                             </button>
+                            <!-- <button class="btn btn-outline-primary ms-2" @click.prevent="createIndexing()">
+                                <vue-feather type="trash-2" class="text-top"></vue-feather> Vector Indexing
+                            </button>                             -->
                         </div>
                     </div>
                 </div>
@@ -196,6 +199,17 @@ export default {
             }
         };
 
+        const createIndexing = async () => {
+            loading.value = true;
+            try {
+                await storageStore.createIndexing(userId, storeId.value);
+            } catch (error) {
+                console.error('An error occurred while deleting the storage.', error);
+            } finally {
+                loading.value = false;
+            }
+        };
+
         onMounted(fetchFiles);
 
         return {
@@ -209,6 +223,7 @@ export default {
             getFileIconClass,
             deleteFile,
             deleteStorage,
+            createIndexing,
             loading
         };
     },

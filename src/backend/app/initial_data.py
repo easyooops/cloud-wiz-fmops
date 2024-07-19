@@ -42,8 +42,8 @@ def create_model_data(session: Session, model_data):
     clear_model_table(session)
     models = []
     for data in model_data:
-        provider_name = data.pop("provider_name")
-        provider = session.exec(select(Provider).where(Provider.name == provider_name)).first()
+        pvd_key = data.pop("pvd_key")
+        provider = session.exec(select(Provider).where(Provider.pvd_key == pvd_key)).first()
         if provider:
             provider_id = provider.provider_id
 

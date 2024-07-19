@@ -17,7 +17,7 @@ class ChatOpenAIComponent(AbstractLLMComponent):
             openai_api_key=self.openai_api_key, 
             model=model_id,
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_tokens=None,
             streaming=True
         )
 

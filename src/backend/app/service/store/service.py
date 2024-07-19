@@ -5,9 +5,11 @@ import os
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 from fastapi import HTTPException, UploadFile
+from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import CharacterTextSplitter
 from sqlmodel import Session, desc, select
 from app.service.store.model import Store
-from app.api.v1.schemas.store import StoreCreate, StoreUpdate
+from app.api.v1.schemas.store import StoreCreate, StoreUpdate, Vector
 from app.core.provider.aws.s3 import S3Service
 import pandas as pd
 from langchain_community.document_loaders import TextLoader, PyPDFLoader, CSVLoader, Docx2txtLoader
@@ -15,9 +17,16 @@ from langchain_core.documents import Document
 
 from app.service.credential.model import Credential
 from app.service.credential.service import CredentialService
+from app.components.VectorStore.Chroma import ChromaVectorStoreComponent
+from app.components.VectorStore.Faiss import FaissVectorStoreComponent
+from app.components.VectorStore.Pinecone import PineconeVectorStoreComponent
+from app.service.provider.model import Provider
+from app.components.Embedding.Bedrock import BedrockEmbeddingComponent
+from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
+from app.service.model.model import Model
 
 class StoreService():
-    def __init__(self, session: Session, user_id: Optional[UUID] = None):
+    def __init__(self, session: Session):
         super().__init__()
         self.session = session
         self.credential_service = CredentialService(session)
@@ -257,3 +266,127 @@ class StoreService():
             logging.error(f"Error in load_documents: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
+    def create_indexing(self, agent_data: Vector):
+
+        try:
+            # 파일 목록을 가져옴
+            files = self.list_files(agent_data.user_id, agent_data.storage_object_id)
+            file_keys = [file["Key"] for file in files]
+
+            documents = self.load_documents_v2(agent_data.storage_provider_id, file_keys)
+            
+            # 문서를 1000 단위로 청킹
+            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+            chunked_docs = text_splitter.split_documents(documents)
+
+            # # 임베딩 생성
+            # embedding_function = OpenAIEmbeddings()
+            # embeddings = embedding_function.embed_documents([doc.page_content for doc in chunked_docs])
+
+            # 벡터 스토어 초기화 및 인덱싱
+            models = self.session.get(Model, agent_data.embedding_model_id)
+            embedding_credential_type = self.get_provider_info(agent_data.embedding_provider_id)
+            embed_component = self._initialize_embedding_component(embedding_credential_type, agent_data)
+            embed_component.build(models.model_name)
+
+            storage_service = self.credential_service._set_storage_credential(credential_id=agent_data.storage_provider_id)
+            if not storage_service:
+                logging.error("Failed to initialize storage service")
+                raise HTTPException(status_code=500, detail="Failed to initialize storage service")
+
+            vector_store_type = self.get_provider_info(agent_data.vector_db_provider_id)
+            if vector_store_type == "FS":
+                # vector_store = FaissVectorStoreComponent(storage_service=storage_service, embedding_function=embedding_function)
+                # vector_store.initialize(dimension=1536)
+                # vector_store.add_embeddings(embeddings, chunked_docs)  # 문서 추가
+                # index_file_path = f"/tmp/faiss_index_{store_id}.index"
+                # storage_location = f"{user_id}/faiss_indexes/faiss_index_{store_id}.index"
+                # vector_store.save_index(index_file_path, storage_location)
+                pass
+
+            elif vector_store_type == "CM":
+                persist_directory = f"./chroma_db/{agent_data.storage_object_id}"
+                storage_location = f"{agent_data.user_id}/chroma_indexes/{agent_data.storage_object_id}"
+                vector_store = ChromaVectorStoreComponent(storage_service=storage_service)
+                vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(agent_data.storage_object_id), storage_location=storage_location)
+                vector_store.save_index(storage_location)
+
+            elif vector_store_type == "PC":
+                vector_store = PineconeVectorStoreComponent()
+                vector_store.initialize(docs=chunked_docs, index_name=str(agent_data.storage_object_id))
+            
+            else:
+                raise ValueError(f"Unsupported vector store type: {vector_store_type}")
+
+            return {"status": "success", "message": "Indexing completed successfully."}
+
+        except Exception as e:
+            logging.error(f"Error creating indexing: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error creating indexing: {str(e)}")
+
+    def get_provider_info(self, credential_id: UUID):
+        try:
+            statement = (
+                select(Provider)
+                .select_from(Credential)
+                .join(Provider, Credential.provider_id == Provider.provider_id)
+                .where(Credential.credential_id == credential_id)
+            )
+            provider = self.session.execute(statement).one_or_none()
+
+            if provider is None:
+                raise HTTPException(status_code=404, detail="Store not found")
+            
+            return provider[0].pvd_key
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error retrieving store: {str(e)}")
+        
+    def _initialize_embedding_component(self, embedding_type: str, agent_data):
+        """
+        Initialize the embedding component based on the embedding type.
+        
+        Args:
+            embedding_type (str): Type of embedding provider (e.g., "OA" for OpenAI, "BR" for Bedrock).
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The initialized embedding component.
+        
+        Raises:
+            ValueError: If required credentials are missing.
+        """
+        if embedding_type == "OA":
+            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
+            if not openai_api_key:
+                raise ValueError("OpenAI API key is not set in the provider information.")
+            return OpenAIEmbeddingComponent(openai_api_key)
+
+        elif embedding_type == "BR":
+            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials or region are not set in the provider information.")
+            return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
+        
+        else:
+            raise ValueError(f"Unsupported embedding type: {embedding_type}")
+        
+    def _get_credential_info(self, agent_data, key):
+
+        credentials = self.session.get(Credential, agent_data.embedding_provider_id)
+        if not credentials:
+            raise HTTPException(status_code=404, detail="Credentials not found")
+
+        if not credentials.inner_used:
+            if key == "AWS_ACCESS_KEY_ID":
+                return credentials.access_key
+            elif key == "AWS_SECRET_ACCESS_KEY":
+                return credentials.secret_key
+            elif key == "AWS_REGION":
+                return os.getenv(key)
+            elif key == "OPENAI_API_KEY":
+                return credentials.api_key
+        else:
+            return os.getenv(key)        

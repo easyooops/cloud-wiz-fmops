@@ -96,13 +96,25 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "company": "Facebook AI Research",
+        "name": "FAISS",
+        "pvd_key": "FS",
+        "description": "FAISS (Facebook AI Similarity Search) is a library developed by Facebook AI Research for efficient similarity search and clustering of dense vectors.",
+        "logo": "faiss.png",
+        "type": "V",
+        "sort_order": 1,
+        "is_deleted": false,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },    
+    {
         "company": "ChromaWay",
         "name": "ChromaDB",
         "pvd_key": "CM",
         "description": "ChromaDB is a blockchain-based database that provides data storage and management for smart contracts and decentralized applications.",
         "logo": "chromadb.png",
         "type": "V",
-        "sort_order": 1,
+        "sort_order": 2,
         "is_deleted": false,
         "creator_id": "2e9279bc33104a7ba53d342dafba7841",
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
@@ -114,7 +126,7 @@
         "description": "A cloud-based platform for real-time vector search and similarity search, enabling fast exploration of vector similarities in large datasets.",
         "logo": "pinecone.png",
         "type": "V",
-        "sort_order": 2,
+        "sort_order": 3,
         "is_deleted": false,
         "creator_id": "2e9279bc33104a7ba53d342dafba7841",
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"

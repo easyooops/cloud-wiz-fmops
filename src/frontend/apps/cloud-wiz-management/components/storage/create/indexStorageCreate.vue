@@ -14,13 +14,22 @@
                         <div class="card-body">                                    
                             <div class="row">
                                 <div class="col-xl-4 mb-3">
-                                    <div class="col-form-label">Provider *</div>
+                                    <div class="col-form-label">Storage Provider *</div>
                                     <select class="form-select form-control-primary" v-model="selectedProvider">
-                                        <option value="" disabled hidden>Select Provider</option>
+                                        <option value="" disabled hidden>Select Storage Provider</option>
                                         <option v-for="provider in filteredProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
                                     </select>
                                 </div>                                            
-                            </div>                                
+                            </div>                            
+                            <!-- <div class="row">
+                                <div class="col-xl-4 mb-3">
+                                    <div class="col-form-label">Vector Provider *</div>
+                                    <select class="form-select form-control-primary" v-model="selectedVectorProvider">
+                                        <option value="" disabled hidden>Select Vector Provider</option>
+                                        <option v-for="provider in filteredVectorProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
+                                    </select>
+                                </div>                                            
+                            </div>                             -->
                         </div>
                     </div> 
 
@@ -78,6 +87,7 @@ export default {
             errorMessage: null,
             successMessage: null,
             selectedProvider: '', 
+            selectedVectorProvider: '', 
             userId: useAuthStore().userId,
         }
     },
@@ -85,7 +95,10 @@ export default {
         ...mapState(useProviderStore, ['credentials']),
         filteredProviders() {
             return this.credentials.filter(provider => provider.provider_type === "S");
-        }
+        },
+        filteredVectorProviders() {
+            return this.credentials.filter(provider => provider.provider_type === "V");
+        }        
     },
     methods: {
         ...mapActions(useProviderStore, ['fetchCredential']),

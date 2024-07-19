@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Breadcrumbs main="Monitoring" title="Dashboard" />
     <div class="container-fluid">
       <div class="row widget-grid">
         <div class="col-sm-12">
@@ -33,7 +32,7 @@ import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
 export default defineComponent({
   setup() {
     const dashboardUrl = ref(
-        'https://p.datadoghq.com/sb/eb4d74c2-eb97-11ec-b30d-da7ad0900002-c478ac9bf6eff219365e965a7b367621'
+        'https://p.datadoghq.com/sb/eb4d74c2-eb97-11ec-b30d-da7ad0900002-a04b2cf16634bf73b900b8553c71e602'
     );
     const iframeRef = ref<HTMLIFrameElement | null>(null);
     const loading = ref(true);

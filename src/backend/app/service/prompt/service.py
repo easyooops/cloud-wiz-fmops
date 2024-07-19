@@ -37,6 +37,10 @@ from app.core.util.piimasking import PiiMaskingService
 from app.core.util.textNormailization import TextNormalizationService
 from app.service.credential.model import Credential
 from app.core.provider.aws.SecretManager import SecretManagerService
+from app.components.VectorStore.Chroma import ChromaVectorStoreComponent
+from app.components.VectorStore.Pinecone import PineconeVectorStoreComponent
+from app.service.credential.service import CredentialService
+from app.components.VectorStore.Faiss import FaissVectorStoreComponent
 
 
 class PromptService:
@@ -84,7 +88,9 @@ class PromptService:
                     return storage_limit_response
                         
                 try:
-                    documents = asyncio.run(self._run_embedding(agent_data, query))
+                    # documents = asyncio.run(self._run_embedding(agent_data, query))
+                    documents = asyncio.run(self._run_embedding_main(agent_data))
+                    
                     if agent_data["Provider"].name == "OpenAI":
                         rag_response = asyncio.run(self.run_rag_openai(agent_data, query, documents))
                     elif agent_data["Provider"].name == "Bedrock":
@@ -189,7 +195,7 @@ class PromptService:
         directory_name = store_data.store_name
         credential_id = store_data.credential_id
 
-        service = StoreService(self.session, user_id)
+        service = StoreService(self.session)
         storage_info = service.get_store_directory_info(user_id, directory_name, credential_id)
         total_size = storage_info.get('total_size', 0)
 
@@ -267,12 +273,180 @@ class PromptService:
             chunks.append(encoding.decode(chunk_tokens))
         return chunks
 
-    async def _run_embedding(self, agent_data, query):
+    async def _run_embedding_main(self, agent_data):
+        store = agent_data['Store']
+        agent = agent_data['Agent']
 
-        _d_provider = agent_data['Provider']
+        credential_service = CredentialService(self.session)
+        store_service = StoreService(self.session)
+        
+        storage_service = credential_service._set_storage_credential(credential_id=store.credential_id)
+        if not storage_service:
+            logging.error("Failed to initialize storage service")
+            raise HTTPException(status_code=500, detail="Failed to initialize storage service")
+
+        vector_store_type = store_service.get_provider_info(agent.vector_db_provider_id)
+        if vector_store_type == "FS":
+            return await self._run_embedding_faiss(agent_data)
+        elif vector_store_type == "CM":
+            return await self._run_embedding_chroma(agent_data)
+        elif vector_store_type == "PC":
+            return await self._run_embedding_pinecone(agent_data)
+        else:
+            return await self._run_embedding_faiss(agent_data)
+    
+    def get_embedding_credential(self, credential_id: UUID):
+        try:
+            statement = (
+                select(Credential).where(Credential.credential_id == credential_id)
+            )
+            provider = self.session.execute(statement).one_or_none()
+
+            if provider is None:
+                raise HTTPException(status_code=404, detail="Store not found")
+            
+            return provider[0].pvd_key
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error retrieving store: {str(e)}")        
+            
+    async def _run_embedding_faiss(self, agent_data):
+        """
+        Run the embedding process using FAISS.
+        
+        Args:
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The FAISS engine or an error message.
+        """
         store_service = StoreService(self.session)
 
-        storage_object_id = str(agent_data['Agent'].storage_object_id)
+        try:
+            agents_store = agent_data['Agent']
+            storage_store = agent_data['Store']
+            embedding_model_name = agent_data['EmbeddingModelName']
+
+            # Load Object
+            file_metadata_list = store_service.list_files(storage_store.user_id, storage_store.store_id)
+            files = [file_metadata['Key'] for file_metadata in file_metadata_list]
+
+            # Load Document
+            documents = store_service.load_documents_v2(storage_store.credential_id, files)
+
+            # Make Chunks
+            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+            chunks = text_splitter.split_documents(documents)
+
+            # Credential Type
+            embedding_type = store_service.get_provider_info(agents_store.embedding_provider_id)
+            embed_component = self._initialize_embedding_component(embedding_type, agent_data)
+
+            embed_component.build(embedding_model_name)
+            embeddings = await embed_component.run_embed_documents([doc.page_content for doc in chunks])
+            docs_with_embeddings = [
+                Document(page_content=doc.page_content, metadata={"embedding": embedding})
+                for doc, embedding in zip(documents, embeddings)
+            ]
+            engine = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
+
+            return engine
+        except Exception as e:
+            logging.error(f"An error occurred during the FAISS embedding process: {e}")
+            return f"An error occurred: {e}"
+
+    def _initialize_embedding_component(self, embedding_type: str, agent_data):
+        """
+        Initialize the embedding component based on the embedding type.
+        
+        Args:
+            embedding_type (str): Type of embedding provider (e.g., "OA" for OpenAI, "BR" for Bedrock).
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The initialized embedding component.
+        
+        Raises:
+            ValueError: If required credentials are missing.
+        """
+        if embedding_type == "OA":
+            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
+            if not openai_api_key:
+                raise ValueError("OpenAI API key is not set in the provider information.")
+            return OpenAIEmbeddingComponent(openai_api_key)
+
+        elif embedding_type == "BR":
+            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials or region are not set in the provider information.")
+            return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
+        
+        else:
+            raise ValueError(f"Unsupported embedding type: {embedding_type}")
+        
+    async def _run_embedding_chroma(self, agent_data):
+        """
+        Load the Chroma engine for querying.
+        
+        Args:
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The Chroma engine or an error message.
+        """    
+        store_service = StoreService(self.session)
+        credential_service = CredentialService(self.session)
+
+        try:            
+            agents_store = agent_data['Agent']
+            storage_store = agent_data['Store']
+            embedding_model_name = agent_data['EmbeddingModelName']
+
+            # Load Object
+            file_metadata_list = store_service.list_files(storage_store.user_id, storage_store.store_id)
+            files = [file_metadata['Key'] for file_metadata in file_metadata_list]
+
+            # Load Document
+            documents = store_service.load_documents_v2(storage_store.credential_id, files)
+
+            # Make Chunks
+            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+            chunks = text_splitter.split_documents(documents)
+
+            storage_service = credential_service._set_storage_credential(credential_id=storage_store.credential_id)
+            if not storage_service:
+                logging.error("Failed to initialize storage service")
+                raise HTTPException(status_code=500, detail="Failed to initialize storage service")
+
+            embedding_type = store_service.get_provider_info(agents_store.embedding_provider_id)
+            embed_component = self._initialize_embedding_component(embedding_type, agent_data)
+            embed_component.build(embedding_model_name)
+
+            persist_directory = f"./chroma_db/{storage_store.store_id}"
+            storage_location = f"{storage_store.user_id}/chroma_indexes/{storage_store.store_id}"
+            chroma_component = ChromaVectorStoreComponent(storage_service=storage_service)
+            chroma_component.initialize(docs=chunks, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(storage_store.store_id), storage_location=storage_location)
+            chroma_component.save_index(storage_location)
+
+            if chroma_component.db:
+                logging.warning("Database initialized successfully.")
+            else:
+                logging.warning("Database initialization failed.")
+
+            return chroma_component.db
+        except Exception as e:
+            logging.error(f"An error occurred while loading the Chroma engine: {e}")
+            return f"An error occurred: {e}"
+
+    async def _run_embedding_pinecone(self, agent_data):
+        pass
+
+    async def _run_embedding(self, agent_data, query):
+
+        store_service = StoreService(self.session)
+
         storage_store = agent_data['Store']
         store_id = storage_store.store_id
         user_id = storage_store.user_id
@@ -284,7 +458,6 @@ class PromptService:
             logging.error("No files found in storage Object")
             raise HTTPException(status_code=500, detail="No files found in storage object")
 
-        # documents = store_service.load_documents(files)
         documents = store_service.load_documents_v2(storage_store.credential_id, files)
 
         if not documents:
@@ -293,12 +466,9 @@ class PromptService:
 
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         chunks = text_splitter.split_documents(documents)
-        logging.info(f"Chunks: {chunks}")
 
         if not chunks:
             raise ValueError("No chunks were split into chunks")
-
-        embedding_provider_name = agent_data['EmbeddingProviderName']
 
         if agent_data["Provider"].name == "OpenAI":
             return await self._run_embedding_openai_model(agent_data, chunks)
@@ -319,36 +489,68 @@ class PromptService:
             return self._run_openai_model(agent_data, query)
 
     async def _run_embedding_openai_model(self, agent_data, documents):
-        _d_agent = agent_data['Agent']
+        store = agent_data['Store']
+        agent = agent_data['Agent']
         embedding_model_name = agent_data['EmbeddingModelName']
+
+        credential_service = CredentialService(self.session)
+        store_service = StoreService(self.session)
 
         openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
 
         if not openai_api_key:
             return "OpenAI API key is not set in the provider information."
         
-        embed_component = OpenAIEmbeddingComponent(openai_api_key)
-        embed_component.build(
-            model_id=embedding_model_name
-        )
-        embeddings = embed_component.run_embed_documents([doc.page_content for doc in documents])
-        db = await FAISS.afrom_documents(documents, OpenAIEmbeddings(api_key=openai_api_key))
+        storage_service = credential_service._set_storage_credential(credential_id=store.credential_id)
+        if not storage_service:
+            logging.error("Failed to initialize storage service")
+            raise HTTPException(status_code=500, detail="Failed to initialize storage service")
+
+        vector_store_type = store_service.get_provider_info(agent.vector_db_provider_id)
+        if vector_store_type == "CM":
+            
+            embed_component = OpenAIEmbeddingComponent(openai_api_key)
+            embed_component.build(embedding_model_name)
+            embeddings = await embed_component.run_embed_documents([doc.page_content for doc in documents])
+
+            docs_with_embeddings = [Document(page_content=doc.page_content, metadata={"embedding": embedding}) for doc, embedding in zip(documents, embeddings)]
+
+            db = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
+
+        elif vector_store_type == "FS":
+            persist_directory = f"/tmp/chroma_db/{store.store_id}"
+            storage_location = f"{store.user_id}/chroma_indexes/{store.store_id}"
+
+            os.makedirs(persist_directory, exist_ok=True)
+
+            vector_store = ChromaVectorStoreComponent(storage_service=storage_service)
+            vector_store.load_index(storage_location, persist_directory)
+            db = vector_store.db
+
+        elif vector_store_type == "PC":
+            vector_store = PineconeVectorStoreComponent()
+            vector_store.initialize(index_name=str(store.store_id))
+            db = vector_store
+
+        else:
+            raise ValueError(f"Unsupported vector store type: {vector_store_type}")
+
         return db
 
     async def run_rag_openai(self, agent_data, query: str, db, top_k: int = 5):
         try:
             _d_agent = agent_data['Agent']
             _d_model = agent_data['Model']
-
+            
             logging.info(f"FAISS database created")
-            matching_docs = await db.asimilarity_search(query, k=top_k)
+            matching_docs = db.similarity_search(query, k=top_k)
             logging.info(f"Matching documents: {matching_docs}")
 
             if not matching_docs:
                 raise ValueError("No matching documents found")
 
             retriever = db.as_retriever()
-            
+
             openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
             
             if not openai_api_key:
@@ -399,6 +601,7 @@ class PromptService:
         except Exception as e:
             logging.error(f"Exception in run_rag_openai: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
+
 
     async def _run_embedding_bedrock_model(self, agent_data, documents):
         _d_agent = agent_data['Agent']

@@ -17,5 +17,5 @@ class AbstractVectorStoreComponent(ABC):
         pass
 
     @abstractmethod
-    def reset_index(self):
+    def save_index(self, file_path, storage_location):
         pass

@@ -38,10 +38,10 @@ langchain_openai
 llama-cpp-python
 langchain_aws
 langchain_core
-
 openai
 tiktoken
 tokencost
+langchain-huggingface
 
 # chat
 langchain-openai
@@ -49,6 +49,8 @@ langchain-openai
 # Vector store
 faiss-cpu
 langchain-chroma
+langchain-pinecone
+pinecone-notebooks
 
 #Document Loader
 pypdf
