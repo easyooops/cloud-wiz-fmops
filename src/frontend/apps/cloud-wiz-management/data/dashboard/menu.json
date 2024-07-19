@@ -39,7 +39,7 @@
       "children": [
         {
           "path": "/agent/list",
-          "title": "Managent",
+          "title": "Builder",
           "type": "link",
           "active":false
         },

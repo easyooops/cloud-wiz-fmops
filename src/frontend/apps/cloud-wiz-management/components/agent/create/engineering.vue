@@ -16,8 +16,11 @@
                 </div>
                 <div class="row">
                     <div class="col">
+                        <!-- <button v-if="agentId" class="btn btn-outline-primary me-2" @click.prevent="createIndexing()">
+                            <vue-feather type="trash-2" class="text-top"></vue-feather> Vector Indexing
+                        </button>                                             -->
                         <button @click="saveAgent" class="btn btn-primary me-2">Save</button>
-                        <button @click="deleteAgent" class="btn btn-danger me-2">Delete</button>
+                        <button v-if="agentId" @click="deleteAgent" class="btn btn-danger me-2">Delete</button>
                         <router-link to="/agent/list" class="btn btn-secondary">Back to List</router-link>
                     </div>
                 </div>
@@ -209,7 +212,6 @@
                                 <div class="mb-3">
                                   <div class="col-form-label">Vector DB</div>
                                   <select class="form-select form-control-primary" v-model="selectedVectorDB">
-                                    <option value="" disabled hidden>FAISS</option>
                                     <option v-for="provider in filteredVectorDBProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
                                   </select>
                                 </div>
@@ -484,7 +486,7 @@ export default {
     },
     methods: {
         ...mapActions(useProviderStore, ['fetchCredential', 'fetchModels']),
-        ...mapActions(useStorageStore, ['fetchAllStorages','fetchFiles']),
+        ...mapActions(useStorageStore, ['fetchAllStorages','fetchFiles','createIndexing']),
         ...mapActions(useAgentStore, ['fetchAgentById']),
         ...mapActions(useProcessingStore, ['fetchProcessingsById']),
         activeDiv(item) {
@@ -600,7 +602,7 @@ export default {
                     const agentInfo = useAgentStore().agent;
                     this.agentId = agentInfo.agent_id;
                 }   
-                this.successMessage = 'Agent updated successfully.';             
+                this.successMessage = 'Agent updated successfully.';
             } catch (error) {
                 this.errorMessage = 'An error occurred while creating the agent.';
             } finally {
@@ -609,6 +611,32 @@ export default {
                     this.errorMessage = '';
                     this.successMessage = '';
                 }, 2000);                  
+            }
+        },
+        async createIndexing() {
+            this.loading = true;
+            this.errorMessage = '';
+            this.successMessage = '';
+
+            try {
+                let embeddings = {
+                    user_id: this.userId,
+                    embedding_provider_id: this.selectedEmbeddingProvider,
+                    embedding_model_id: this.selectedEmbeddingModel,
+                    storage_provider_id: this.selectedStorageProvider,
+                    storage_object_id: this.selectedObject,
+                    vector_db_provider_id: this.selectedVectorDB
+                };                
+                await useStorageStore().createIndexing(embeddings);
+                this.successMessage = 'Agent updated successfully.';
+            } catch (error) {
+                console.error('An error occurred while deleting the storage.', error);
+            } finally {
+                this.loading = false;
+                setTimeout(() => {
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                }, 2000);  
             }
         },
         async loadFiles(storeName) {
@@ -646,7 +674,7 @@ export default {
                 this.selectedProvider = this.filteredProviders[0]?.credentials_id || '';
                 this.selectedEmbeddingProvider = this.filteredEmbeddingProviders[0]?.credentials_id || '';
                 this.selectedStorageProvider = this.filteredStorageProviders[0]?.credentials_id || '';
-                
+                this.selectedVectorDB = this.filteredVectorDBProviders[0]?.credentials_id || '';
             }
             if (this.processings.length > 0) {
                 this.selectedPreProcessing = this.filteredPreProcessings[0]?.processing_id || '';
@@ -662,9 +690,6 @@ export default {
             if (this.router.currentRoute.query.agentId || this.agentId) {
                 await this.fetchAgentData();
             }
-            if (this.credentials.length > 0) {
-                this.selectedVectorDB = this.filteredVectorDBProviders[0]?.credentials_id || '';
-            }                         
         } catch (error) {
             console.error('Error agents loading:', error);
         } finally {
