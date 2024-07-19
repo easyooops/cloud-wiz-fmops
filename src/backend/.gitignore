@@ -126,3 +126,7 @@ uvicorn.log
 *uvicorn.log
 *.log
 .logs
+
+.chroma_db
+./chroma_db
+*chroma_db

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlmodel import Session
 from app.core.factories import get_database
 from app.service.store.service import StoreService
-from app.api.v1.schemas.store import StoreCreate, StoreUpdate, StoreWithDirectory
+from app.api.v1.schemas.store import StoreCreate, StoreUpdate, StoreWithDirectory, Vector
 from app.core.exception import internal_server_error
 from app.service.store.model import Store
 from app.service.auth.service import get_current_user
@@ -18,7 +18,7 @@ def get_stores(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session, user_id)
+        service = StoreService(session)
         stores = service.get_all_stores(user_id, None)
     
         store_responses = []
@@ -49,7 +49,7 @@ def create_store(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session, user_id)
+        service = StoreService(session)
         return service.create_store(store, user_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating store: {str(e)}")
@@ -63,7 +63,7 @@ def update_store(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session, user_id)
+        service = StoreService(session)
         return service.update_store(store_id, store_update, user_id)
     except Exception as e:
         raise internal_server_error(e)
@@ -76,7 +76,7 @@ def delete_store(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session, user_id)
+        service = StoreService(session)
         service.delete_store(store_id, user_id)
         return {"message": "Store deleted successfully"}
     except Exception as e:
@@ -90,7 +90,7 @@ def get_store_files(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session, user_id)
+        service = StoreService(session)
         return service.list_files(user_id, store_id)
     except Exception as e:
         raise internal_server_error(e)
@@ -104,7 +104,7 @@ def upload_file_to_store(
     # token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session, user_id)
+        service = StoreService(session)
         service.upload_file_to_store(user_id, store_id, file)
         return {"message": "File uploaded successfully"}
     except Exception as e:
@@ -119,8 +119,21 @@ def delete_file_from_store(
     token: str = Depends(get_current_user) 
 ):
     try:
-        service = StoreService(session, user_id)
+        service = StoreService(session)
         service.delete_file_from_store(user_id, store_id, file_name)
         return {"message": "File deleted successfully"}
+    except Exception as e:
+        raise internal_server_error(e)
+
+@router.put("/{user_id}/{store_id}/indexing")
+def create_indexing(
+    agent: Vector,
+    session: Session = Depends(get_database),
+    token: str = Depends(get_current_user) 
+):
+    try:
+        service = StoreService(session)
+        service.create_indexing(agent)
+        return {"message": "Store deleted successfully"}
     except Exception as e:
         raise internal_server_error(e)
