@@ -161,13 +161,15 @@ export default {
 
       const redirectToGoogleAuth = () => {
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        const redirectUri = 'http://localhost:3006/google/callback';
+        // const redirectUri = 'http://localhost:3006/google/callback'; // local Test 용
+        const redirectUri = 'https://management.cloudwiz-ai.com/google/callback';
         const scope = 'https://www.googleapis.com/auth/drive';
         const responseType = 'code';
         const accessType = 'offline';
-        const prompt = 'consent';
+        // const prompt = 'consent'; // local Test 용 (Google Oauth 인증을 계속 하도록 설정해 주기 위해)
 
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}&prompt=${prompt}`;
+        // const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}&prompt=${prompt}`; //local Test 용
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}`;
 
         window.location.href = authUrl;
       };

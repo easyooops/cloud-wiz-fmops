@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 from uuid import UUID
 
@@ -12,9 +12,20 @@ class StoreBase(BaseModel):
     updated_at: Optional[datetime] = None    
     user_id: Optional[UUID] = None
 
+class FileInfo(BaseModel):
+    id: str
+    name: str
+    size: Optional[int] = None
+
 class StoreWithDirectory(StoreBase):
     total_size: Optional[int] = None
     file_count: Optional[int] = None
+
+class StoreWithDirectoryGoogle(StoreBase):
+    total_size: Optional[int] = None
+    file_count: Optional[int] = None
+    files: List[FileInfo] = []
+
 
 class StoreCreate(BaseModel):
     store_name: str

@@ -12,7 +12,6 @@ import restApi from "~/utils/axios";
 export default {
   name: 'GoogleDriveCallback',
   async mounted() {
-    console.log('GoogleDriveCallback mounted');
     const providerStore = useProviderStore();
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
@@ -32,12 +31,6 @@ export default {
       const selectedProvider = sessionStorage.getItem('selectedProvider');
       const providerName = sessionStorage.getItem('providerName');
 
-      console.log('providerStore values:',{
-        userId: providerStore.userId,
-        selectedProvider: providerStore.selectedProvider,
-        providerName:providerStore.providerName
-      });
-
       const credentialData = {
         user_id: userId,
         provider_id: selectedProvider,
@@ -47,7 +40,6 @@ export default {
         creator_id: userId,
         updater_id: userId,
       };
-      console.log('Creating credential with data in call back:', credentialData);
 
       await providerStore.createCredential(credentialData);
 
