@@ -113,6 +113,7 @@ import { ref, watch, onMounted, computed } from 'vue';
 import { useProviderStore } from '@/store/provider';
 import { useAuthStore } from '@/store/auth';
 import { useRouter, useRoute } from 'vue-router';
+import restApi from "~/utils/axios";
 
 export default {
     name: 'createProvider',
@@ -158,20 +159,70 @@ export default {
           selectedCompany.value = null;
         }
       };
-
-      const redirectToGoogleAuth = () => {
+      const openGooglePopup = () => {
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        // const redirectUri = 'http://localhost:3006/google/callback'; // local Test 용
-        const redirectUri = 'https://management.cloudwiz-ai.com/google/callback';
+        const environment = import.meta.env.VITE_ENVIRONMENT;
         const scope = 'https://www.googleapis.com/auth/drive';
         const responseType = 'code';
         const accessType = 'offline';
-        // const prompt = 'consent'; // local Test 용 (Google Oauth 인증을 계속 하도록 설정해 주기 위해)
+        let authUrl;
 
-        // const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}&prompt=${prompt}`; //local Test 용
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}`;
+        if (environment === 'local') {
+          const redirectUri = 'http://localhost:3006/google/callback';
+          const prompt = 'consent';
+          authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}&prompt=${prompt}`;
+        } else {
+          const redirectUri = 'https://management.cloudwiz-ai.com/google/callback';
+          authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}`;
+        }
 
-        window.location.href = authUrl;
+        const width = 500;
+        const height = 600;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+
+        console.log('Opening Google OAuth popup with URL:', authUrl);
+        const popup = window.open(authUrl, 'googleOAuth', `width=${width},height=${height},top=${top},left=${left}`);
+
+        const handleMessage = async (event) => {
+          if (event.origin !== window.location.origin) {
+            return;
+          }
+
+          const { code } = event.data;
+          if (code) {
+            try {
+              const { get } = restApi();
+              const response = await get(`/auth/google/callback?code=${code}`);
+              const tokens = response.data;
+
+              // console.log('Received tokens from server:', tokens);
+              const credentialData = {
+                user_id: userId.value,
+                provider_id: selectedProvider.value,
+                credential_name: providerName.value,
+                access_token: tokens.access_token,
+                refresh_token: tokens.refresh_token,
+                creator_id: userId.value,
+                updater_id: userId.value,
+              };
+              await providerStore.createCredential(credentialData);
+              // console.log('Credential created successfully:', credentialData);
+              popup.close();
+              router.push('/provider/list');
+            } catch (error) {
+              errorMessage.value = 'Google Drive Authentication failed';
+              console.error('Google Drive Authentication failed:', error);
+              popup.close();
+            }
+          }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        popup.onbeforeunload = () => {
+          window.removeEventListener('message', handleMessage);
+        };
       };
 
       const isAmazonWebServices = computed(() => {
@@ -211,9 +262,8 @@ export default {
           sessionStorage.setItem('userId', userId.value);
           sessionStorage.setItem('selectedProvider', selectedProvider.value);
           sessionStorage.setItem('providerName', providerName.value);
-          redirectToGoogleAuth();
+          openGooglePopup();
         } else {
-          console.log("createCredential start")
           await createCredential({
             user_id: userId.value,
             provider_id: selectedProvider.value,

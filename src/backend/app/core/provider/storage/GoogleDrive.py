@@ -1,14 +1,12 @@
 import json
 import os
-
+import tempfile
 from fastapi import UploadFile
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from app.core.interface.service import ServiceFactory, StorageService
 from typing import List, Dict, Any
-
-from app.core.provider.aws.SecretManager import SecretManagerService
 
 
 class GoogleDriveStorageService(StorageService):
@@ -52,14 +50,18 @@ class GoogleDriveStorageService(StorageService):
         else:
             return self.list_all_objects()
 
-    def upload_file(self, file_path: str, file_location: str):
-        file_metadata = {'name': file_location}
-        media = MediaFileUpload(file_path, resumable=True)
-        file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        print(f'File ID: {file.get("id")}')
-        return file
+    def upload_file(self, file, file_location: str):
+        if isinstance(file, UploadFile):
+            folder_id, filename = os.path.split(file_location)
+            return self.upload_file_to_folder(folder_id, file)
+        else:
+            file_metadata = {'name': file_location}
+            media = MediaFileUpload(file, resumable=True)
+            uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+            print(f'File ID: {uploaded_file.get("id")}')
+            return uploaded_file
 
-    def list_all_objects(self) -> List[Dict]:
+    def list_all_objects(self, directory_name: str = '') -> List[Dict]:
         results = self.drive_service.files().list(pageSize=1000, fields="files(id, name)").execute()
         items = results.get('files', [])
         return items
@@ -92,71 +94,15 @@ class GoogleDriveStorageService(StorageService):
         return response.get('files', [])
 
     def upload_file_to_folder(self, folder_id: str, file: UploadFile):
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(file.file.read())
+            tmp_path = tmp.name
+
         file_metadata = {'name': file.filename, 'parents': [folder_id]}
-        media = MediaFileUpload(file.file, resumable=True)
+        media = MediaFileUpload(tmp_path, resumable=True)
         uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        print(f'File ID: {uploaded_file.get("id")}')
-        return uploaded_file
 
-    def delete_file(self, key: str):
-        try:
-            self.drive_service.files().delete(fileId=key).execute()
-        except Exception as e:
-            print(e)
-
-    def retry(self, func, retries=5, delay=5, backoff=2):
-        for attempt in range(retries):
-            try:
-                return func()
-            except Exception as e:
-                print(f"Attempt {attempt + 1} failed: {str(e)}")
-                if attempt < retries - 1:
-                    import time
-                    time.sleep(delay)
-                    delay *= backoff
-                else:
-                    raise e
-
-    def download_file(self, s3_file_key: str, local_file_path: str):
-        try:
-            request = self.drive_service.files().get_media(fileId=s3_file_key)
-            with open(local_file_path, 'wb') as file:
-                downloader = MediaIoBaseDownload(file, request)
-                done = False
-                while done is False:
-                    status, done = downloader.next_chunk()
-                    print(f"Download {int(status.progress() * 100)}%.")
-        except Exception as e:
-            print(f"Error downloading file from Google Drive: {str(e)}")
-            raise
-
-    def set_ready(self):
-        print("GoogleDriveStorageService is ready")
-
-    def teardown(self):
-        print("GoogleDriveStorageService is being torn down")
-
-    def get_folder_id_by_name(self, folder_name: str) -> str:
-        response = self.drive_service.files().list(
-            q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
-            fields="files(id, name)"
-        ).execute()
-        folders = response.get('files', [])
-        if not folders:
-            raise FileNotFoundError(f"No folder found with the name: {folder_name}")
-        return folders[0]['id']
-
-    def list_all_objects(self, folder_id: str) -> List[Dict[str, Any]]:
-        response = self.drive_service.files().list(
-            q=f"'{folder_id}' in parents and trashed=false",
-            fields="files(id, name, size)"
-        ).execute()
-        return response.get('files', [])
-
-    def upload_file_to_folder(self, folder_id: str, file: UploadFile):
-        file_metadata = {'name': file.filename, 'parents': [folder_id]}
-        media = MediaFileUpload(file.file, resumable=True)
-        uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        os.remove(tmp_path)
         print(f'File ID: {uploaded_file.get("id")}')
         return uploaded_file
 

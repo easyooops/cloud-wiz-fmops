@@ -1,17 +1,28 @@
 import logging
 import requests
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, FastAPI
 from sqlmodel import Session
 from app.core.exception import authentication_error
 from app.service.auth.service import AuthService
-from app.service.credential.service import CredentialService
-from app.service.user.model import User
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.schemas.auth import UserCreate  # Adjust the import if necessary
 from app.core.factories import get_database
 from app.service.user.service import UserService
 from app.service.init.service import InitDataService
 
 router = APIRouter()
+
+origins = ["http://localhost:3006", "https://management.cloudwiz-ai.com"]
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 @router.post("/")
 async def authenticate_with_google(
@@ -76,11 +87,13 @@ async def google_callback(request: Request, session: Session = Depends(get_datab
     code = request.query_params.get('code')
     if not code:
         raise HTTPException(status_code=400, detail="Authorization code not provided")
+    logging.info(f"Received authorization code: {code}")
 
     auth_service = AuthService()
     tokens = auth_service.exchange_code_for_tokens(code)
 
-    # Extract tokens
+    logging.info(f"Received tokens: {tokens}")
+
     access_token = tokens.get("access_token")
     refresh_token = tokens.get("refresh_token")
 

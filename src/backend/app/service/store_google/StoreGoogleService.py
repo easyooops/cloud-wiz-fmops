@@ -30,6 +30,7 @@ class StoreGoogleService:
 
     def upload_file_to_store(self, user_id: UUID, store_name: str, file: UploadFile):
         folder_id = self.google_drive_service.get_folder_id_by_name(store_name)
+        file_location = f"{folder_id}/{file.filename}"
         return self.google_drive_service.upload_file_to_folder(folder_id, file)
 
     def delete_file_from_store(self, user_id: UUID, store_name: str, file_name: str):
