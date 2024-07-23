@@ -287,7 +287,6 @@ class StoreService():
             models = self.session.get(Model, agent_data.embedding_model_id)
             embedding_credential_type = self.get_provider_info(agent_data.embedding_provider_id)
             embed_component = self._initialize_embedding_component(embedding_credential_type, agent_data)
-            embed_component.build(models.model_name)
 
             storage_service = self.credential_service._set_storage_credential(credential_id=agent_data.storage_provider_id)
             if not storage_service:
@@ -305,6 +304,8 @@ class StoreService():
                 pass
 
             elif vector_store_type == "CM":
+                embed_component.build(models.model_name)
+
                 persist_directory = f"./chroma_db/{agent_data.storage_object_id}"
                 storage_location = f"{agent_data.user_id}/chroma_indexes/{agent_data.storage_object_id}"
                 vector_store = ChromaVectorStoreComponent(storage_service=storage_service)
@@ -312,9 +313,13 @@ class StoreService():
                 vector_store.save_index(storage_location)
 
             elif vector_store_type == "PC":
-                vector_store = PineconeVectorStoreComponent()
-                vector_store.initialize(docs=chunked_docs, index_name=str(agent_data.storage_object_id))
-            
+                embed_component.build(models.model_name, 1536)
+
+                pinecone_api_key = self._get_credential_info(agent_data, "PINECONE_API_KEY")
+                environment = self._get_credential_info(agent_data, "AWS_REGION")
+                vector_store = PineconeVectorStoreComponent(pinecone_api_key, environment, index_name=str(agent_data.storage_object_id))
+                vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance)
+
             else:
                 raise ValueError(f"Unsupported vector store type: {vector_store_type}")
 
@@ -388,5 +393,7 @@ class StoreService():
                 return os.getenv(key)
             elif key == "OPENAI_API_KEY":
                 return credentials.api_key
+            elif key == "PINECONE_API_KEY":
+                return credentials.api_key                
         else:
             return os.getenv(key)        

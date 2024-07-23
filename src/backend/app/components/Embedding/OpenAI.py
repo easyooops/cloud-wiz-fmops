@@ -16,7 +16,7 @@ class OpenAIEmbeddingComponent(AbstractEmbeddingComponent):
         self.model_instance = None
         self.executor = ThreadPoolExecutor()
 
-    def build(self, model_id: str = "text-embedding-3-small"):
+    def build(self, model_id: str = "text-embedding-3-small", dimension: int = None):
         """
         Build and configure the model instance.
         
@@ -25,6 +25,7 @@ class OpenAIEmbeddingComponent(AbstractEmbeddingComponent):
         """
         self.model_instance = OpenAIEmbeddings(
             openai_api_key=self.openai_api_key,
+            dimensions=dimension,
             model=model_id
         )
 
