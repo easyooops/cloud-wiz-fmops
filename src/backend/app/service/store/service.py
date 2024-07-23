@@ -315,8 +315,8 @@ class StoreService():
             elif vector_store_type == "PC":
                 embed_component.build(models.model_name, 1536)
 
-                pinecone_api_key = self._get_credential_info(agent_data, "PINECONE_API_KEY")
-                environment = self._get_credential_info(agent_data, "AWS_REGION")
+                pinecone_api_key = self._get_credential_info(agent_data.vector_db_provider_id, "PINECONE_API_KEY")
+                environment = self._get_credential_info(agent_data.embedding_provider_id, "AWS_REGION")
                 vector_store = PineconeVectorStoreComponent(pinecone_api_key, environment, index_name=str(agent_data.storage_object_id))
                 vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance)
 
@@ -362,15 +362,15 @@ class StoreService():
             ValueError: If required credentials are missing.
         """
         if embedding_type == "OA":
-            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
+            openai_api_key = self._get_credential_info(agent_data.embedding_provider_id, "OPENAI_API_KEY")
             if not openai_api_key:
                 raise ValueError("OpenAI API key is not set in the provider information.")
             return OpenAIEmbeddingComponent(openai_api_key)
 
         elif embedding_type == "BR":
-            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
-            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
+            aws_access_key = self._get_credential_info(agent_data.embedding_provider_id, "AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = self._get_credential_info(agent_data.embedding_provider_id, "AWS_SECRET_ACCESS_KEY")
+            aws_region = self._get_credential_info(agent_data.embedding_provider_id, "AWS_REGION")
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the provider information.")
             return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
@@ -378,9 +378,9 @@ class StoreService():
         else:
             raise ValueError(f"Unsupported embedding type: {embedding_type}")
         
-    def _get_credential_info(self, agent_data, key):
+    def _get_credential_info(self, credentials_id, key):
 
-        credentials = self.session.get(Credential, agent_data.embedding_provider_id)
+        credentials = self.session.get(Credential, credentials_id)
         if not credentials:
             raise HTTPException(status_code=404, detail="Credentials not found")
 

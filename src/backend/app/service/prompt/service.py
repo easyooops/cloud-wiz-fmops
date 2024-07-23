@@ -452,8 +452,8 @@ class PromptService:
             embed_component.build(embedding_model_name, 1536)
 
             # Pinecone initialization
-            pinecone_api_key = self._get_credential_info(agent_data, "PINECONE_API_KEY")
-            pinecone_environment = self._get_credential_info(agent_data, "AWS_REGION")
+            pinecone_api_key = store_service._get_credential_info(agent_data.vector_db_provider_id, "PINECONE_API_KEY")
+            pinecone_environment = store_service._get_credential_info(agent_data.embedding_provider_id, "AWS_REGION")
             index_name = str(storage_store.store_id)
             pinecone_component = PineconeVectorStoreComponent(api_key=pinecone_api_key, environment=pinecone_environment, index_name=index_name)
             pinecone_component.load_index(embedding_function=embed_component.model_instance)
