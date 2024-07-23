@@ -1,29 +1,39 @@
 import json
 import os
+import logging
 from dotenv import load_dotenv
+from sqlmodel import Session
 from fastapi.security import OAuth2PasswordBearer
+from google.auth.transport import requests as google_requests
 from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta
 from google.auth.transport import requests
 from google.oauth2 import id_token
+import requests
+from fastapi import Depends, HTTPException, Security
+from uuid import UUID
+from app.service.credential.model import Credential
 from fastapi import HTTPException, Security
-
 from app.core.provider.aws.SecretManager import SecretManagerService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
 class AuthService:
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     AUTH_SECRET_KEY = os.getenv("AUTH_SECRET_KEY")
     ALGORITHM = "HS256"                                 # 사용할 알고리즘
     ACCESS_TOKEN_EXPIRE_MINUTES = 30                    # 엑세스 토큰 유효 시간
     REFRESH_TOKEN_EXPIRE_DAYS = 7
+    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+    GOOGLE_TOKEN_URI = os.getenv("GOOGLE_TOKEN_URI")
+    GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
     @staticmethod
     def verify_google_token(token: str):
         try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), AuthService.GOOGLE_CLIENT_ID)
+            idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), AuthService.GOOGLE_CLIENT_ID)
 
             if idinfo['aud'] != AuthService.GOOGLE_CLIENT_ID:
                 raise ValueError('Invalid client ID.')
@@ -34,7 +44,38 @@ class AuthService:
 
             return {'user_id': user_id, 'email': email, 'name': name}
         except ValueError as e:
+            logging.error(f"Invalid token: {e}")
             raise HTTPException(status_code=403, detail="Invalid token")
+
+    @staticmethod
+    def exchange_code_for_tokens(code: str):
+        logging.info(f'Exchanging code for tokens with code: {code}')
+        data = {
+            'code': code,
+            'client_id': AuthService.GOOGLE_CLIENT_ID,
+            'client_secret': AuthService.GOOGLE_CLIENT_SECRET,
+            'redirect_uri': AuthService.GOOGLE_REDIRECT_URI,
+            'grant_type': 'authorization_code'
+        }
+        response = requests.post(AuthService.GOOGLE_TOKEN_URI, data=data)
+        if response.status_code == 200:
+            logging.info('Tokens received successfully.')
+            return response.json()
+        else:
+            logging.error(f'Failed to retrieve token: {response.status_code} {response.text}')
+            raise HTTPException(status_code=response.status_code, detail="Failed to retrieve token")
+
+    @staticmethod
+    def save_tokens_to_db(session: Session, user_id: UUID, provider_id: str, access_token: str, refresh_token: str, expires_in: int):
+        credential = Credential(
+            user_id=user_id,
+            provider_id=provider_id,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=expires_in
+        )
+        session.add(credential)
+        session.commit()
 
     @staticmethod
     def create_access_token(data: dict):
@@ -63,7 +104,7 @@ class AuthService:
             raise HTTPException(status_code=401, detail="Token has expired")
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid credentials")
-        
+
     def get_openai_key():
         # secret_manager = SecretManagerService()
         # secret_name = os.getenv("SECRETS_MANAGER_NAME")
@@ -86,8 +127,8 @@ class AuthService:
             'aws_access_key': os.getenv("AWS_ACCESS_KEY_ID"),
             'aws_secret_access_key': os.getenv("AWS_SECRET_ACCESS_KEY"),
             'aws_region': os.getenv("AWS_REGION")
-        }    
-    
+        }
+
     def get_db_info():
         # secret_manager = SecretManagerService()
         # secret_name = os.getenv("SECRETS_MANAGER_NAME")
@@ -95,6 +136,6 @@ class AuthService:
         # secrets = json.loads(secret_value)
         # return secrets.get("DATABASE_URL")
         return os.getenv("DATABASE_URL")
-    
+
 def get_current_user(token: str = Security(oauth2_scheme)):
     return AuthService.verify_jwt_token(token)
