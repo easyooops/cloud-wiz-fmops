@@ -37,6 +37,7 @@ class PineconeVectorStoreComponent(AbstractVectorStoreComponent):
             embedding=self.embedding_function,
             index_name=self.index_name
         )
+        
 
     def add_embeddings(self, docs):
         if self.db:
