@@ -427,8 +427,10 @@ class PromptService:
             persist_directory = f"./chroma_db/{storage_store.store_id}"
             storage_location = f"{storage_store.user_id}/chroma_indexes/{storage_store.store_id}"
             chroma_component = ChromaVectorStoreComponent(storage_service=storage_service)
-            chroma_component.initialize(docs=chunks, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(storage_store.store_id), storage_location=storage_location)
-            chroma_component.save_index(storage_location)
+            # chroma_component.initialize(docs=chunks, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(storage_store.store_id), storage_location=storage_location)
+            # chroma_component.save_index(storage_location)
+            chroma_component.embedding_function = embed_component.model_instance
+            chroma_component.load_index(storage_location, persist_directory)
 
             if chroma_component.db:
                 logging.warning("Database initialized successfully.")

@@ -16,9 +16,9 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <!-- <button v-if="agentId" class="btn btn-outline-primary me-2" @click.prevent="createIndexing()">
+                        <button v-if="agentId" class="btn btn-outline-primary me-2" @click.prevent="createIndexing()">
                             <vue-feather type="trash-2" class="text-top"></vue-feather> Vector Indexing
-                        </button>                                             -->
+                        </button>                                            
                         <button @click="saveAgent" class="btn btn-primary me-2">Save</button>
                         <button v-if="agentId" @click="deleteAgent" class="btn btn-danger me-2">Delete</button>
                         <router-link to="/agent/list" class="btn btn-secondary">Back to List</router-link>

@@ -23,13 +23,13 @@
                                             <div class="chat-history chat-msg-box custom-scrollbar" :ref="`chatInput-${dataItem.agent_id}`">
                                                 <ul>
                                                     <li v-for="(chat, index) in dataItem.currentChatMessages" :key="chat.time" :class="{ clearfix: chat.sender == 0 }">
-                                                        <div class="message" :class="{ 'other-message pull-right': chat.sender == 0, 'my-message': chat.sender != 0}">
+                                                        <div class="message" :class="{ 'other-message pull-right': chat.sender == 0, 'my-message': chat.sender != 0, 'blinking': chat.isLoading}">
                                                             <img class="rounded-circle float-start chat-user-img img-30 text-end" alt="" v-if="chat.sender != 0" :src="getImgUrl(dataItem.currentChatThumb)" />
                                                             <img class="rounded-circle float-end chat-user-img img-30" alt="" v-if="chat.sender == 0" :src="getImgUrl('user/1.jpg')" />
                                                             <div class="message-data text-end" :class="{ 'text-start': chat.sender == 0 }">
                                                                 <span class="message-data-time">{{ chat.time }}</span>
                                                             </div>
-                                                            {{ chat.text }}
+                                                            <div v-html="chat.text"></div>
                                                         </div>
                                                     </li>
                                                 </ul>
@@ -134,7 +134,8 @@ export default {
                             time: new Date().toLocaleTimeString()
                         }
                     ],
-                    currentChatThumb: 'default-thumbnail.jpg'                 
+                    currentChatThumb: 'default-thumbnail.jpg',
+                    isLoading: false
                 };
             });
         }      
@@ -168,15 +169,23 @@ export default {
             this.text = '';
 
             const promises = this.filteredData.map(async (dataItem) => {
-
                 dataItem.currentChatMessages.push({
                     sender: 1,
                     text: userInput,
                     time: new Date().toLocaleTimeString()
                 });
 
-                try {
+                // "Analyzing..." 메시지를 추가
+                const loadingMessage = {
+                    sender: 0,
+                    text: "Analyzing...",
+                    time: new Date().toLocaleTimeString(),
+                    isLoading: true  // 로딩 상태를 표시하는 플래그 추가
+                };
+                dataItem.currentChatMessages.push(loadingMessage);
+                const loadingMessageIndex = dataItem.currentChatMessages.length - 1;
 
+                try {
                     const agentId = dataItem.selectedAgent;
                     let responseText = '';
 
@@ -184,13 +193,15 @@ export default {
                         responseText = 'No agent selected';
                     } else {
                         await this.fetchLLMS(agentId, userInput);
-                        responseText = useAgentStore().llmsResponse ? useAgentStore().llmsResponse.answer : 'No response';
+                        responseText = useAgentStore().llmsResponse ? useAgentStore().llmsResponse.answer.replace(/\n/g, '<br/>') : 'No response';
                     }
 
-                    dataItem.currentChatMessages.push({
+                    // 새로운 객체로 할당하여 텍스트를 변경
+                    dataItem.currentChatMessages.splice(loadingMessageIndex, 1, {
                         sender: 0,
                         text: responseText,
-                        time: new Date().toLocaleTimeString()
+                        time: new Date().toLocaleTimeString(),
+                        isLoading: false
                     });
 
                     dataItem.tokens += useAgentStore().llmsResponse.tokens;
@@ -201,6 +212,13 @@ export default {
                     this.$forceUpdate();
                 } catch (error) {
                     console.error('Error fetching LLMS response:', error);
+                    // 오류 시 "Analyzing..." 메시지를 오류 메시지로 변경
+                    dataItem.currentChatMessages.splice(loadingMessageIndex, 1, {
+                        sender: 0,
+                        text: 'Error occurred. Please try again.',
+                        time: new Date().toLocaleTimeString(),
+                        isLoading: false
+                    });
                 }
             });
 
@@ -276,5 +294,13 @@ export default {
 .form-control-primary {
     border-color: var(--theme-deafult);
     color: var(--theme-deafult);
+}
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+.blinking {
+    animation: blink 1s infinite;
 }
 </style>
