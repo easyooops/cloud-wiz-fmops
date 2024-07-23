@@ -50,6 +50,7 @@ langchain-openai
 faiss-cpu
 langchain-chroma
 langchain-pinecone
+pinecone-client
 pinecone-notebooks
 
 #Document Loader

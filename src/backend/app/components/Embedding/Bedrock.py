@@ -25,7 +25,7 @@ class BedrockEmbeddingComponent(AbstractEmbeddingComponent):
 
         self.model_instance = None
 
-    def build(self, model_id: str = "amazon.titan-embed-text-v1"):
+    def build(self, model_id: str = "amazon.titan-embed-text-v1", dimension: int = None):
         """
         Build and configure the model instance.
         

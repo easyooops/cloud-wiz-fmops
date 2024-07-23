@@ -5,13 +5,22 @@
                 <div class="chat-history chat-msg-box custom-scrollbar" ref="chatInput">
                     <ul>
                         <li v-for="(chat, index) in currentChatMessages" :key="index" v-bind:class="{ clearfix: chat.sender == 0 }">
-                            <div class="message" v-bind:class="{ 'other-message pull-right': chat.sender == 0, 'my-message': chat.sender != 0}">
+                            <!-- <div class="message" v-bind:class="{ 'other-message pull-right': chat.sender == 0, 'my-message': chat.sender != 0}">
                                 <img class="rounded-circle float-start chat-user-img img-30 text-end" alt="" v-if="chat.sender != 0" v-bind:src="getImgUrl(currentChatThumb)" />
                                 <img class="rounded-circle float-end chat-user-img img-30" alt="" v-if="chat.sender == 0" v-bind:src="getImgUrl('user/1.jpg')" />
                                 <div class="message-data text-end" v-bind:class="{ 'text-start': chat.sender == 0 }">
                                     <span class="message-data-time">{{ chat.time }}</span>
                                 </div>
                                 {{ chat.text }}
+                            </div> -->
+
+                            <div class="message" v-bind:class="{ 'other-message pull-right': chat.sender == 0, 'my-message': chat.sender != 0, 'blinking': chat.isLoading}">
+                                <img class="rounded-circle float-start chat-user-img img-30 text-end" alt="" v-if="chat.sender != 0" v-bind:src="getImgUrl(currentChatThumb)" />
+                                <img class="rounded-circle float-end chat-user-img img-30" alt="" v-if="chat.sender == 0" v-bind:src="getImgUrl('user/1.jpg')" />
+                                <div class="message-data text-end" v-bind:class="{ 'text-start': chat.sender == 0 }">
+                                    <span class="message-data-time">{{ chat.time }}</span>
+                                </div>
+                                <div v-html="chat.text"></div>
                             </div>
                         </li>
                     </ul>
@@ -78,23 +87,45 @@ export default {
             });
             const userInput = this.text;
             this.text = '';
-
             this.scrollChat();
 
             const agentStore = useAgentStore();
             const agentId = agentStore.agent ? agentStore.agent.agent_id : '';
+
+            const loadingMessage = {
+                sender: 0,
+                text: "Analyzing...",
+                time: new Date().toLocaleTimeString(),
+                isLoading:true
+            };
+            this.currentChatMessages.push(loadingMessage);
+            const loadingMessageIndex = this.currentChatMessages.length - 1;
+            this.scrollChat();
+
             try {
                 await agentStore.fetchLLMS(agentId, userInput);
 
-                this.currentChatMessages.push({
+                // this.currentChatMessages.push({
+                //     sender: 0,
+                //     text: agentStore.llmsResponse.answer,
+                //     time: new Date().toLocaleTimeString()
+                // });
+                this.currentChatMessages.splice(loadingMessageIndex, 1, {
                     sender: 0,
-                    text: agentStore.llmsResponse.answer,
-                    time: new Date().toLocaleTimeString()
+                    text: agentStore.llmsResponse.answer.replace(/\n/g, '<br/>'),
+                    time: new Date().toLocaleTimeString(),
+                    isLoading: false
                 });
 
                 this.scrollChat();
             } catch (error) {
                 console.error('Error fetching LLMS response:', error);
+                this.currentChatMessages.splice(loadingMessageIndex, 1, {
+                    sender: 0,
+                    text: 'Error occurred. Please try again.',
+                    time: new Date().toLocaleTimeString(),
+                    isLoading: false
+                });
             }
         },
         scrollChat() {
@@ -122,5 +153,13 @@ export default {
 .chat-box .chat-right-aside .chat .chat-msg-box .message-text {
     display: inline-block;
     max-width: 100%;
+}
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+.blinking {
+    animation: blink 1s infinite;
 }
 </style>

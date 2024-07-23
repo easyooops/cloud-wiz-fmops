@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import chromadb
 from langchain_openai import OpenAIEmbeddings
 from app.components.VectorStore.Base import AbstractVectorStoreComponent
@@ -21,27 +22,34 @@ class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
         self.docs = docs
         self.index_name = index_name
 
-        client = chromadb.EphemeralClient()
+        self.db = Chroma.from_documents(
+            documents=docs, 
+            embedding=self.embedding_function,
+            persist_directory=persist_directory
+        )
 
-        if persist_directory:
-            # Load existing index if available
-            if self.storage_service:
-                self.load_index(storage_location, persist_directory)
-            if self.db is None:  # If loading index failed, create a new one
-                self.db = Chroma.from_documents(
-                    docs, 
-                    self.embedding_function,
-                    client=client,
-                    persist_directory=persist_directory, 
-                    collection_name=index_name
-                )
-        else:
-            self.db = Chroma.from_documents(
-                docs, 
-                self.embedding_function,
-                client=client,
-                collection_name=index_name
-            )
+        # self.db = None
+        # client = chromadb.EphemeralClient()
+
+        # if persist_directory:
+        #     # Load existing index if available
+        #     if self.storage_service:
+        #         self.load_index(storage_location, persist_directory)
+        #     if self.db is None:  # If loading index failed, create a new one
+        #         self.db = Chroma.from_documents(
+        #             docs, 
+        #             self.embedding_function,
+        #             client=client,
+        #             persist_directory=persist_directory, 
+        #             collection_name=index_name
+        #         )
+        # else:
+        #     self.db = Chroma.from_documents(
+        #         docs, 
+        #         self.embedding_function,
+        #         client=client,
+        #         collection_name=index_name
+        #     )
 
     def add_embeddings(self, docs):
         if self.db:
@@ -74,6 +82,7 @@ class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
             
             # Upload each file in the persist directory to the storage service
             if self.storage_service:
+                os.makedirs(self.persist_directory, exist_ok=True)
                 for file_name in os.listdir(self.persist_directory):
                     file_path = os.path.join(self.persist_directory, file_name)
                     if os.path.isfile(file_path):  # 파일인지 확인
@@ -81,6 +90,9 @@ class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
                         with open(file_path, 'rb') as file:
                             logging.warning(f"Uploading file: {file_path} to {storage_file_path}")
                             self.storage_service.upload_file(file, storage_file_path)
+
+                # Clear the persist directory after upload
+                self.clear_persist_directory()                            
         else:
             raise ValueError("Database is not initialized. Call the initialize method first.")
 
@@ -94,13 +106,22 @@ class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
                 file_path = os.path.join(persist_directory, file_name)
                 self.storage_service.download_file(file['Key'], file_path)
 
-            client = chromadb.EphemeralClient()
+            # client = chromadb.EphemeralClient()
 
             try:
                 self.db = Chroma(
-                    self.embedding_function,
-                    persist_directory=persist_directory
+                    persist_directory=persist_directory,
+                    embedding_function=self.embedding_function
                 )
             except Exception as e:
                 logging.warning(f"Failed to load index from {persist_directory}: {e}")
                 return None
+            
+            # Clear the persist directory after loading the index
+            self.clear_persist_directory()            
+
+    def clear_persist_directory(self):
+        """Helper function to clear the persist directory"""
+        if self.persist_directory and os.path.exists(self.persist_directory):
+            shutil.rmtree(self.persist_directory)
+            os.makedirs(self.persist_directory)

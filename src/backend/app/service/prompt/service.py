@@ -404,17 +404,6 @@ class PromptService:
             storage_store = agent_data['Store']
             embedding_model_name = agent_data['EmbeddingModelName']
 
-            # Load Object
-            file_metadata_list = store_service.list_files(storage_store.user_id, storage_store.store_id)
-            files = [file_metadata['Key'] for file_metadata in file_metadata_list]
-
-            # Load Document
-            documents = store_service.load_documents_v2(storage_store.credential_id, files)
-
-            # Make Chunks
-            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-            chunks = text_splitter.split_documents(documents)
-
             storage_service = credential_service._set_storage_credential(credential_id=storage_store.credential_id)
             if not storage_service:
                 logging.error("Failed to initialize storage service")
@@ -427,8 +416,8 @@ class PromptService:
             persist_directory = f"./chroma_db/{storage_store.store_id}"
             storage_location = f"{storage_store.user_id}/chroma_indexes/{storage_store.store_id}"
             chroma_component = ChromaVectorStoreComponent(storage_service=storage_service)
-            chroma_component.initialize(docs=chunks, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(storage_store.store_id), storage_location=storage_location)
-            chroma_component.save_index(storage_location)
+            chroma_component.embedding_function = embed_component.model_instance
+            chroma_component.load_index(storage_location, persist_directory)
 
             if chroma_component.db:
                 logging.warning("Database initialized successfully.")
@@ -441,7 +430,43 @@ class PromptService:
             return f"An error occurred: {e}"
 
     async def _run_embedding_pinecone(self, agent_data):
-        pass
+        """
+        Load the Pinecone engine for querying.
+        
+        Args:
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The Pinecone engine or an error message.
+        """
+        store_service = StoreService(self.session)
+
+        try:            
+            agents_store = agent_data['Agent']
+            storage_store = agent_data['Store']
+            embedding_model_name = agent_data['EmbeddingModelName']
+
+            # Get embedding type and initialize embedding component
+            embedding_type = store_service.get_provider_info(agents_store.embedding_provider_id)
+            embed_component = self._initialize_embedding_component(embedding_type, agent_data)
+            embed_component.build(embedding_model_name, 1536)
+
+            # Pinecone initialization
+            pinecone_api_key = self._get_credential_info(agent_data, "PINECONE_API_KEY")
+            pinecone_environment = self._get_credential_info(agent_data, "AWS_REGION")
+            index_name = str(storage_store.store_id)
+            pinecone_component = PineconeVectorStoreComponent(api_key=pinecone_api_key, environment=pinecone_environment, index_name=index_name)
+            pinecone_component.load_index(embedding_function=embed_component.model_instance)
+
+            if pinecone_component.db:
+                logging.warning("Database initialized successfully.")
+            else:
+                logging.warning("Database initialization failed.")
+
+            return pinecone_component.db
+        except Exception as e:
+            logging.error(f"An error occurred while loading the Pinecone engine: {e}")
+            return f"An error occurred: {e}"
 
     async def _run_embedding(self, agent_data, query):
 
@@ -877,5 +902,7 @@ class PromptService:
                 return os.getenv(key)
             elif key == "OPENAI_API_KEY":
                 return _d_credential.api_key
+            elif key == "PINECONE_API_KEY":
+                return _d_credential.api_key             
         else:
             return os.getenv(key)
