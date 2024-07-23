@@ -28,7 +28,7 @@ class AuthService:
     REFRESH_TOKEN_EXPIRE_DAYS = 7
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_TOKEN_URI = os.getenv("GOOGLE_TOKEN_URI")
-    GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+    ENV = os.getenv("ENVIRONMENT")
 
     @staticmethod
     def verify_google_token(token: str):
@@ -50,11 +50,17 @@ class AuthService:
     @staticmethod
     def exchange_code_for_tokens(code: str):
         logging.info(f'Exchanging code for tokens with code: {code}')
+
+        if AuthService.ENV == 'local':
+            redirect_uri = 'http://localhost:3006/google/callback'
+        else:
+            redirect_uri = 'https://management.cloudwiz-ai.com/google/callback'
+
         data = {
             'code': code,
             'client_id': AuthService.GOOGLE_CLIENT_ID,
             'client_secret': AuthService.GOOGLE_CLIENT_SECRET,
-            'redirect_uri': AuthService.GOOGLE_REDIRECT_URI,
+            'redirect_uri': redirect_uri,
             'grant_type': 'authorization_code'
         }
         response = requests.post(AuthService.GOOGLE_TOKEN_URI, data=data)
