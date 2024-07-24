@@ -111,6 +111,20 @@ class AuthService:
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    @staticmethod
+    def refresh_access_token(refresh_token: str):
+        data = {
+            'client_id': AuthService.GOOGLE_CLIENT_ID,
+            'client_secret': AuthService.GOOGLE_CLIENT_SECRET,
+            'refresh_token': refresh_token,
+            'grant_type': 'refresh_token'
+        }
+        response = requests.post(AuthService.GOOGLE_TOKEN_URI, data=data)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Failed to refresh access token")
+
     def get_openai_key():
         # secret_manager = SecretManagerService()
         # secret_name = os.getenv("SECRETS_MANAGER_NAME")

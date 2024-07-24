@@ -87,34 +87,12 @@ export const useProviderStore = defineStore({
       async exchangeCodeForTokens(code) {
           try {
               const { get } = restApi();
-              const response = await get(`/auth/google/callback?code=${code}`);
+              const response = await get(`/google/callback?code=${code}`);
               return response.data;
           } catch (error) {
               throw error;
           }
       },
-      async createGoogleCredential(code, userId, providerId, providerName) {
-          this.loading = true;
-          this.error = null;
-          try {
-              const tokens = await this.exchangeCodeForTokens(code);
-              const credentialData = {
-                  user_id: userId,
-                  provider_id: providerId,
-                  credential_name: providerName,
-                  access_token: tokens.access_token,
-                  refresh_token: tokens.refresh_token,
-                  creator_id: userId,
-                  updater_id: userId,
-              };
-              await this.createCredential(credentialData);
-          } catch (error) {
-              throw error;
-          } finally {
-              this.loading = false;
-          }
-      },
-
       async updateCredential(credentialData) {
         this.loading = true;
         this.error = null;
