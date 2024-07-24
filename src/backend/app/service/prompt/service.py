@@ -45,17 +45,10 @@ from app.components.VectorStore.Faiss import FaissVectorStoreComponent
 
 
 class PromptService:
-    def __init__(self, session: Session, user_id:Optional[UUID] = None):
+    def __init__(self, session: Session):
         self.session = session
-        self.user_id = user_id
 
-    def get_session_id(self):
-        return str(self.user_id)
-    
-    def get_ml_app_id(self):
-        return "fmops_"+str(self.user_id)
-
-    @workflow(name="cloudwiz-ai-fmops", session_id=get_session_id, ml_app=get_ml_app_id)
+    @workflow(name="cloudwiz-ai-fmops")
     @LoggingConfigurator.log_method
     def get_prompt(self, agent_id: UUID, query: Optional[str] = None) -> ChatResponse:
 
@@ -127,7 +120,7 @@ class PromptService:
                 span=None,
                 input_data=query,
                 output_data=response,
-                tags={"agent_id":_d_agent.agent_id,"input_date": datetime.datetime,"user_id": _d_agent.user_id,"result": "success"}
+                tags={"agent_id":str(_d_agent.agent_id),"input_date": str(datetime.datetime),"user_id": str(_d_agent.user_id),"result": "success"}
             )
                 
             return ChatResponse(
@@ -141,7 +134,7 @@ class PromptService:
                 span=None,
                 input_data=query,
                 output_data=response,
-                tags={"agent_id":_d_agent.agent_id,"input_date": datetime.datetime,"user_id": _d_agent.user_id,"result": "fail","error": e}
+                tags={"agent_id":str(_d_agent.agent_id),"input_date": str(datetime.datetime),"user_id": str(_d_agent.user_id),"result": "fail","error": e}
             )            
             raise HTTPException(status_code=500, detail=str(e))
 

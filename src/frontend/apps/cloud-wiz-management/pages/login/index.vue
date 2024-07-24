@@ -85,10 +85,6 @@ export default {
       this.loading = true;
       try {              
         if (response && response.credential) {
-
-          console.log('== handleCallback() =====================');
-          console.log(response);
-          console.log('== handleCallback() =====================');
           const token = response.credential
           // const base64Payload = token.split('.')[1]
           // const payload = atob(base64Payload);

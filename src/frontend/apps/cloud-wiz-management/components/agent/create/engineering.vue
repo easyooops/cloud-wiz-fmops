@@ -476,7 +476,6 @@ export default {
         selectedEmbeddingProvider() {
             if (this.models.length > 0) {
                 let filteredEmbeddingModels = this.models.filter(model => model.model_type === "E" && model.model_id == this.selectedEmbeddingModel);
-                console.log(filteredEmbeddingModels)
                 if (filteredEmbeddingModels.length > 0) {
                     this.selectedEmbeddingModel = filteredEmbeddingModels[0].model_id;
                 }
@@ -682,10 +681,10 @@ export default {
             }
             if (this.storages.length > 0) {
                 this.selectedObject = this.filteredObjects[0]?.store_id || '';
-                const firstStore = this.filteredObjects[0];
-                if (firstStore?.store_name) {
-                    await this.loadFiles(firstStore.store_name);
-                }
+                // const firstStore = this.filteredObjects[0];
+                // if (firstStore?.store_name) {
+                //     await this.loadFiles(firstStore.store_name);
+                // }
             }
             if (this.router.currentRoute.query.agentId || this.agentId) {
                 await this.fetchAgentData();

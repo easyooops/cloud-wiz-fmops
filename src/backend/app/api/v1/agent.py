@@ -24,7 +24,6 @@ def get_agents_prompt(
 ):
     try:
         service = PromptService(session)
-        service.user_id = agent_id
         # answer = service.get_prompt(agent_id, query)
         # tokens = service._get_token_counts(agent_id, answer)
         # return ChatResponse(answer=answer, tokens=tokens)

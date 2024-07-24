@@ -40,16 +40,10 @@ export const useOneClickStore = defineStore('oneClick', {
             this.stageSelected[this.oneClickStage] = selected
 
             this.oneClickStage++
-
-            console.log(this.stageSelected)
         },
 
         prevQuestion() {
-
             this.oneClickStage--
-
-            console.log(this.stageSelected)
-
         },
 
         setOneClickStage(stage: integer) {
