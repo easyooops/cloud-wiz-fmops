@@ -132,7 +132,6 @@
 
     } catch (err) {
       error.value = err
-      console.log('error : {}', error.value)
     } finally {
       pending.value = false
     }

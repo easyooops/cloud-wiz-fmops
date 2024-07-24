@@ -12,6 +12,7 @@ import restApi from "~/utils/axios";
 export default {
   name: 'GoogleDriveCallback',
   async mounted() {
+    console.log('== GoogleDriveCallback() =============================');
     const providerStore = useProviderStore();
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
@@ -46,12 +47,8 @@ export default {
       sessionStorage.removeItem('userId');
       sessionStorage.removeItem('selectedProvider');
       sessionStorage.removeItem('providerName');
-
-      console.log('Google Drive Authentication successful:', tokens);
-
       this.$router.push('/provider/list');
     } catch (error) {
-      console.error('Google Drive Authentication failed:', error);
       this.$router.push('/provider/list');
     }
   }

@@ -164,16 +164,16 @@ export default {
       const scope = 'https://www.googleapis.com/auth/drive';
       const responseType = 'code';
       const accessType = 'offline';
+      const prompt = 'consent'
       let authUrl;
 
       if (environment === 'local'){
         const redirectUri = 'http://localhost:3006/google/callback';
-        const prompt = 'consent'
         authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}&prompt=${prompt}`;
 
       }else{
         const redirectUri = 'https://management.cloudwiz-ai.com/google/callback';
-        authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}`;
+        authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}&access_type=${accessType}&prompt=${prompt}`;
       }
       window.location.href = authUrl;
     };
@@ -196,7 +196,6 @@ export default {
       successMessage.value = null;
 
       try {
-        console.log("creadentialData:",credentialData)
         await providerStore.createCredential(credentialData);
         successMessage.value = 'Credential created successfully.';
         router.push('/provider/list');

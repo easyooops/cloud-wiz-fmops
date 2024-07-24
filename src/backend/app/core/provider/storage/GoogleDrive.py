@@ -145,7 +145,9 @@ class GoogleDriveStorageService(StorageService):
         print("GoogleDriveStorageService is being torn down")
 
 class GoogleDriveStorageServiceFactory(ServiceFactory):
-    def __init__(self, access_token: str):
+    def __init__(self, access_token: str, refresh_token: str):
         self.access_token = access_token
+        self.refresh_token = refresh_token
+
     def create(self) -> GoogleDriveStorageService:
-        return GoogleDriveStorageService(self.access_token)
+        return GoogleDriveStorageService(self.access_token, self.refresh_token)

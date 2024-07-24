@@ -7,7 +7,6 @@
   
   <script>
   import restApi from '@/utils/axios';
-  console.log('==  AuthCallback =================================');
   export default {
     name: 'AuthCallback',
     async mounted() {
@@ -19,13 +18,10 @@
           throw new Error('Access token not found');
         }
   
-        console.log('==  AuthCallback =================================');
         const { post } = restApi();
         const response = await post('/auth/', {
           token: accessToken
         });
-  
-        console.log('Authentication successful:', response.data);
   
         this.$router.push('/');
       } catch (error) {

@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 from decimal import Decimal
 import json
 from langchain_core.documents import Document
@@ -119,7 +120,7 @@ class PromptService:
                 span=None,
                 input_data=query,
                 output_data=response,
-                tags={"host":_d_agent.agent_id, "result": "success"}
+                tags={"agent_id":str(_d_agent.agent_id),"input_date": str(datetime.datetime),"user_id": str(_d_agent.user_id),"result": "success"}
             )
                 
             return ChatResponse(
@@ -133,7 +134,7 @@ class PromptService:
                 span=None,
                 input_data=query,
                 output_data=response,
-                tags={"host":_d_agent.agent_id, "result": "fail", "error": e}
+                tags={"agent_id":str(_d_agent.agent_id),"input_date": str(datetime.datetime),"user_id": str(_d_agent.user_id),"result": "fail","error": e}
             )            
             raise HTTPException(status_code=500, detail=str(e))
 

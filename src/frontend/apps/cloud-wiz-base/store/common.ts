@@ -35,7 +35,6 @@ export const useCommonStore = defineStore('common', {
 
             } catch (err) {
                 error.value = err
-                console.log('error : {}', error.value)
             } finally {
                 pending.value = false
             }
