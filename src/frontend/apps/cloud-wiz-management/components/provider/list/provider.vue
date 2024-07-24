@@ -53,10 +53,10 @@
                           <div class="col-6 font-primary" v-if="dataItem.access_token">{{ dataItem.access_token }}</div>
                           <div class="col-6" v-if="dataItem.api_key"> <span>API Key</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.api_key">{{ dataItem.api_key }}</div>
-                          <div class="col-6" v-if="dataItem.client_id"><span>Google Client ID</span></div>
+                          <!-- <div class="col-6" v-if="dataItem.client_id"><span>Google Client ID</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.client_id">{{ dataItem.client_id }}</div>
                           <div class="col-6" v-if="dataItem.auth_secret_key"><span>Auth Secret Key</span></div>
-                          <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ dataItem.auth_secret_key }}</div>
+                          <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ dataItem.auth_secret_key }}</div> -->
                       </div>
 
                       <div class="row details">

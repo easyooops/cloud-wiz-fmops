@@ -157,6 +157,7 @@ class CredentialService():
                     'token': os.getenv('GITHUB_TOKEN'),
                     'repo': os.getenv('GITHUB_REPO'),
                     'owner': os.getenv('GITHUB_OWNER'),
+                    'access_token': os.getenv('ACCESS_TOKEN'),
                     'refresh_token': os.getenv('REFRESH_TOKEN')
                 }
             else:
@@ -167,10 +168,11 @@ class CredentialService():
                     'bucket_name': self.store_bucket,
                     'credentials_json': credential.api_key,
                     'api_token': credential.access_token,
-                    'database_id': credential.client_id,
-                    'token': credential.auth_secret_key,
+                    'database_id': credential.api_endpoint,
+                    'token': credential.access_token,
                     'repo': credential.session_key,
                     'owner': credential.secret_key,
+                    'access_token': credential.access_token,
                     'refresh_token': credential.refresh_token
                 }
 

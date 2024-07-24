@@ -40,7 +40,8 @@ class ServiceManager:
                 )
             elif service_type == ServiceType.GOOGLE_DRIVE:
                 factory = GoogleDriveStorageServiceFactory(
-                    google_token=config['google_token']
+                    access_token=config['access_token'],
+                    refresh_token=config['refresh_token']
                 )
             elif service_type == ServiceType.NOTION:
                 factory = NotionStorageServiceFactory(
