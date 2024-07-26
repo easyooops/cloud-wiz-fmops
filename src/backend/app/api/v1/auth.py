@@ -74,7 +74,6 @@ async def google_callback(request: Request, session: Session = Depends(get_datab
     code = request.query_params.get('code')
     if not code:
         raise HTTPException(status_code=400, detail="Authorization code not provided")
-    logging.info(f"Received authorization code: {code}")
 
     auth_service = AuthService()
     tokens = auth_service.exchange_code_for_tokens(code)
