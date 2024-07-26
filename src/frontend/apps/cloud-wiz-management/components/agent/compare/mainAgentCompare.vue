@@ -2,7 +2,7 @@
     <div class="email-wrap bookmark-wrap">
         <div class="row">
             
-            <div :class="getGridClass(filteredData.length)" class="box-col-6" v-for="(dataItem, dataIndex) in filteredData.slice(0,4)" :key="dataIndex">
+            <div :class="getGridClass(filteredData.slice(0,4).length)" class="box-col-6" v-for="(dataItem, dataIndex) in filteredData.slice(0,4)" :key="dataIndex">
                 <div class="card">
                     <div class="card-body">
                         <div class="email-app-sidebar left-bookmark">
@@ -175,7 +175,7 @@ export default {
                 return;
             } else if (event.key === 'Enter') {
                 event.preventDefault(); // 기본 엔터 동작 방지
-                addChat(); // 엔터키 입력 시 채팅 전송
+                this.addChat(); // 엔터키 입력 시 채팅 전송
             }
         },                       
         async addChat() {
