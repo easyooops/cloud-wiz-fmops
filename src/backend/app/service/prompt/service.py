@@ -37,11 +37,11 @@ from app.service.processing.model import Processing
 from app.core.util.piimasking import PiiMaskingService
 from app.core.util.textNormailization import TextNormalizationService
 from app.service.credential.model import Credential
-from app.core.provider.aws.SecretManager import SecretManagerService
 from app.components.VectorStore.Chroma import ChromaVectorStoreComponent
 from app.components.VectorStore.Pinecone import PineconeVectorStoreComponent
 from app.service.credential.service import CredentialService
-from app.components.VectorStore.Faiss import FaissVectorStoreComponent
+from app.components.Chat.GoogleAI import ChatGoogleAIComponent
+from app.components.LLM.GoogleAI import GoogleAILLMComponent
 
 
 class PromptService:
@@ -89,22 +89,14 @@ class PromptService:
                     return storage_limit_response
                         
                 try:
-                    # documents = asyncio.run(self._run_embedding(agent_data, query))
                     documents = asyncio.run(self._run_embedding_main(agent_data))
-                    
-                    if agent_data["Provider"].name == "OpenAI":
-                        rag_response = asyncio.run(self.run_rag_openai(agent_data, query, documents))
-                    elif agent_data["Provider"].name == "Bedrock":
-                        rag_response = asyncio.run(self.run_rag_bedrock(agent_data, query, documents))
-                    else:
-                        raise ValueError("Unsupported embedding provider")
-
+                    rag_response = asyncio.run(self._run_rag_retrieval(agent_data, query, documents))
                     response = rag_response["llm_response"]
                 except openai.PermissionDeniedError as e:
                     logging.error(f"Embedding generation permission denied: {str(e)}")
                     raise HTTPException(status_code=403, detail="Embedding generation permission denied")
             else:
-                response = self._run_provider(agent_data, query, history)
+                response = self._run_model(agent_data, query, history)
 
             # post-processing
             if _d_agent.processing_enabled:
@@ -294,22 +286,7 @@ class PromptService:
         elif vector_store_type == "PC":
             return await self._run_embedding_pinecone(agent_data)
         else:
-            return await self._run_embedding_faiss(agent_data)
-    
-    def get_embedding_credential(self, credential_id: UUID):
-        try:
-            statement = (
-                select(Credential).where(Credential.credential_id == credential_id)
-            )
-            provider = self.session.execute(statement).one_or_none()
-
-            if provider is None:
-                raise HTTPException(status_code=404, detail="Store not found")
-            
-            return provider[0].pvd_key
-
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error retrieving store: {str(e)}")        
+            return await self._run_embedding_faiss(agent_data)    
             
     async def _run_embedding_faiss(self, agent_data):
         """
@@ -356,37 +333,6 @@ class PromptService:
             logging.error(f"An error occurred during the FAISS embedding process: {e}")
             return f"An error occurred: {e}"
 
-    def _initialize_embedding_component(self, embedding_type: str, agent_data):
-        """
-        Initialize the embedding component based on the embedding type.
-        
-        Args:
-            embedding_type (str): Type of embedding provider (e.g., "OA" for OpenAI, "BR" for Bedrock).
-            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
-        
-        Returns:
-            Any: The initialized embedding component.
-        
-        Raises:
-            ValueError: If required credentials are missing.
-        """
-        if embedding_type == "OA":
-            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
-            if not openai_api_key:
-                raise ValueError("OpenAI API key is not set in the provider information.")
-            return OpenAIEmbeddingComponent(openai_api_key)
-
-        elif embedding_type == "BR":
-            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
-            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
-            if not all([aws_access_key, aws_secret_access_key, aws_region]):
-                raise ValueError("AWS credentials or region are not set in the provider information.")
-            return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
-        
-        else:
-            raise ValueError(f"Unsupported embedding type: {embedding_type}")
-        
     async def _run_embedding_chroma(self, agent_data):
         """
         Load the Chroma engine for querying.
@@ -468,146 +414,140 @@ class PromptService:
         except Exception as e:
             logging.error(f"An error occurred while loading the Pinecone engine: {e}")
             return f"An error occurred: {e}"
-
-    async def _run_embedding(self, agent_data, query):
-
-        store_service = StoreService(self.session)
-
-        storage_store = agent_data['Store']
-        store_id = storage_store.store_id
-        user_id = storage_store.user_id
-
-        file_metadata_list = store_service.list_files(user_id, store_id)
-        files = [file_metadata['Key'] for file_metadata in file_metadata_list]
-
-        if not files:
-            logging.error("No files found in storage Object")
-            raise HTTPException(status_code=500, detail="No files found in storage object")
-
-        documents = store_service.load_documents_v2(storage_store.credential_id, files)
-
-        if not documents:
-            logging.error("No documents found in files")
-            raise HTTPException(status_code=500, detail="No documents found in files")
-
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        chunks = text_splitter.split_documents(documents)
-
-        if not chunks:
-            raise ValueError("No chunks were split into chunks")
-
-        if agent_data["Provider"].name == "OpenAI":
-            return await self._run_embedding_openai_model(agent_data, chunks)
-        elif agent_data["Provider"].name == "Bedrock":
-            return await self._run_embedding_bedrock_model(agent_data, chunks)
-        else:
-            return await self._run_embedding_openai_model(agent_data, chunks)
-
-    def _run_provider(self, agent_data, query, history):
-
-        _d_provider = agent_data['Provider']
-
-        if _d_provider.name == "OpenAI":
-            return self._run_openai_model(agent_data, query)
-        elif _d_provider.name == "Bedrock":
-            return self._run_bedrock_model(agent_data, query)
-        else:
-            return self._run_openai_model(agent_data, query)
-
-    async def _run_embedding_openai_model(self, agent_data, documents):
-        store = agent_data['Store']
-        agent = agent_data['Agent']
-        embedding_model_name = agent_data['EmbeddingModelName']
-
-        credential_service = CredentialService(self.session)
-        store_service = StoreService(self.session)
-
-        openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
-
-        if not openai_api_key:
-            return "OpenAI API key is not set in the provider information."
         
-        storage_service = credential_service._set_storage_credential(credential_id=store.credential_id)
-        if not storage_service:
-            logging.error("Failed to initialize storage service")
-            raise HTTPException(status_code=500, detail="Failed to initialize storage service")
+    def _initialize_embedding_component(self, embedding_type: str, agent_data):
+        """
+        Initialize the embedding component based on the embedding type.
+        
+        Args:
+            embedding_type (str): Type of embedding provider (e.g., "OA" for OpenAI, "BR" for Bedrock).
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The initialized embedding component.
+        
+        Raises:
+            ValueError: If required credentials are missing.
+        """
+        if embedding_type == "OA":
+            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
+            if not openai_api_key:
+                raise ValueError("OpenAI API key is not set in the provider information.")
+            return OpenAIEmbeddingComponent(openai_api_key)
 
-        vector_store_type = store_service.get_provider_info(agent.vector_db_provider_id)
-        if vector_store_type == "CM":
-            
-            embed_component = OpenAIEmbeddingComponent(openai_api_key)
-            embed_component.build(embedding_model_name)
-            embeddings = await embed_component.run_embed_documents([doc.page_content for doc in documents])
-
-            docs_with_embeddings = [Document(page_content=doc.page_content, metadata={"embedding": embedding}) for doc, embedding in zip(documents, embeddings)]
-
-            db = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
-
-        elif vector_store_type == "FS":
-            persist_directory = f"/tmp/chroma_db/{store.store_id}"
-            storage_location = f"{store.user_id}/chroma_indexes/{store.store_id}"
-
-            os.makedirs(persist_directory, exist_ok=True)
-
-            vector_store = ChromaVectorStoreComponent(storage_service=storage_service)
-            vector_store.load_index(storage_location, persist_directory)
-            db = vector_store.db
-
-        elif vector_store_type == "PC":
-            vector_store = PineconeVectorStoreComponent()
-            vector_store.initialize(index_name=str(store.store_id))
-            db = vector_store
-
+        elif embedding_type == "BR":
+            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials or region are not set in the provider information.")
+            return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
+        
         else:
-            raise ValueError(f"Unsupported vector store type: {vector_store_type}")
+            raise ValueError(f"Unsupported embedding type: {embedding_type}")
+        
+    def _initialize_chat_component(self, model_type: str, agent_data):
+        """
+        Initialize the chat component based on the model type.
+        
+        Args:
+            model_type (str): Type of chat provider (e.g., "OA" for OpenAI, "BR" for Bedrock, "GN" for Google).
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The initialized chat component.
+        
+        Raises:
+            ValueError: If required credentials are missing.
+        """
+        if model_type == "OA":
+            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
+            if not openai_api_key:
+                raise ValueError("OpenAI API key is not set in the provider information.")
+            return ChatOpenAIComponent(openai_api_key)
 
-        return db
+        elif model_type == "BR":
+            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials or region are not set in the provider information.")
+            return ChatBedrockComponent(aws_access_key, aws_secret_access_key, aws_region)
+        
+        elif model_type == "GN":
+            google_api_key = self._get_credential_info(agent_data, "GOOGLE_API_KEY")
+            if not google_api_key:
+                raise ValueError("Google API key is not set in the provider information.")
+            return ChatGoogleAIComponent(google_api_key)
+                
+        else:
+            raise ValueError(f"Unsupported chat type: {model_type}")       
 
-    async def run_rag_openai(self, agent_data, query: str, db, top_k: int = 5):
+    def _initialize_llm_component(self, model_type: str, agent_data):
+        """
+        Initialize the llm component based on the model type.
+        
+        Args:
+            model_type (str): Type of llm provider (e.g., "OA" for OpenAI, "BR" for Bedrock, "GN" for Google).
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The initialized llm component.
+        
+        Raises:
+            ValueError: If required credentials are missing.
+        """
+        if model_type == "OA":
+            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
+            if not openai_api_key:
+                raise ValueError("OpenAI API key is not set in the provider information.")
+            return OpenAILLMComponent(openai_api_key)
+
+        elif model_type == "BR":
+            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
+            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
+            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
+            if not all([aws_access_key, aws_secret_access_key, aws_region]):
+                raise ValueError("AWS credentials or region are not set in the provider information.")
+            return BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
+        
+        elif model_type == "GN":
+            google_api_key = self._get_credential_info(agent_data, "GOOGLE_API_KEY")
+            if not google_api_key:
+                raise ValueError("Google API key is not set in the provider information.")
+            return GoogleAILLMComponent(google_api_key)
+                
+        else:
+            raise ValueError(f"Unsupported llm type: {model_type}")
+
+    async def _run_rag_retrieval(self, agent_data, query: str, db, top_k: int = 5):
+        store_service = StoreService(self.session)
         try:
-            _d_agent = agent_data['Agent']
-            _d_model = agent_data['Model']
+            agents_store = agent_data['Agent']
+            models_store = agent_data['Model']
             
-            logging.info(f"FAISS database created")
             matching_docs = db.similarity_search(query, k=top_k)
-            logging.info(f"Matching documents: {matching_docs}")
 
             if not matching_docs:
                 raise ValueError("No matching documents found")
 
             retriever = db.as_retriever()
 
-            openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
-            
-            if not openai_api_key:
-                return "OpenAI API key is not set in the provider information."
-                    
-            if _d_agent.fm_provider_type == "T":
-                openai_component = OpenAILLMComponent(openai_api_key)
-                openai_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    top_p=_d_agent.fm_top_p,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
-            elif _d_agent.fm_provider_type == "C":
-                openai_component = ChatOpenAIComponent(openai_api_key)
-                openai_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
-            else:
-                openai_component = OpenAILLMComponent(openai_api_key)
-                openai_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    top_p=_d_agent.fm_top_p,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
+            model_type = store_service.get_provider_info(agents_store.fm_provider_id)
 
-            llm_instance = openai_component.model_instance
-            logging.info(f"LLM instance created")
+            if agents_store.fm_provider_type == "T":
+                component = self._initialize_llm_component(model_type, agent_data)
+            elif agents_store.fm_provider_type == "C":    
+                component = self._initialize_chat_component(model_type, agent_data)
+  
+            component.build(
+                model_id=models_store.model_name,
+                temperature=agents_store.fm_temperature,
+                top_p=agents_store.fm_top_p,
+                max_tokens=agents_store.fm_response_token_limit
+            )
+
+            llm_instance = component.model_instance
 
             qa_chain = RetrievalQA.from_chain_type(llm=llm_instance, chain_type="stuff", retriever=retriever)
             inputs = {"query": query, "input_documents": matching_docs}
@@ -627,152 +567,35 @@ class PromptService:
         except Exception as e:
             logging.error(f"Exception in run_rag_openai: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
-
-
-    async def _run_embedding_bedrock_model(self, agent_data, documents):
-        _d_agent = agent_data['Agent']
-        embedding_model_name = agent_data['EmbeddingModelName']
-
-        aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
-        aws_region = self._get_credential_info(agent_data, "AWS_REGION")
-
-        if not all([aws_access_key, aws_secret_access_key, aws_region]):
-            return "AWS credentials or region are not set in the provider information."
-
-        embed_component = BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
-        embed_component.build(embedding_model_name)
-        embeddings = await embed_component.run_embed_documents([doc.page_content for doc in documents])
-
-        docs_with_embeddings = [Document(page_content=doc.page_content, metadata={"embedding": embedding}) for doc, embedding in zip(documents, embeddings)]
-
-        db = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
-        return db
-
-    async def run_rag_bedrock(self, agent_data, query: str, db, top_k: int = 5):
+        
+    def _run_model(self, agent_data, query, history):
+        store_service = StoreService(self.session)
         try:
-            _d_agent = agent_data['Agent']
-            _d_model = agent_data['Model']
+            component = None
 
-            matching_docs = db.similarity_search(query, k=top_k)
+            agents_store = agent_data['Agent']
+            models_store = agent_data['Model']
 
-            if not matching_docs:
-                raise ValueError("No matching documents found")
+            model_type = store_service.get_provider_info(agents_store.fm_provider_id)
 
-            retriever = db.as_retriever()
 
-            aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
-            aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
-            aws_region = self._get_credential_info(agent_data, "AWS_REGION")
-
-            if not all([aws_access_key, aws_secret_access_key, aws_region]):
-                return "AWS credentials are not set in the provider information."
-
-            if _d_agent.fm_provider_type == "T":
-                bedrock_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
-            elif _d_agent.fm_provider_type == "C":
-                bedrock_component = ChatBedrockComponent(aws_access_key, aws_secret_access_key, aws_region)
-            else:
-                bedrock_component = ChatBedrockComponent(aws_access_key, aws_secret_access_key, aws_region)
-
-            bedrock_component.build(
-                model_id=_d_model.model_name,
-                temperature=_d_agent.fm_temperature,
-                top_p=_d_agent.fm_top_p,
-                max_tokens=_d_agent.fm_response_token_limit
+            if agents_store.fm_provider_type == "T":
+                component = self._initialize_llm_component(model_type, agent_data)
+            elif agents_store.fm_provider_type == "C":    
+                component = self._initialize_chat_component(model_type, agent_data)
+  
+            component.build(
+                model_id=models_store.model_name,
+                temperature=agents_store.fm_temperature,
+                top_p=agents_store.fm_top_p,
+                max_tokens=agents_store.fm_response_token_limit
             )
-            llm_instance = bedrock_component.model_instance
 
-            qa_chain = RetrievalQA.from_chain_type(llm=llm_instance, chain_type="stuff", retriever=retriever)
-            inputs = {"query": query, "input_documents": matching_docs}
-
-            try:
-                answer = await asyncio.to_thread(qa_chain.invoke, inputs)
-                result = answer['result'] if 'result' in answer else answer
-            except Exception as e:
-                logging.error(f"Error generating response from QA chain: {str(e)}")
-                result = "Error generating response from QA chain"
-
-            return {
-                "matching_documents": matching_docs,
-                "llm_response": result
-            }
-
+            return component.run(query)
+        
         except Exception as e:
-            logging.error(f"Exception in run_rag_bedrock: {str(e)}")
+            logging.error(f"Exception in _run_openai_model: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
-
-    def _initialize_rag_model(self, agent_data, history):
-        # Logic to initialize RAG model
-        return None
-
-
-    def _run_openai_model(self, agent_data, query):
-
-        llms_component = None
-
-        _d_agent = agent_data['Agent']
-        _d_model = agent_data['Model']
-
-        openai_api_key = self._get_credential_info(agent_data, "OPENAI_API_KEY")
-
-        if not openai_api_key:
-            return "OpenAI API key is not set in the provider information."
-        
-        if _d_agent.fm_provider_type == "T":
-            llms_component = OpenAILLMComponent(openai_api_key)
-            llms_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    top_p=_d_agent.fm_top_p,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
-        elif _d_agent.fm_provider_type == "C":
-            llms_component = ChatOpenAIComponent(openai_api_key)
-            llms_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
-        else:
-            llms_component = OpenAILLMComponent(openai_api_key)
-            llms_component.build(
-                    model_id=_d_model.model_name,
-                    temperature=_d_agent.fm_temperature,
-                    top_p=_d_agent.fm_top_p,
-                    max_tokens=_d_agent.fm_response_token_limit
-                )
-
-        return llms_component.run(query)
-
-    def _run_bedrock_model(self, agent_data, query):
-
-        llms_component = None
-        _d_agent = agent_data['Agent']
-        _d_model = agent_data['Model']
- 
-        aws_access_key = self._get_credential_info(agent_data, "AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = self._get_credential_info(agent_data, "AWS_SECRET_ACCESS_KEY")
-        aws_region = self._get_credential_info(agent_data, "AWS_REGION")
-
-        if not all([aws_access_key, aws_secret_access_key, aws_region]):
-            return "AWS credentials or region are not set in the provider information."
-        
-        if _d_agent.fm_provider_type == "T":
-            llms_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
-        elif _d_agent.fm_provider_type == "C":
-            llms_component = ChatBedrockComponent(aws_access_key, aws_secret_access_key, aws_region)
-        else:
-            llms_component = BedrockLLMComponent(aws_access_key, aws_secret_access_key, aws_region)
-
-        llms_component.build(
-                model_id=_d_model.model_name,
-                temperature=_d_agent.fm_temperature,
-                top_p=_d_agent.fm_top_p,
-                max_tokens=_d_agent.fm_response_token_limit
-            )
-
-        return llms_component.run(query)
 
     def _postprocess_response(self, agent_data, response: str):
 
@@ -902,6 +725,8 @@ class PromptService:
             elif key == "AWS_REGION":
                 return os.getenv(key)
             elif key == "OPENAI_API_KEY":
+                return _d_credential.api_key
+            elif key == "GOOGLE_API_KEY":
                 return _d_credential.api_key
             elif key == "PINECONE_API_KEY":
                 return _d_credential.api_key             

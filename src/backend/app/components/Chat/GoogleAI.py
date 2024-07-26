@@ -1,20 +1,19 @@
 import asyncio
 
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from app.components.Chat.Base import AbstractLLMComponent
 
-class ChatOpenAIComponent(AbstractLLMComponent):
-    def __init__(self, openai_api_key):
+class ChatGoogleAIComponent(AbstractLLMComponent):
+    def __init__(self, google_api_key):
         super().__init__()
-        self.openai_api_key = openai_api_key
+        self.google_api_key = google_api_key
 
     def build(self, model_id: str, temperature: float, top_p: float = None, max_tokens: int = None):
-
         if not model_id:
-            model_id="gpt-3.5-turbo"
+            model_id = "gemini-1.5-pro"
 
-        self.model_instance = ChatOpenAI(
-            openai_api_key=self.openai_api_key, 
+        self.model_instance = ChatGoogleGenerativeAI(
+            api_key=self.google_api_key,
             model=model_id,
             temperature=temperature,
             top_p=top_p,

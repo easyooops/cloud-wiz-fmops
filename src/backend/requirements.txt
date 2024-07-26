@@ -45,6 +45,7 @@ langchain-huggingface
 
 # chat
 langchain-openai
+langchain-google-genai
 
 # Vector store
 faiss-cpu

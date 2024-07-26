@@ -74,6 +74,14 @@
       "iconf":"fill-task",
       "type": "link",
       "active": false
+    },
+    {
+      "path": "/opinion/create",
+      "title": "Opinions",
+      "icon": "stroke-faq",
+      "iconf":"fill-faq",
+      "type": "link",
+      "active": false
     }
   ]
 }

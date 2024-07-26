@@ -26,6 +26,11 @@ def init_db(session: Session):
     statement = select(Provider)
     results = session.exec(statement)
     if not results.first():
+        for data in provider_data:
+            data['provider_id'] = uuid.uuid4()
+            data['creator_id'] = ensure_uuid(data['creator_id'])
+            if data.get('updater_id'):
+                data['updater_id'] = ensure_uuid(data['updater_id'])
         providers = [Provider(**data) for data in provider_data]
         session.add_all(providers)
         session.commit()
@@ -48,6 +53,9 @@ def create_model_data(session: Session, model_data):
             provider_id = provider.provider_id
 
         data["provider_id"] = provider_id
+        data['creator_id'] = ensure_uuid(data['creator_id'])
+        if data.get('updater_id'):
+            data['updater_id'] = ensure_uuid(data['updater_id'])
         models.append(Model(**data))
 
     session.add_all(models)
@@ -66,3 +74,9 @@ def validate_uuid(value):
         return True
     except ValueError:
         return False  
+    
+
+def ensure_uuid(value):
+    if isinstance(value, str):
+        return UUID(value)
+    return value    

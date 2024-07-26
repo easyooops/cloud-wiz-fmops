@@ -19,7 +19,7 @@
             <Form as="form" v-slot="{ errors, values, handleSubmit }">
             <form name="contactus" class="row contact-form" @submit.prevent="handleSubmit($event, onSubmit)">
               <!-- Form Select -->
-              <div class="col-md-12 input-subject">
+              <!-- <div class="col-md-12 input-subject">
                 <Field type="select"
                        name="topic"
                        rules="required"
@@ -35,15 +35,15 @@
                   </select>
                 </Field>
                 <span class="color--theme">{{ errors.topic }}</span>
-              </div>
+              </div> -->
               <!-- Contact Form Input -->
               <div class="col-md-12">
                 <Field type="text"
                        name="name"
                        rules="required"
-                       id="contactUsName"
+                       id="customer_name"
                        v-slot="{ field }"
-                       v-model="formData.contactUsName" >
+                       v-model="formData.customer_name" >
                   <p class="p-lg">Your Name:</p>
                   <span>Please enter your nick name: </span>
                   <input v-bind="field" class="form-control name" placeholder="Your Name*" />
@@ -54,9 +54,9 @@
                 <Field type="text"
                        name="email"
                        rules="required|email"
-                       id="contactUsEmail"
+                       id="customer_email"
                        v-slot="{ field }"
-                       v-model="formData.contactUsEmail" >
+                       v-model="formData.customer_email" >
                   <p class="p-lg">Your Email Address:</p>
                   <span>Please carefully check your email address for accuracy</span>
                   <input v-bind="field" class="form-control email" placeholder="Email Address*" />
@@ -65,8 +65,8 @@
               </div>
               <div class="col-md-12">
                 <p class="p-lg">Explain your question in details:</p>
-                <span>Please provide detailed information regarding the construction/operation of cloud and infrastructure.</span>
-                <textarea class="form-control message" name="contactUsQuestion" rows="6" placeholder="I have a problem with..." id="contactUsQuestion" v-model="formData.contactUsQuestion"></textarea>
+                <span>Please ask questions about any type of service.</span>
+                <textarea class="form-control message" name="content" rows="6" placeholder="I have a question with..." id="content" v-model="formData.content"></textarea>
               </div>
               <!-- Contact Form Button -->
               <div class="col-md-12 mt-15 form-btn text-right">
@@ -104,16 +104,16 @@
   const error = ref()
   const pending = ref(true)
   const formData = {
-    contactUsEmail: '',
-    contactUsName: '',
-    contactUsQuestion: '',
+    customer_email: '',
+    customer_name: '',
+    content: '',
     contactUsTp: ''
   }
 
   // common store init
-  useCommonStore().commGrpCode = "CONTACT_US_TP"
-  useCommonStore().commFirstItem = "This question is about..."
-  useCommonStore().getCommCodeList()
+  // useCommonStore().commGrpCode = "CONTACT_US_TP"
+  // useCommonStore().commFirstItem = "This question is about..."
+  // useCommonStore().getCommCodeList()
 
   const onSubmit = async () => {
 
@@ -125,8 +125,9 @@
 
       const response = await restApi().post('/contactus', formData,null)
 
+      console.log(response.data)
       // @ts-ignore
-      if (commonUtil().isNotEmpty(response.data.value["resultData"]["contactUsNo"].toString())) {
+      if (commonUtil().isNotEmpty(response.data.value["contactus_id"].toString())) {
         dialog_message = 'You have been successfully submitted. We will give you a quick reply.'
       }
 

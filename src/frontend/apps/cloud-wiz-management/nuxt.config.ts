@@ -70,6 +70,7 @@ export default defineNuxtConfig({
     },
     plugins: [
         { src: "~/plugins/plugins.js", mode: "client" },
+        { src: "~/plugins/google-oauth.js", mode: "client" },
         { src: "./plugins/useBootstrap.client.ts", mode: "client" }
     ]   
 });

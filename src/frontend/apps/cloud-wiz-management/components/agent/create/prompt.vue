@@ -29,8 +29,14 @@
                     <div class="row">
                         <div class="col-xl-12 d-flex">
                             <div class="input-group text-box" ref="abc">
-                                <input class="form-control input-txt-bx" id="message-to-send" v-model="text" v-on:keyup.enter="addChat()"
-                                    type="text" name="message-to-send" placeholder="Type a message......" />
+                                <textarea 
+                                    class="form-control input-txt-bx" 
+                                    id="message-to-send" 
+                                    v-model="text" 
+                                    @keydown.enter="handleEnterKey"
+                                    type="text" 
+                                    name="message-to-send" 
+                                    placeholder="Type a message......"></textarea>
                             </div>
                             <button @click="addChat()" class="btn btn-primary" type="button" :disabled="!agentId">
                                 <i class="fa fa-send-o"></i>
@@ -76,15 +82,24 @@ export default {
         getImgUrl(path) {
             return ('/images/' + path);
         },
+        handleEnterKey(event) {
+            if ((event.shiftKey || event.altKey) && event.key === 'Enter') {
+                // Shift+Enter 입력 시 줄바꿈 처리
+                return;
+            } else if (event.key === 'Enter') {
+                event.preventDefault(); // 기본 엔터 동작 방지
+                this.addChat(); // 엔터키 입력 시 채팅 전송
+            }
+        },          
         async addChat() {
             if (this.text.trim() === '') return;
             
             this.currentChatMessages.push({
                 sender: 1,
-                text: this.text,
+                text: this.text.replace(/\n/g, '<br/>'),
                 time: new Date().toLocaleTimeString()
             });
-            const userInput = this.text;
+            const userInput = this.text.replace(/\n/g, '<br/>'); // 줄바꿈 처리;
             this.text = '';
             this.scrollChat();
 

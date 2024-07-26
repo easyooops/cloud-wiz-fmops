@@ -113,6 +113,8 @@ import { ref, watch, onMounted, computed } from 'vue';
 import { useProviderStore } from '@/store/provider';
 import { useAuthStore } from '@/store/auth';
 import { useRouter, useRoute } from 'vue-router';
+import { useNuxtApp } from '#app'
+import restApi from "~/utils/axios";
 
 export default {
   name: 'createProvider',
@@ -177,6 +179,45 @@ export default {
       }
       window.location.href = authUrl;
     };
+    
+    const redirectToGoogleAuth_v2 = async () => {
+      const { $googleAuth } = useNuxtApp()
+      let providerStore = useProviderStore()
+
+      try {
+        console.log($googleAuth);
+        let code = await $googleAuth.getAuthCode()
+        console.log('authCode: ' + code)
+
+        const { get } = restApi();
+        const response = await get(`/auth/google/callback?code=${code}`);
+        const tokens = await response.data;
+
+        const userId = sessionStorage.getItem('userId');
+        const selectedProvider = sessionStorage.getItem('selectedProvider');
+        const providerName = sessionStorage.getItem('providerName');
+
+        const credentialData = {
+          user_id: userId,
+          provider_id: selectedProvider,
+          credential_name: providerName,
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          creator_id: userId,
+          updater_id: userId,
+        }
+
+        await providerStore.createCredential(credentialData)
+
+        sessionStorage.removeItem('userId')
+        sessionStorage.removeItem('selectedProvider')
+        sessionStorage.removeItem('providerName')
+        router.push('/provider/list')
+      } catch (error) {
+        console.error('Google Sign-In error', error)
+        router.push('/provider/list')
+      }
+    };
 
     const isAmazonWebServices = computed(() => {
       return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
@@ -215,6 +256,7 @@ export default {
         sessionStorage.setItem('selectedProvider', selectedProvider.value);
         sessionStorage.setItem('providerName', providerName.value);
         redirectToGoogleAuth();
+        // redirectToGoogleAuth_v2();
       } else {
         await createCredential({
           user_id: userId.value,

@@ -1,6 +1,6 @@
 const restApi = () => {
 
-    const API_ENDPOINT = import.meta.env.VITE_PROD_API_ENDPOINT
+    const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT + '/api/v1';
 
     const get = async (url: string, param: any, header: any): Promise<object> => {
         return await useFetch(`${API_ENDPOINT}${url}`, {

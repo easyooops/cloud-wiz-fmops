@@ -1,5 +1,6 @@
 [
     {
+        "provider_id": "",
         "company": "OpenAI",
         "name": "OpenAI",
         "pvd_key": "OA",
@@ -12,6 +13,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Amazon Web Services",
         "name": "Bedrock",
         "pvd_key": "BR",
@@ -24,6 +26,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Anthropic",
         "name": "Anthropic",
         "pvd_key": "AP",
@@ -36,6 +39,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Google",
         "name": "Gemini",
         "pvd_key": "GN",
@@ -48,6 +52,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Amazon Web Services",
         "name": "Amazon S3",
         "pvd_key": "AS",
@@ -60,6 +65,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Google LLC",
         "name": "Google Drive",
         "pvd_key": "GD",
@@ -72,6 +78,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "GIT",
         "name": "GITHub",
         "pvd_key": "GH",
@@ -84,6 +91,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Notion Labs Inc",
         "name": "Notion",
         "pvd_key": "NT",
@@ -96,6 +104,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Facebook AI Research",
         "name": "FAISS",
         "pvd_key": "FS",
@@ -108,6 +117,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },    
     {
+        "provider_id": "",
         "company": "ChromaWay",
         "name": "ChromaDB",
         "pvd_key": "CM",
@@ -120,6 +130,7 @@
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     },
     {
+        "provider_id": "",
         "company": "Pinecone Systems Inc",
         "name": "Pinecone",
         "pvd_key": "PC",

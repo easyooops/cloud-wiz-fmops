@@ -67,6 +67,7 @@
         "vue3-star-ratings": "^1.1.0",
         "vue3-toastify": "^0.0.5",
         "vue3-tour": "^0.3.3",
-        "vue3-tree": "^0.11.5"
+        "vue3-tree": "^0.11.5",
+        "gapi-script": "^1.2.0"
     }
 }
