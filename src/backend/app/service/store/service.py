@@ -115,7 +115,6 @@ class StoreService():
             if provider_key == "AS":
                 storage_service.delete_directory(full_directory_name)
             else:
-                # For Google Drive, delete the store_name folder under the user_id folder
                 try:
                     store_folder_id = storage_service.get_folder_hierarchy_id(full_directory_name)
                     storage_service.delete_directory(store_folder_id)
@@ -123,11 +122,10 @@ class StoreService():
                     logging.error(f"No folder found with the name: {full_directory_name}")
                     raise HTTPException(status_code=404, detail=f"No folder found with the name: {full_directory_name}")
         except HTTPException as e:
-            raise e  # Re-raise the HTTPException if it was already raised
+            raise e
         except Exception as e:
             logging.error(f"Error deleting store: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error deleting store: {str(e)}")
-
 
     def list_files(self, user_id: UUID, store_id: UUID) -> List[Dict[str, Any]]:
         try:
@@ -157,7 +155,6 @@ class StoreService():
 
             files = []
             if provider_key == "AS":
-                logging.info(f"Objects listed from S3: {objects}")
                 for obj in objects:
                     file_info = {
                         "Key": obj["Key"],
@@ -166,7 +163,6 @@ class StoreService():
                     }
                     files.append(file_info)
             else:
-                logging.info(f"Objects listed from Google Drive: {objects}")
                 for obj in objects:
                     file_info = {
                         "Key": obj["name"],
@@ -215,8 +211,6 @@ class StoreService():
         finally:
             if tmp_path and os.path.exists(tmp_path):
                 os.remove(tmp_path)
-
-
 
     def delete_file_from_store(self, user_id: UUID, store_id: UUID, file_name: str):
         try:

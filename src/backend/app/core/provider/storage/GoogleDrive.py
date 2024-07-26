@@ -31,9 +31,8 @@ class GoogleDriveStorageService(StorageService):
         self.drive_service = build('drive', 'v3', credentials=self.credentials)
 
     def create_directory(self, directory_name: str):
-        logging.debug(f"Creating directory: {directory_name}")
         file_metadata = {
-            'name': directory_name.split('/')[-1],  # 폴더명만 사용
+            'name': directory_name.split('/')[-1],
             'mimeType': 'application/vnd.google-apps.folder'
         }
         parent_folder_id = self.get_parent_folder_id(directory_name)
@@ -65,19 +64,15 @@ class GoogleDriveStorageService(StorageService):
                 parent_id = self.create_directory(part, parent_id)['id']
         return parent_id
 
-
     def delete_directory(self, directory_id: str):
         try:
-            # List all files and folders in the directory
             query = f"'{directory_id}' in parents and trashed=false"
             results = self.drive_service.files().list(q=query, fields="files(id)").execute()
             items = results.get('files', [])
 
-            # Delete each item
             for item in items:
                 self.drive_service.files().delete(fileId=item['id']).execute()
 
-            # Delete the directory itself
             self.drive_service.files().delete(fileId=directory_id).execute()
             logging.debug(f"Deleted directory: {directory_id}")
         except Exception as e:
@@ -107,14 +102,25 @@ class GoogleDriveStorageService(StorageService):
             return []
 
     def get_directory_info(self, directory_name: str = ''):
-        response = self.drive_service.files().list(q=f"'{directory_name}' in parents", fields="files(id, name, size)").execute()
-        contents = response.get('files', [])
-        total_size = sum(int(obj.get('size', 0)) for obj in contents)
-        file_count = len(contents)
-        return {
-            'total_size': total_size,
-            'file_count': file_count
-        }
+        try:
+            folder_id = self.get_folder_hierarchy_id(directory_name)
+
+            response = self.drive_service.files().list(q=f"'{folder_id}' in parents and trashed=false", fields="files(id, name, size)").execute()
+            contents = response.get('files', [])
+
+            total_size = sum(int(obj.get('size', 0)) for obj in contents)
+            file_count = len(contents)
+
+            return {
+                'total_size': total_size,
+                'file_count': file_count
+            }
+        except Exception as e:
+            logging.error(f"Error getting directory info: {str(e)}")
+            return {
+                'total_size': 0,
+                'file_count': 0
+            }
 
     def get_file_id_by_name(self, folder_id: str, file_name: str) -> str:
         try:
@@ -160,38 +166,29 @@ class GoogleDriveStorageService(StorageService):
             raise
 
     def upload_file_to_folder(self, folder_id: str, file: UploadFile):
-        logging.debug(f"Starting to upload file {file.filename} to folder {folder_id}")
         try:
             with tempfile.NamedTemporaryFile(delete=False) as tmp:
-                logging.debug("Writing file content to temporary file")
                 tmp.write(file.file.read())
-                tmp.flush()  # Ensure all data is written to the file
+                tmp.flush()
                 tmp_path = tmp.name
-                logging.debug(f"Temporary file created at {tmp_path}")
 
             file_metadata = {'name': file.filename, 'parents': [folder_id]}
-            logging.debug(f"File metadata prepared: {file_metadata}")
             media = MediaFileUpload(tmp_path, resumable=True)
-            logging.debug(f"MediaFileUpload object created with temp file {tmp_path}")
             uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-            logging.debug(f"File uploaded to Google Drive with ID: {uploaded_file.get('id')}")
             return uploaded_file
         except Exception as e:
             logging.error(f"Error uploading file: {str(e)}")
             raise
         finally:
-            if os.path.exists(tmp_path):  # Check if the file exists before deleting
-                logging.debug(f"Deleting temporary file {tmp_path}")
+            if os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
     def upload_file(self, file_path: str, file_location: str):
         try:
-            logging.debug(f"Starting to upload file from path {file_path} to location {file_location}")
             folder_id, filename = os.path.split(file_location)
             file_metadata = {'name': filename, 'parents': [folder_id]}
             media = MediaFileUpload(file_path, resumable=True)
             uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-            logging.debug(f"File uploaded to Google Drive with ID: {uploaded_file.get('id')}")
             return uploaded_file
         except Exception as e:
             logging.error(f"Error uploading file: {str(e)}")
