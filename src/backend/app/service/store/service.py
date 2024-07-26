@@ -1,4 +1,6 @@
 import logging
+import tempfile
+
 from aiohttp import ClientError
 import boto3
 import os
@@ -31,7 +33,7 @@ class StoreService():
         self.session = session
         self.credential_service = CredentialService(session)
         self.store_bucket = os.getenv("AWS_S3_BUCKET_STORE_NAME")
-    
+
     def get_all_stores(self, user_id: Optional[UUID] = None, store_id: Optional[UUID] = None):
         try:
             statement = select(Store)
@@ -72,9 +74,9 @@ class StoreService():
             if storage_service:
                 storage_service.retry(lambda: storage_service.create_directory(full_directory_name))
             else:
-                print("Failed to initialize storage service")                    
+                print("Failed to initialize storage service")
             return new_store
-        
+
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error creating store: {str(e)}")
 
@@ -90,7 +92,7 @@ class StoreService():
             self.session.refresh(store)
             return store
         except HTTPException as e:
-            raise e  # Re-raise the HTTPException if it was already raised
+            raise e
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error updating store: {str(e)}")
 
@@ -104,18 +106,32 @@ class StoreService():
             full_directory_name = f"{user_id}/{store.store_name}"
 
             storage_service = self.credential_service._set_storage_credential(credential_id=store.credential_id)
-            storage_service.delete_directory(full_directory_name)
-        
+            if not storage_service:
+                logging.error("Failed to initialize storage service")
+                raise HTTPException(status_code=500, detail="Failed to initialize storage service")
+
+            provider_key = self.get_provider_info(store.credential_id)
+
+            if provider_key == "AS":
+                storage_service.delete_directory(full_directory_name)
+            else:
+                try:
+                    store_folder_id = storage_service.get_folder_hierarchy_id(full_directory_name)
+                    storage_service.delete_directory(store_folder_id)
+                except FileNotFoundError:
+                    logging.error(f"No folder found with the name: {full_directory_name}")
+                    raise HTTPException(status_code=404, detail=f"No folder found with the name: {full_directory_name}")
         except HTTPException as e:
-            raise e  # Re-raise the HTTPException if it was already raised
+            raise e
         except Exception as e:
+            logging.error(f"Error deleting store: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error deleting store: {str(e)}")
 
     def list_files(self, user_id: UUID, store_id: UUID) -> List[Dict[str, Any]]:
         try:
             store = self.session.get(Store, store_id)
             if not store:
-                raise HTTPException(status_code=404, detail="Store not found")            
+                raise HTTPException(status_code=404, detail="Store not found")
             full_directory_name = f"{user_id}/{store.store_name}"
 
             storage_service = self.credential_service._set_storage_credential(credential_id=store.credential_id)
@@ -123,17 +139,38 @@ class StoreService():
                 logging.error("Failed to initialize storage service")
                 return []
 
-            objects = storage_service.list_all_objects(full_directory_name)
+            provider_key = self.get_provider_info(store.credential_id)
 
-            logging.info(f"Objects listed from S3: {objects}")
+            if provider_key == "AS":
+                objects = storage_service.list_all_objects(full_directory_name)
+            else:
+                parts = full_directory_name.split('/')
+                parent_id = None
+                for part in parts:
+                    try:
+                        parent_id = storage_service.get_folder_id_by_name(part)
+                    except FileNotFoundError:
+                        parent_id = storage_service.create_directory(part, parent_id)['id']
+                objects = storage_service.list_files_in_folder(parent_id)
+
             files = []
-            for obj in objects:
-                file_info = {
-                    "Key": obj["Key"],
-                    "LastModified": obj["LastModified"],
-                    "Size": obj["Size"],
-                }
-                files.append(file_info)
+            if provider_key == "AS":
+                for obj in objects:
+                    file_info = {
+                        "Key": obj["Key"],
+                        "LastModified": obj["LastModified"],
+                        "Size": obj["Size"],
+                    }
+                    files.append(file_info)
+            else:
+                for obj in objects:
+                    file_info = {
+                        "Key": obj["name"],
+                        "LastModified": obj.get("modifiedTime", ""),
+                        "Size": obj.get("size", 0),
+                    }
+                    files.append(file_info)
+
             logging.info(f"Files: {files}")
             return files
         except Exception as e:
@@ -141,34 +178,72 @@ class StoreService():
             return []
 
     def upload_file_to_store(self, user_id: UUID, store_id: UUID, file: UploadFile):
+        tmp_path = None
         try:
             store = self.session.get(Store, store_id)
             if not store:
-                raise HTTPException(status_code=404, detail="Store not found")            
-            file_location = f"{user_id}/{store.store_name}/{file.filename}"
+                raise HTTPException(status_code=404, detail="Store not found")
+            folder_name = f"{user_id}/{store.store_name}"
 
             storage_service = self.credential_service._set_storage_credential(credential_id=store.credential_id)
             if not storage_service:
                 logging.error("Failed to initialize storage service")
                 raise HTTPException(status_code=500, detail="Failed to initialize storage service")
-            
-            storage_service.upload_file(file.file, file_location)
 
+            provider_key = self.get_provider_info(store.credential_id)
+
+            if provider_key == "AS":
+                file_location = f"{folder_name}/{file.filename}"
+                storage_service.upload_file(file.file, file_location)
+            else:
+                parts = folder_name.split('/')
+                parent_id = None
+                for part in parts:
+                    try:
+                        parent_id = storage_service.get_folder_id_by_name(part)
+                    except FileNotFoundError:
+                        parent_id = storage_service.create_directory(part, parent_id)['id']
+
+                storage_service.upload_file_to_folder(parent_id, file)
         except Exception as e:
             logging.error(f"Error uploading file: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
-
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
 
     def delete_file_from_store(self, user_id: UUID, store_id: UUID, file_name: str):
         try:
             store = self.session.get(Store, store_id)
             if not store:
-                raise HTTPException(status_code=404, detail="Store not found")              
-            file_location = f"{user_id}/{store.store_name}/{file_name}"
+                raise HTTPException(status_code=404, detail="Store not found")
 
+            full_directory_name = f"{user_id}/{store.store_name}"
             storage_service = self.credential_service._set_storage_credential(credential_id=store.credential_id)
-            storage_service.delete_file(file_location)
+            if not storage_service:
+                logging.error("Failed to initialize storage service")
+                raise HTTPException(status_code=500, detail="Failed to initialize storage service")
 
+            provider_key = self.get_provider_info(store.credential_id)
+
+            if provider_key == "AS":
+                file_location = f"{full_directory_name}/{file_name}"
+                storage_service.delete_file(file_location)
+            else:
+                parts = full_directory_name.split('/')
+                parent_id = None
+                for part in parts:
+                    try:
+                        parent_id = storage_service.get_folder_id_by_name(part)
+                    except FileNotFoundError:
+                        parent_id = storage_service.create_directory(part, parent_id)['id']
+                try:
+                    file_id = storage_service.get_file_id_by_name(parent_id, file_name)
+                except FileNotFoundError:
+                    logging.error(f"No file found with the name: {file_name} in folder: {full_directory_name}")
+                    raise HTTPException(status_code=404, detail=f"No file found with the name: {file_name} in folder: {full_directory_name}")
+
+                storage_service.delete_file(file_id)
         except Exception as e:
             logging.error(f"Error deleting file from store: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error deleting file from store: {str(e)}")
@@ -223,7 +298,7 @@ class StoreService():
                 raise HTTPException(status_code=400, detail="No files provided")
 
             storage_service = self.credential_service._set_storage_credential(credential_id=credential_id)
-            
+
             if not storage_service:
                 logging.error("Failed to initialize storage service")
                 raise HTTPException(status_code=500, detail="Failed to initialize storage service")
@@ -232,7 +307,7 @@ class StoreService():
             for s3_file_key in files:
                 local_file_path = f"/tmp/{s3_file_key.split('/')[-1]}"
                 logging.info(f"Downloading file: {s3_file_key} to {local_file_path}")
-                
+
                 try:
                     storage_service.download_file(s3_file_key, local_file_path)
                 except ClientError as e:
@@ -274,7 +349,7 @@ class StoreService():
             file_keys = [file["Key"] for file in files]
 
             documents = self.load_documents_v2(agent_data.storage_provider_id, file_keys)
-            
+
             # 문서를 1000 단위로 청킹
             text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
             chunked_docs = text_splitter.split_documents(documents)
@@ -341,23 +416,23 @@ class StoreService():
 
             if provider is None:
                 raise HTTPException(status_code=404, detail="Store not found")
-            
+
             return provider[0].pvd_key
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error retrieving store: {str(e)}")
-        
+
     def _initialize_embedding_component(self, embedding_type: str, agent_data):
         """
         Initialize the embedding component based on the embedding type.
-        
+
         Args:
             embedding_type (str): Type of embedding provider (e.g., "OA" for OpenAI, "BR" for Bedrock).
             agent_data (Dict[str, Any]): Dictionary containing agent-related data.
-        
+
         Returns:
             Any: The initialized embedding component.
-        
+
         Raises:
             ValueError: If required credentials are missing.
         """
@@ -374,10 +449,10 @@ class StoreService():
             if not all([aws_access_key, aws_secret_access_key, aws_region]):
                 raise ValueError("AWS credentials or region are not set in the provider information.")
             return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
-        
+
         else:
             raise ValueError(f"Unsupported embedding type: {embedding_type}")
-        
+
     def _get_credential_info(self, credentials_id, key):
 
         credentials = self.session.get(Credential, credentials_id)
@@ -394,6 +469,6 @@ class StoreService():
             elif key == "OPENAI_API_KEY":
                 return credentials.api_key
             elif key == "PINECONE_API_KEY":
-                return credentials.api_key                
+                return credentials.api_key
         else:
-            return os.getenv(key)        
+            return os.getenv(key)

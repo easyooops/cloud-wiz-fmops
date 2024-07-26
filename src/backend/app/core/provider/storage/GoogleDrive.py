@@ -1,4 +1,4 @@
-import json
+import logging
 import os
 import tempfile
 from fastapi import UploadFile
@@ -6,7 +6,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from app.core.interface.service import ServiceFactory, StorageService
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 class GoogleDriveStorageService(StorageService):
@@ -32,16 +32,52 @@ class GoogleDriveStorageService(StorageService):
 
     def create_directory(self, directory_name: str):
         file_metadata = {
-            'name': directory_name,
+            'name': directory_name.split('/')[-1],
             'mimeType': 'application/vnd.google-apps.folder'
         }
+        parent_folder_id = self.get_parent_folder_id(directory_name)
+        if parent_folder_id:
+            file_metadata['parents'] = [parent_folder_id]
+
         file = self.drive_service.files().create(body=file_metadata, fields='id, name').execute()
-        print(f"Directory creation response: {file}")
+        logging.debug(f"Directory creation response: {file}")
         return file
 
-    def delete_directory(self, directory_name: str):
-        folder_id = self.get_folder_id_by_name(directory_name)
-        self.drive_service.files().delete(fileId=folder_id).execute()
+    def get_parent_folder_id(self, directory_name: str) -> Optional[str]:
+        folders = directory_name.split('/')
+        if len(folders) > 1:
+            parent_folder_name = '/'.join(folders[:-1])
+            try:
+                return self.get_folder_id_by_name(parent_folder_name)
+            except FileNotFoundError:
+                parent_folder = self.create_directory(parent_folder_name)
+                return parent_folder['id']
+        return None
+
+    def get_folder_hierarchy_id(self, full_directory_name: str) -> str:
+        parts = full_directory_name.split('/')
+        parent_id = None
+        for part in parts:
+            try:
+                parent_id = self.get_folder_id_by_name(part, parent_id)
+            except FileNotFoundError:
+                parent_id = self.create_directory(part, parent_id)['id']
+        return parent_id
+
+    def delete_directory(self, directory_id: str):
+        try:
+            query = f"'{directory_id}' in parents and trashed=false"
+            results = self.drive_service.files().list(q=query, fields="files(id)").execute()
+            items = results.get('files', [])
+
+            for item in items:
+                self.drive_service.files().delete(fileId=item['id']).execute()
+
+            self.drive_service.files().delete(fileId=directory_id).execute()
+            logging.debug(f"Deleted directory: {directory_id}")
+        except Exception as e:
+            logging.error(f"Error deleting directory: {str(e)}")
+            raise
 
     def list_files(self, directory_name: str = ''):
         if directory_name:
@@ -50,67 +86,120 @@ class GoogleDriveStorageService(StorageService):
         else:
             return self.list_all_objects()
 
-    def upload_file(self, file, file_location: str):
-        if isinstance(file, UploadFile):
-            folder_id, filename = os.path.split(file_location)
-            return self.upload_file_to_folder(folder_id, file)
-        else:
-            file_metadata = {'name': file_location}
-            media = MediaFileUpload(file, resumable=True)
-            uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-            print(f'File ID: {uploaded_file.get("id")}')
-            return uploaded_file
+    def list_all_objects(self, directory_name: str = '') -> List[Dict[str, Any]]:
+        try:
+            if directory_name:
+                folder_id = self.get_folder_id_by_name(directory_name)
+                query = f"'{folder_id}' in parents and trashed=false"
+            else:
+                query = "trashed=false"
 
-    def list_all_objects(self, directory_name: str = '') -> List[Dict]:
-        results = self.drive_service.files().list(pageSize=1000, fields="files(id, name)").execute()
-        items = results.get('files', [])
-        return items
+            results = self.drive_service.files().list(q=query, pageSize=1000, fields="files(id, name, size)").execute()
+            items = results.get('files', [])
+            return items
+        except Exception as e:
+            logging.error(f"Error listing files: {str(e)}")
+            return []
 
     def get_directory_info(self, directory_name: str = ''):
-        response = self.drive_service.files().list(q=f"'{directory_name}' in parents", fields="files(id, name, size)").execute()
-        contents = response.get('files', [])
-        total_size = sum(int(obj.get('size', 0)) for obj in contents)
-        file_count = len(contents)
-        return {
-            'total_size': total_size,
-            'file_count': file_count
-        }
+        try:
+            folder_id = self.get_folder_hierarchy_id(directory_name)
 
-    def get_folder_id_by_name(self, folder_name: str) -> str:
-        response = self.drive_service.files().list(
-            q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
-            fields="files(id, name)"
-        ).execute()
-        folders = response.get('files', [])
-        if not folders:
-            raise FileNotFoundError(f"No folder found with the name: {folder_name}")
-        return folders[0]['id']
+            response = self.drive_service.files().list(q=f"'{folder_id}' in parents and trashed=false", fields="files(id, name, size)").execute()
+            contents = response.get('files', [])
+
+            total_size = sum(int(obj.get('size', 0)) for obj in contents)
+            file_count = len(contents)
+
+            return {
+                'total_size': total_size,
+                'file_count': file_count
+            }
+        except Exception as e:
+            logging.error(f"Error getting directory info: {str(e)}")
+            return {
+                'total_size': 0,
+                'file_count': 0
+            }
+
+    def get_file_id_by_name(self, folder_id: str, file_name: str) -> str:
+        try:
+            response = self.drive_service.files().list(
+                q=f"'{folder_id}' in parents and name='{file_name}' and trashed=false",
+                fields="files(id, name)"
+            ).execute()
+            files = response.get('files', [])
+            if not files:
+                raise FileNotFoundError(f"No file found with the name: {file_name}")
+            return files[0]['id']
+        except Exception as e:
+            logging.error(f"Error finding file by name: {str(e)}")
+            raise
+
+    def get_folder_id_by_name(self, folder_name: str, parent_id: Optional[str] = None) -> str:
+        try:
+            if parent_id:
+                query = f"'{parent_id}' in parents and name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+            else:
+                query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+
+            response = self.drive_service.files().list(q=query, fields="files(id, name)").execute()
+            folders = response.get('files', [])
+            if not folders:
+                raise FileNotFoundError(f"No folder found with the name: {folder_name}")
+            return folders[0]['id']
+        except Exception as e:
+            logging.error(f"Error finding folder by name: {str(e)}")
+            raise
+
 
     def list_files_in_folder(self, folder_id: str) -> List[Dict[str, Any]]:
-        response = self.drive_service.files().list(
-            q=f"'{folder_id}' in parents and trashed=false",
-            fields="files(id, name, size)"
-        ).execute()
-        return response.get('files', [])
+        try:
+            response = self.drive_service.files().list(
+                q=f"'{folder_id}' in parents and trashed=false",
+                fields="files(id, name, size)"
+            ).execute()
+            files = response.get('files', [])
+            return files
+        except Exception as e:
+            logging.error(f"Error listing files in folder: {str(e)}")
+            raise
 
     def upload_file_to_folder(self, folder_id: str, file: UploadFile):
-        with tempfile.NamedTemporaryFile(delete=False) as tmp:
-            tmp.write(file.file.read())
-            tmp_path = tmp.name
-
-        file_metadata = {'name': file.filename, 'parents': [folder_id]}
-        media = MediaFileUpload(tmp_path, resumable=True)
-        uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
-        os.remove(tmp_path)
-        print(f'File ID: {uploaded_file.get("id")}')
-        return uploaded_file
-
-    def delete_file(self, key: str):
         try:
-            self.drive_service.files().delete(fileId=key).execute()
+            with tempfile.NamedTemporaryFile(delete=False) as tmp:
+                tmp.write(file.file.read())
+                tmp.flush()
+                tmp_path = tmp.name
+
+            file_metadata = {'name': file.filename, 'parents': [folder_id]}
+            media = MediaFileUpload(tmp_path, resumable=True)
+            uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+            return uploaded_file
         except Exception as e:
-            print(e)
+            logging.error(f"Error uploading file: {str(e)}")
+            raise
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+    def upload_file(self, file_path: str, file_location: str):
+        try:
+            folder_id, filename = os.path.split(file_location)
+            file_metadata = {'name': filename, 'parents': [folder_id]}
+            media = MediaFileUpload(file_path, resumable=True)
+            uploaded_file = self.drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+            return uploaded_file
+        except Exception as e:
+            logging.error(f"Error uploading file: {str(e)}")
+            raise
+
+    def delete_file(self, file_id: str):
+        try:
+            self.drive_service.files().delete(fileId=file_id).execute()
+        except Exception as e:
+            logging.error(f"Error deleting file: {str(e)}")
+            raise
 
     def retry(self, func, retries=5, delay=5, backoff=2):
         for attempt in range(retries):
