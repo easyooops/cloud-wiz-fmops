@@ -55,9 +55,31 @@ class GoogleDriveStorageService(StorageService):
                 return parent_folder['id']
         return None
 
+    def get_folder_hierarchy_id(self, full_directory_name: str) -> str:
+        parts = full_directory_name.split('/')
+        parent_id = None
+        for part in parts:
+            try:
+                parent_id = self.get_folder_id_by_name(part, parent_id)
+            except FileNotFoundError:
+                parent_id = self.create_directory(part, parent_id)['id']
+        return parent_id
+
+
     def delete_directory(self, directory_id: str):
         try:
+            # List all files and folders in the directory
+            query = f"'{directory_id}' in parents and trashed=false"
+            results = self.drive_service.files().list(q=query, fields="files(id)").execute()
+            items = results.get('files', [])
+
+            # Delete each item
+            for item in items:
+                self.drive_service.files().delete(fileId=item['id']).execute()
+
+            # Delete the directory itself
             self.drive_service.files().delete(fileId=directory_id).execute()
+            logging.debug(f"Deleted directory: {directory_id}")
         except Exception as e:
             logging.error(f"Error deleting directory: {str(e)}")
             raise
@@ -108,25 +130,21 @@ class GoogleDriveStorageService(StorageService):
             logging.error(f"Error finding file by name: {str(e)}")
             raise
 
-    def get_folder_id_by_name(self, folder_name: str) -> str:
-        response = self.drive_service.files().list(
-            q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
-            fields="files(id, name)"
-        ).execute()
-        folders = response.get('files', [])
-        if not folders:
-            raise FileNotFoundError(f"No folder found with the name: {folder_name}")
-        return folders[0]['id']
+    def get_folder_id_by_name(self, folder_name: str, parent_id: Optional[str] = None) -> str:
+        try:
+            if parent_id:
+                query = f"'{parent_id}' in parents and name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+            else:
+                query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
 
-        def get_folder_hierarchy_id(self, storage_service, full_directory_name):
-            parts = full_directory_name.split('/')
-        parent_id = None
-        for part in parts:
-            try:
-                parent_id = storage_service.get_folder_id_by_name(part, parent_id)
-            except FileNotFoundError:
-                parent_id = storage_service.create_directory(part, parent_id)['id']
-        return parent_id
+            response = self.drive_service.files().list(q=query, fields="files(id, name)").execute()
+            folders = response.get('files', [])
+            if not folders:
+                raise FileNotFoundError(f"No folder found with the name: {folder_name}")
+            return folders[0]['id']
+        except Exception as e:
+            logging.error(f"Error finding folder by name: {str(e)}")
+            raise
 
 
     def list_files_in_folder(self, folder_id: str) -> List[Dict[str, Any]]:

@@ -117,8 +117,7 @@ class StoreService():
             else:
                 # For Google Drive, delete the store_name folder under the user_id folder
                 try:
-                    parent_id = self.get_folder_hierarchy_id(storage_service, user_id)
-                    store_folder_id = storage_service.get_folder_id_by_name(store.store_name, parent_id)
+                    store_folder_id = storage_service.get_folder_hierarchy_id(full_directory_name)
                     storage_service.delete_directory(store_folder_id)
                 except FileNotFoundError:
                     logging.error(f"No folder found with the name: {full_directory_name}")
