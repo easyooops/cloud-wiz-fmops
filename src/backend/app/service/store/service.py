@@ -468,6 +468,8 @@ class StoreService():
                 return os.getenv(key)
             elif key == "OPENAI_API_KEY":
                 return credentials.api_key
+            elif key == "GOOGLE_API_KEY":
+                return credentials.api_key            
             elif key == "PINECONE_API_KEY":
                 return credentials.api_key
         else:

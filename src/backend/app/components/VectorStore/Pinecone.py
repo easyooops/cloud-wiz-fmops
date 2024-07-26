@@ -21,16 +21,17 @@ class PineconeVectorStoreComponent(AbstractVectorStoreComponent):
         # Create or connect to the Pinecone index
         existing_indexes = [index_info["name"] for index_info in self.pinecone_client.list_indexes()]
 
-        if self.index_name not in existing_indexes:
+        if self.index_name in existing_indexes:
             self.pinecone_client.delete_index(self.index_name)
-            self.pinecone_client.create_index(
-                name=self.index_name, 
-                dimension=1536,
-                metric="cosine",
-                spec=ServerlessSpec(cloud="aws", region=self.environment)
-            )
-            while not self.pinecone_client.describe_index(self.index_name).status["ready"]:
-                time.sleep(1)
+
+        self.pinecone_client.create_index(
+            name=self.index_name, 
+            dimension=1536,
+            metric="cosine",
+            spec=ServerlessSpec(cloud="aws", region=self.environment)
+        )
+        while not self.pinecone_client.describe_index(self.index_name).status["ready"]:
+            time.sleep(1)
 
         self.db = PineconeVectorStore.from_documents(
             documents=self.docs,
