@@ -223,5 +223,59 @@
         "sort_order": 1,
         "creator_id": "2e9279bc33104a7ba53d342dafba7841",
         "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
+        "pvd_key": "GN",
+        "model_name": "gemini-1.0-pro",
+        "provider_id": "system",
+        "model_type": "C",
+        "sort_order": 1,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
+        "pvd_key": "GN",
+        "model_name": "gemini-1.5-pro",
+        "provider_id": "system",
+        "model_type": "C",
+        "sort_order": 2,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
+        "pvd_key": "GN",
+        "model_name": "gemini-1.5-flash",
+        "provider_id": "system",
+        "model_type": "C",
+        "sort_order": 3,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
+        "pvd_key": "GN",
+        "model_name": "aqa",
+        "provider_id": "system",
+        "model_type": "T",
+        "sort_order": 1,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
+        "pvd_key": "GN",
+        "model_name": "gemini-pro",
+        "provider_id": "system",
+        "model_type": "T",
+        "sort_order": 3,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
+    },
+    {
+        "pvd_key": "GN",
+        "model_name": "text-embedding-004",
+        "provider_id": "system",
+        "model_type": "E",
+        "sort_order": 1,
+        "creator_id": "2e9279bc33104a7ba53d342dafba7841",
+        "updater_id": "2e9279bc33104a7ba53d342dafba7841"
     }
 ]

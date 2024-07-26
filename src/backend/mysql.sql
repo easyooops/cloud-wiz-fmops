@@ -170,6 +170,40 @@ CREATE TABLE processing (
 	PRIMARY KEY (processing_id)
 );
 
+DROP TABLE IF EXISTS opinions;
+
+CREATE TABLE opinions (
+    opinion_id INTEGER NOT NULL AUTO_INCREMENT,
+    title VARCHAR(255) NULL,
+    content TEXT NULL,
+    answer TEXT,
+    is_deleted BOOLEAN NOT NULL DEFAULT 0,
+    creator_id CHAR(36) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updater_id CHAR(36),
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (opinion_id)
+);
+
+DROP TABLE IF EXISTS contactus;
+
+CREATE TABLE contactus (
+    contactus_id INTEGER NOT NULL AUTO_INCREMENT,
+    customer_name VARCHAR(255),
+    customer_email VARCHAR(255),
+    title VARCHAR(255),
+    content TEXT,
+    answer TEXT,
+    is_deleted BOOLEAN NOT NULL DEFAULT 0,
+    creator_id VARCHAR(255) DEFAULT 'system',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updater_id VARCHAR(255) DEFAULT 'system',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (contactus_id)
+);
+
+
+
 CREATE INDEX ix_providers_provider_id ON providers (provider_id);
 CREATE INDEX ix_providers_company ON providers (company);
 CREATE INDEX ix_providers_name ON providers (name);

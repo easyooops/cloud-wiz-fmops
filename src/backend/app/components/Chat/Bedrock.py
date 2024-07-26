@@ -21,7 +21,7 @@ class ChatBedrockComponent(AbstractLLMComponent):
         if not model_id:
             model_id = "amazon.titan-text-express-v1"
 
-        model_kwargs = {"temperature": temperature, "top_p": top_p}
+        model_kwargs = {"temperature": temperature, "top_p": top_p, "max_tokens":max_tokens}
 
         if "amazon" in model_id:
             del model_kwargs["top_p"]
