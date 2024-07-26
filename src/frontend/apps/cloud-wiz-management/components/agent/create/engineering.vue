@@ -184,14 +184,14 @@
                             <div class="card" :class="{ 'disabled-card': !embeddingEnabled }">
                               <div class="card-body">
                                 <div class="mb-3">
-                                  <div class="col-form-label">Storage *</div>
+                                  <div class="col-form-label">Provider *</div>
                                   <select class="form-select form-control-primary" v-model="selectedStorageProvider">
                                     <option value="" disabled hidden>Select Storage Provider</option>
                                     <option v-for="provider in filteredStorageProviders" :key="provider.credential_id" :value="provider.credential_id">{{ provider.credential_name }}</option>
                                   </select>
                                 </div>
-                                <div v-if="isS3ProviderSelected" class="mb-3">
-                                  <div class="col-form-label">Object</div>
+                                <div class="mb-3" v-if="filteredObjects.length > 0">
+                                  <div class="col-form-label">Storage</div>
                                   <select class="form-select form-control-primary" v-model="selectedObject">
                                     <option value="" disabled hidden>Select Object</option>
                                     <option v-for="object in filteredObjects" :key="object.store_id" :value="object.store_id">{{ object.store_name }}</option>
@@ -381,71 +381,78 @@ export default {
             userId: useAuthStore().userId
         }
     },
-    computed: {
-        display() {
-            return useContactStore().display
-        },
-        activeTab() {
-            return useContactStore().activeTab
-        },
-        menu() {
-            return this.data.data
-        },
-        ...mapState(useProviderStore, ['credentials', 'models']),
-        ...mapState(useStorageStore, ['storages']),  
-        ...mapState(useAgentStore, ['agent']),
-        ...mapState(useProcessingStore, ['processings']),
-        filteredProviders() {
-            return this.credentials.filter(provider => provider.provider_type === "M");
-        },
-        filteredModels() {
-            let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedProvider);
-            let provider_id = '';
-            if (credentials.length > 0) {
-                provider_id = credentials[0].provider_id
-            }
-            return this.models.filter(model => model.model_type === this.modelType && model.provider_id == provider_id);
-        },
-        filteredEmbeddingProviders() {
-            return this.credentials.filter(provider => provider.provider_type === "M");
-        },
-        filteredEmbeddingModels() {
-            let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedEmbeddingProvider);
-            let provider_id = '';
-            if (credentials.length > 0) {
-                provider_id = credentials[0].provider_id
-            }            
-            return this.models.filter(model => model.model_type === "E" && model.provider_id == provider_id);
-        },
-        filteredStorageProviders() {
-            return this.credentials.filter(provider => provider.provider_type === "S");
-        },
-        filteredObjects() {
-            return this.storages;
-        },
-        filteredFiles(){
-            return this.filteredFiles;
-        },
-        isS3ProviderSelected() {          
-            let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedStorageProvider);
-            let provider_id = '';
-            if (credentials.length > 0) {
-                provider_id = credentials[0].provider_id
-            }                  
-            let selectedProvider = this.credentials.find(provider => provider.provider_id === provider_id);
-            return selectedProvider && selectedProvider.credential_name.includes('S3');
-        },
-        filteredVectorDBProviders() {
-            return this.credentials.filter(provider => provider.provider_type === "V");
-        },
-        filteredPreProcessings() {
-            return this.processings.filter(processing => processing.processing_type === 'pre');
-        },
-        filteredPostProcessings() {
-            return this.processings.filter(processing => processing.processing_type === 'post');
-        }            
+  computed: {
+      display() {
+        return useContactStore().display;
+      },
+      activeTab() {
+        return useContactStore().activeTab;
+      },
+      menu() {
+        return this.data.data;
+      },
+      ...mapState(useProviderStore, ['credentials', 'models']),
+      ...mapState(useStorageStore, ['storages']),
+      ...mapState(useAgentStore, ['agent']),
+      ...mapState(useProcessingStore, ['processings']),
+      filteredProviders() {
+        return this.credentials.filter(provider => provider.provider_type === "M");
+      },
+      filteredModels() {
+        let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedProvider);
+        let provider_id = '';
+        if (credentials.length > 0) {
+          provider_id = credentials[0].provider_id;
+        }
+        return this.models.filter(model => model.model_type === this.modelType && model.provider_id == provider_id);
+      },
+      filteredEmbeddingProviders() {
+        return this.credentials.filter(provider => provider.provider_type === "M");
+      },
+      filteredEmbeddingModels() {
+        let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedEmbeddingProvider);
+        let provider_id = '';
+        if (credentials.length > 0) {
+          provider_id = credentials[0].provider_id;
+        }
+        return this.models.filter(model => model.model_type === "E" && model.provider_id == provider_id);
+      },
+      filteredStorageProviders() {
+        return this.credentials.filter(provider => provider.provider_type === "S");
+      },
+
+      filteredObjects() {
+        return this.storages.filter(storage => storage.credential_id === this.selectedStorageProvider);
+      },
+      filteredFiles() {
+        return this.filteredFiles;
+      },
+      isS3ProviderSelected() {
+        let credentials = this.credentials.filter(provider => provider.credential_id === this.selectedStorageProvider);
+        let provider_id = '';
+        if (credentials.length > 0) {
+          provider_id = credentials[0].provider_id;
+        }
+        let selectedProvider = this.credentials.find(provider => provider.provider_id === provider_id);
+        return selectedProvider && selectedProvider.credential_name.includes('S3');
+      },
+      filteredVectorDBProviders() {
+        return this.credentials.filter(provider => provider.provider_type === "V");
+      },
+      filteredPreProcessings() {
+        return this.processings.filter(processing => processing.processing_type === 'pre');
+      },
+      filteredPostProcessings() {
+        return this.processings.filter(processing => processing.processing_type === 'post');
+      }
     },
     watch: {
+        selectedStorageProvider(){
+          const filteredObjects = this.filteredObjects;
+          if (filteredObjects.length > 0){
+            this.selectedObject = filteredObjects[0].store_id;
+          }
+        },
         requestToken(newValue) {
             if (newValue > 5000) this.requestToken = 5000
             else if (newValue < 0) this.requestToken = 0
