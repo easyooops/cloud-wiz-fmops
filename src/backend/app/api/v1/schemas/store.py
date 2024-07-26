@@ -18,6 +18,8 @@ class FileInfo(BaseModel):
     size: Optional[int] = None
 
 class StoreWithDirectory(StoreBase):
+    provider_logo: Optional[str] = None
+    provider_company: Optional[str] = None    
     total_size: Optional[int] = None
     file_count: Optional[int] = None
 

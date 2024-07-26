@@ -422,6 +422,24 @@ class StoreService():
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error retrieving store: {str(e)}")
 
+    def get_provider(self, credential_id: UUID):
+        try:
+            statement = (
+                select(Provider)
+                .select_from(Credential)
+                .join(Provider, Credential.provider_id == Provider.provider_id)
+                .where(Credential.credential_id == credential_id)
+            )
+            provider = self.session.execute(statement).one_or_none()
+
+            if provider is None:
+                raise HTTPException(status_code=404, detail="Store not found")
+
+            return provider[0]
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error retrieving store: {str(e)}")
+        
     def _initialize_embedding_component(self, embedding_type: str, agent_data):
         """
         Initialize the embedding component based on the embedding type.

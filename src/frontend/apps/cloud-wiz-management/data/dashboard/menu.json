@@ -6,27 +6,12 @@
       "type": "headtitle"
     },
     {
+      "path": "/",
       "title": "Monitoring",
       "icon": "stroke-home",
       "iconf":"fill-home",
-      "type": "sub",
-      "badgeType": "light-primary",
-      "badgeValue": "2",
-      "active": false,
-      "children": [
-        {
-          "path": "/",
-          "title": "Dashboard",
-          "type": "link",
-          "active":false
-        },
-        {
-          "path": "/trace/list",
-          "title": "Trace",
-          "type": "link",
-          "active":false
-        }
-      ]
+      "type": "link",
+      "active": false
     },
     {
       "title": "Agents",

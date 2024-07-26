@@ -36,9 +36,9 @@
                     <div class="project-box" @click="navigateToEdit(dataItem.store_id, dataItem.store_name)" @mouseover="onMouseOver" @mouseleave="onMouseLeave">
                       <span class="badge badge-primary">Public</span>
                         <h6>{{ dataItem.store_name }}</h6>
-                        <div class="d-flex mb-3"><img class="img-20 me-2 rounded-circle" :src="`/images/provider/aws.png`" alt="" data-original-title="" title="">
+                        <div class="d-flex mb-3"><img class="img-20 me-2 rounded-circle" :src="`/images/provider/${dataItem.provider_logo}`" alt="" data-original-title="" title="">
                             <div class="flex-grow-1 project-item-detail">
-                                <p>Amazon S3</p>
+                                <p>{{ dataItem.provider_company }}</p>
                             </div>
                         </div>
                         <p>{{ dataItem.description }}</p>

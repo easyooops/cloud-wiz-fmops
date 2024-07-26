@@ -32,6 +32,8 @@ def get_stores(
                 created_at=store.created_at,
                 updated_at=store.updated_at,
                 user_id=store.user_id,
+                provider_logo=service.get_provider(store.credential_id).logo,
+                provider_company=service.get_provider(store.credential_id).company,              
                 total_size=directory_info['total_size'],
                 file_count=directory_info['file_count']
             )
