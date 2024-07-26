@@ -520,6 +520,7 @@ class PromptService:
         else:
             raise ValueError(f"Unsupported llm type: {model_type}")
 
+
     async def _run_rag_retrieval(self, agent_data, query: str, db, top_k: int = 5):
         store_service = StoreService(self.session)
         try:
