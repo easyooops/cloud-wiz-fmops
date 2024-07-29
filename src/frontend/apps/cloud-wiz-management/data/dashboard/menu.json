@@ -67,6 +67,14 @@
       "iconf":"fill-faq",
       "type": "link",
       "active": false
+    },
+    {
+      "path": "/tutorial",
+      "title": "Tutorial",
+      "icon": "stroke-faq",
+      "iconf":"fill-faq",
+      "type": "link",
+      "active": false
     }
   ]
 }
