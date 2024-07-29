@@ -189,4 +189,3 @@ class CredentialService():
         except Exception as e:
             print(f"Error while setting storage credential: {e}")
             return None
-
