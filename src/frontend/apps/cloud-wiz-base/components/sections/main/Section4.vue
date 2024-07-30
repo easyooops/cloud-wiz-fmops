@@ -4,14 +4,14 @@
     <div class="posts-wrapper">
       <div class="container">
         <div class="main-title-two">
-          <h2 class="s-50 w-700 text-center main-text">간편하게 클라우드 인프라를 구축</h2><br><br>
-          <h3 class="s-25 w-400 text-center main-text">제공하는 코드로 간편하게 클라우드 인프라를 구축하세요</h3><br><br>
+          <h2 class="s-50 w-700 text-center main-text">모니터링</h2><br><br>
+          <h3 class="s-25 w-400 text-center main-text">LLM 사용량 및 비용 모니터링, 토큰 사용 및 비용 추적, 토큰 비용 효율성 모니터링</h3><br><br>
         </div>
         <div class="row d-flex align-items-center">
           <!-- IMAGE BLOCK -->
           <div class="col-md-6">
             <div class="img-block left-column wow fadeInRight">
-              <img class="img-fluid" src="/assets/images/wiz/main_develop.png" alt="content-image" />
+              <img class="img-fluid" src="/assets/images/wiz/main_image_4.gif" width="600px" alt="content-image" />
             </div>
           </div>
           <!-- TEXT BLOCK -->
@@ -26,10 +26,10 @@
                 </div>
                 <!-- Text -->
                 <div class="cbox-2-txt">
-                  <h5 class="s-22 w-700">코드로 클라우드 인프라 구축</h5>
-                  <p>✅ 코드를 사용하여 클라우드 인프라를 구축하는 방법을 제공</p>
-                  <p>✅ 사용자는 단순히 코드를 복사하여 클라우드 인프라를 구성</p>
-                  <p>✅ 클라우드에 대한 지식이 부족해도 코드를 복사해 손쉽게 인프라를 구성</p>
+                  <h5 class="s-22 w-700">모니터링</h5>
+                  <p>✔️ “인프라”에 대한 모니터링을 관제 합니다.</p>
+                  <p>✔️ “토큰”사용에 따른 비용을 모니터링을 합니다.</p>
+                  <p>✔️ 임계치 설정을 통해 “알람” 기능을 제공 합니다.</p>
                 </div>
               </div>
               <!-- END CONTENT BOX #1 -->
@@ -42,58 +42,16 @@
                 </div>
                 <!-- Text -->
                 <div class="cbox-2-txt">
-                  <h5 class="s-22 w-700">CI/CD 파이프라인을 코드로 구현</h5>
-                  <p>✅ IaC 서비스는 CI/CD 파이프라인을 코드로 구현하는 기능을 제공</p>
-                  <p>✅ 코드로 인프라를 관리하고 배포하는 자동화된 프로세스를 구축</p>
+                  <h5 class="s-22 w-700">트레이스</h5>
+                  <p>✔️ “에이전트”의 실시간 처리 과정에 대한 트레이스 로깅을 제공합니다.</p>
+                  <p>✔️ “모델” 사용에 대한 로깅을 제공 합니다.</p>
                 </div>
               </div>
               <!-- END CONTENT BOX #2 -->
-              <!-- CONTENT BOX #3 -->
-              <div class="cbox-2 process-step">
-                <!-- Icon -->
-                <div class="ico-wrap">
-                  <div class="cbox-2-ico bg--theme color--white">3</div>
-                </div>
-                <!-- Text -->
-                <div class="cbox-2-txt">
-                  <h5 class="s-22 w-700">테라폼 코드로 인프라 구성</h5>
-                  <p>✅ 테라폼 코드를 사용하여 인프라를 구성하는 기능을 제공</p>
-                  <p>✅ 테라폼 코드를 사용하면 유연하고 확장 가능한 인프라 구성을 구현</p>
-                </div>
-              </div>
-              <!-- END CONTENT BOX #3 -->
             </div>
-            <div class="fbox-wrapper">
-              <div class="row row-cols-1 row-cols-xl-3">
-                <div class="col">
-                  <div class="fbox-2">
-                    <v-btn prepend-icon="mdi-check-circle" variant="tonal" size="x-large" NuxtLink to="/development/cli-guide">
-                      <template v-slot:prepend>
-                        <v-icon color="success"></v-icon>
-                      </template>
-                      Iac로 구축
-                    </v-btn>
-                  </div>
-                </div>
-                <div class="col">
-                  <v-btn  prepend-icon="mdi-check-circle" variant="tonal" size="x-large" NuxtLink to="/development/git-action">
-                    <template v-slot:prepend>
-                      <v-icon color="success"></v-icon>
-                    </template>
-                    CI/CD 구축
-                  </v-btn>
-                </div>
-                <div class="col">
-                  <v-btn prepend-icon="mdi-check-circle" variant="tonal" size="x-large" NuxtLink to="/development/template">
-                    <template v-slot:prepend>
-                      <v-icon color="success"></v-icon>
-                    </template>
-                    테라폼으로 구축
-                  </v-btn>
-                </div>
-              </div>
+            <div class="dash-btn" >
+              <a :href="baseUrl" class="btn r-04 btn--theme hover--tra-black">Get started for free</a>
             </div>
-
           </div>
           <!-- END TEXT BLOCK -->
       </div>
@@ -104,5 +62,5 @@
 </template>
 
 <script setup lang="ts">
-
+const baseUrl = import.meta.env.VITE_MANAGEMENT_URL || '/';
 </script>

@@ -1,6 +1,10 @@
 <template>
     <div>
         <SectionsMainSection1/>
+        <SectionsMainSection2/>
+        <SectionsMainSection3/>
+        <SectionsMainSection4/>
+        <SectionsMainSection5/>
     </div>
 </template>
 
