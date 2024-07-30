@@ -100,7 +100,7 @@ const onSubmit = async () => {
   let dialog_btn = 'Close'
 
   try {
-    const response = await restApi().post('/contactus', formData.value, null)
+    const response = await post('/contactus', formData.value, null)
 
     console.log(response.data)
     // @ts-ignore
