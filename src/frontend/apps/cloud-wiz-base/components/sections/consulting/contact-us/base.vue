@@ -100,9 +100,7 @@ const onSubmit = async () => {
   let dialog_btn = 'Close'
 
   try {
-    /!* local 테스트용- *!/
-    // const response = await restApi().post('/contactus', formData.value, null)
-    const response = await restApi().post('https://be.cloudwiz-ai.com/api/wiz/contactus', formData.value, null)
+    const response = await restApi().post('/contactus', formData.value, null)
 
     console.log(response.data)
     // @ts-ignore
