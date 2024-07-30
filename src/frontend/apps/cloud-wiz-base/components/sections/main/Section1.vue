@@ -6,12 +6,11 @@
               <div class="col-md-6">
                   <div class="hero-15-txt wow fadeInRight">
                       <!-- Title -->
-                      <h2 class="s-55 w-700">Innovate with Our LLM Cloud Platform</h2>
+                      <h2 class="s-55 w-700">미래를 여는 LLM 기반 AI 플랫폼</h2>
                       <!-- Text -->
-                      <p class="p-lg">Experience an innovative cloud solution that allows you to easily create chains and seamlessly apply customized agents across various industries</p>
+                      <p class="p-lg">노코드 기반의 쉬운 UI로 누구나 AI를 만들 수 있습니다. 지속적으로 발전하는 LLM 모델을 활용하여 시장 변화에 빠르게 대응하고 다양한 산업에 창의적인 솔루션을 제공합니다.</p>
                       <!-- Button -->
                       <a :href="baseUrl" class="btn r-04 btn--theme hover--tra-black">Get started for free</a>
-                      <p class="p-sm btn-txt ico-15"><span class="flaticon-check"></span> No credit card needed, free 14-day trial</p>
                   </div>
               </div>
               <!-- END HERO TEXT -->

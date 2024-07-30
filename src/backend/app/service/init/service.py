@@ -208,3 +208,5 @@ class InitDataService:
         self.create_store_data()
         self.create_processing_data(processing_data)
         self.create_agent_data(agent_data)
+
+

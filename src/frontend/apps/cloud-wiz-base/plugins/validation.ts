@@ -3,10 +3,13 @@ import * as AllRules from '@vee-validate/rules';
 
 export default defineNuxtPlugin((nuxtApp) => {
     Object.keys(AllRules).forEach(rule => {
-        // @ts-ignore
-        defineRule(rule, AllRules[rule]);
+        const ruleDefinition = AllRules[rule];
+        if (typeof ruleDefinition === 'function') {
+            defineRule(rule, ruleDefinition);
+        } else {
+            console.warn(`Skipping invalid rule: ${rule}`);
+        }
     });
-
 
     // vee-validate config
     configure({
@@ -20,4 +23,3 @@ export default defineNuxtPlugin((nuxtApp) => {
         // useConstraintAttrs: true
     });
 });
-
