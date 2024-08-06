@@ -123,6 +123,7 @@ def create_app():
         # with next(get_database()) as db:
         #     pass        
 
+    # logging process
     LoggingConfigurator()
     configure_datadog()
     
