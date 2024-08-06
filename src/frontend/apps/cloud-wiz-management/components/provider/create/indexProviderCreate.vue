@@ -119,7 +119,6 @@ import restApi from "~/utils/axios";
 export default {
   name: 'createProvider',
   setup() {
-    const { loginWith } = useAuth()
     const providerStore = useProviderStore();
     const router = useRouter();
     const route = useRoute();
@@ -220,10 +219,6 @@ export default {
       }
     };
 
-    const redirectToGoogleAuth_v3 = async () => {
-      loginWith('google')
-    }
-
     const isAmazonWebServices = computed(() => {
       return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
     });
@@ -262,7 +257,6 @@ export default {
         sessionStorage.setItem('providerName', providerName.value);
         redirectToGoogleAuth();
         // redirectToGoogleAuth_v2();
-        // redirectToGoogleAuth_v3();
       } else {
         await createCredential({
           user_id: userId.value,
