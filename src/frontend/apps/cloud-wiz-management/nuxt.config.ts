@@ -31,6 +31,7 @@ export default defineNuxtConfig({
     //     },
     modules: [
         "@nuxtjs/i18n",
+        "@sidebase/nuxt-auth",
         [
             "@pinia/nuxt",
             {
@@ -72,5 +73,22 @@ export default defineNuxtConfig({
         { src: "~/plugins/plugins.js", mode: "client" },
         { src: "~/plugins/google-oauth.js", mode: "client" },
         { src: "./plugins/useBootstrap.client.ts", mode: "client" }
-    ]   
+    ],
+    auth: {
+        origin: import.meta.env.VITE_MANAGEMENT_URL,
+        enableGlobalAppMiddleware: true,
+        enableSessionRefreshOnWindowFocus: true,
+        defaultProvider: 'google',
+        google: {
+          clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          authorization: {
+            params: {
+              prompt: "consent",
+              access_type: "offline",
+              response_type: "code",
+              redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI
+            }
+          }
+        }
+      }    
 });

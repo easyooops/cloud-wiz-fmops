@@ -12,6 +12,8 @@ import restApi from "~/utils/axios";
 export default {
   name: 'GoogleDriveCallback',
   async mounted() {
+
+    console.log('== GoogleDriveCallback ==================');
     const providerStore = useProviderStore();
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
