@@ -262,7 +262,7 @@ export default {
         sessionStorage.setItem('providerName', providerName.value);
         redirectToGoogleAuth();
         // redirectToGoogleAuth_v2();
-        redirectToGoogleAuth_v3();
+        // redirectToGoogleAuth_v3();
       } else {
         await createCredential({
           user_id: userId.value,

@@ -1,7 +1,6 @@
 import { defineNuxtConfig } from 'nuxt/config';
 
 export default defineNuxtConfig({
-    // buildDir: '../../dist/apps/cloud-wiz-menagement/.nuxt',
     css: ["@/assets/scss/app.scss"],
     ssr:false,
     app: {
@@ -26,9 +25,6 @@ export default defineNuxtConfig({
             ],
         },
     },
-    // alias: {
-    //     pinia: "/node_modules/@pinia/nuxt/node_modules/pinia/dist/pinia.mjs"
-    //     },
     modules: [
         "@nuxtjs/i18n",
         "@sidebase/nuxt-auth",
@@ -39,7 +35,6 @@ export default defineNuxtConfig({
             },
         ],
     ],
-    // debug: false,
     i18n: {
         strategy: "prefix_except_default",
         defaultLocale: "en",
