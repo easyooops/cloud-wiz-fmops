@@ -124,7 +124,7 @@ def create_app():
         #     pass        
 
     # logging process
-    LoggingConfigurator()
+    # LoggingConfigurator()
     configure_datadog()
     
     app.include_router(api_router, prefix=settings.API_V1_STR)
