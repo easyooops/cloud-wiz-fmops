@@ -59,7 +59,9 @@
     "@nuxtjs/sitemap": "^6.0.0-beta.1",
     "nuxt-gtag": "^2.1.0",
     "defu": "^6.1.4",
-    "@swc-node/core": "^1.13.3"
+    "@swc-node/core": "^1.13.3",
+    "@sidebase/nuxt-auth": "^0.8.1",
+    "next-auth": "~4.21.1"
   },
   "workspaces": {
     "packages": [

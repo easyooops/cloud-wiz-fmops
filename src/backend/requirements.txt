@@ -6,6 +6,7 @@ pytest
 httpx
 python-jose
 python-dotenv
+python-multipart
 
 # env
 pydantic-settings
@@ -35,7 +36,6 @@ boto3
 langchain
 langchain_community
 langchain_openai
-llama-cpp-python
 langchain_aws
 langchain_core
 openai

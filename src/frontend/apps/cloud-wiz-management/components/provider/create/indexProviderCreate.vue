@@ -219,6 +219,11 @@ export default {
       }
     };
 
+    const redirectToGoogleAuth_v3 = async () => {
+      const { signIn } = useAuth();
+      await signIn('google')
+    };
+
     const isAmazonWebServices = computed(() => {
       return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
     });
@@ -255,8 +260,9 @@ export default {
         sessionStorage.setItem('userId', userId.value);
         sessionStorage.setItem('selectedProvider', selectedProvider.value);
         sessionStorage.setItem('providerName', providerName.value);
-        redirectToGoogleAuth();
+        // redirectToGoogleAuth();
         // redirectToGoogleAuth_v2();
+        redirectToGoogleAuth_v3();
       } else {
         await createCredential({
           user_id: userId.value,

@@ -123,7 +123,8 @@ def create_app():
         # with next(get_database()) as db:
         #     pass        
 
-    LoggingConfigurator()
+    # logging process
+    # LoggingConfigurator()
     configure_datadog()
     
     app.include_router(api_router, prefix=settings.API_V1_STR)
