@@ -29,7 +29,7 @@ export default defineNuxtConfig({
     },
     modules: [
         "@nuxtjs/i18n",
-        "@sidebase/nuxt-auth",
+        // "@sidebase/nuxt-auth",
         [
             "@pinia/nuxt",
             {
@@ -77,11 +77,12 @@ export default defineNuxtConfig({
     //     baseURL: baseURL,
     //     globalAppMiddleware: false,
     //     provider: {
-    //         type: 'authjs'
+    //         type: 'authjs',
+    //         trustHost: true
     //     },
     //     sessionRefresh: {
     //         enablePeriodically: false,
-    //         enableOnWindowFocus: false
+    //         enableOnWindowFocus: false,
     //     }        
     // },
 });
