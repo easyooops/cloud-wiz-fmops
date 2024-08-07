@@ -4,6 +4,10 @@ export default defineNuxtConfig({
     // buildDir: '../../dist/apps/cloud-wiz-menagement/.nuxt',
     css: ["@/assets/scss/app.scss"],
     ssr:false,
+    target: 'static',
+    generate: {
+        fallback: '404.html'
+    },
     app: {
         head: {
             link: [
