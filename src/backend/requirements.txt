@@ -6,6 +6,7 @@ pytest
 httpx
 python-jose
 python-dotenv
+python-multipart
 
 # env
 pydantic-settings
