@@ -1,7 +1,5 @@
 import { defineNuxtConfig } from 'nuxt/config';
 
-const baseURL = process.env.BASE_URL ? `${process.env.BASE_URL}` : 'https://management.cloudwiz-ai.com/api/auth';
-
 export default defineNuxtConfig({
     css: ["@/assets/scss/app.scss"],
     ssr:false,
@@ -29,7 +27,6 @@ export default defineNuxtConfig({
     },
     modules: [
         "@nuxtjs/i18n",
-        "@sidebase/nuxt-auth",
         [
             "@pinia/nuxt",
             {
@@ -70,19 +67,5 @@ export default defineNuxtConfig({
         { src: "~/plugins/plugins.js", mode: "client" },
         { src: "~/plugins/google-oauth.js", mode: "client" },
         { src: "./plugins/useBootstrap.client.ts", mode: "client" }
-    ],  
-    auth: {
-        isEnabled: true,
-        disableServerSideAuth: false,
-        baseURL: baseURL,
-        globalAppMiddleware: false,
-        provider: {
-            type: 'authjs',
-            trustHost: true
-        },
-        sessionRefresh: {
-            enablePeriodically: false,
-            enableOnWindowFocus: false,
-        }        
-    },
+    ]
 });
