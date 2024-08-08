@@ -29,7 +29,7 @@ export default defineNuxtConfig({
     },
     modules: [
         "@nuxtjs/i18n",
-        // "@sidebase/nuxt-auth",
+        "@sidebase/nuxt-auth",
         [
             "@pinia/nuxt",
             {
@@ -71,18 +71,18 @@ export default defineNuxtConfig({
         { src: "~/plugins/google-oauth.js", mode: "client" },
         { src: "./plugins/useBootstrap.client.ts", mode: "client" }
     ],  
-    // auth: {
-    //     isEnabled: true,
-    //     disableServerSideAuth: false,
-    //     baseURL: baseURL,
-    //     globalAppMiddleware: false,
-    //     provider: {
-    //         type: 'authjs',
-    //         trustHost: true
-    //     },
-    //     sessionRefresh: {
-    //         enablePeriodically: false,
-    //         enableOnWindowFocus: false,
-    //     }        
-    // },
+    auth: {
+        isEnabled: true,
+        disableServerSideAuth: false,
+        baseURL: baseURL,
+        globalAppMiddleware: false,
+        provider: {
+            type: 'authjs',
+            trustHost: true
+        },
+        sessionRefresh: {
+            enablePeriodically: false,
+            enableOnWindowFocus: false,
+        }        
+    },
 });
