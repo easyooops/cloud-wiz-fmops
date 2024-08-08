@@ -1,7 +1,5 @@
 import { defineNuxtConfig } from 'nuxt/config';
 
-const baseURL = process.env.BASE_URL ? `${process.env.BASE_URL}` : 'https://management.cloudwiz-ai.com/api/auth';
-
 export default defineNuxtConfig({
     css: ["@/assets/scss/app.scss"],
     ssr:false,

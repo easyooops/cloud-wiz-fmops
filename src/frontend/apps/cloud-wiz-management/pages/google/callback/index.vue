@@ -14,8 +14,15 @@ export default {
   async mounted() {
     const providerStore = useProviderStore();
     const urlParams = new URLSearchParams(window.location.search);
+
+    console.log('== GoogleDriveCallback ===========================');
+    console.log(urlParams);
+
     const code = urlParams.get('code');
 
+    console.log(code);
+
+    console.log('== GoogleDriveCallback ===========================');
     if (!code) {
       console.error('Authorization code not found');
       this.$router.push('/provider/list');
