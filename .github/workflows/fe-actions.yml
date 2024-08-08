@@ -42,9 +42,15 @@ jobs:
             npm install
             npm run build:generate
 
+      - name: Empty S3 Bucket - base
+        run: aws s3 rm s3://$AWS_S3_BUCKET_BASE/ --recursive
+
       - name: Upload to S3 - base
         run: aws s3 cp ./src/frontend/apps/cloud-wiz-base/.output/public s3://$AWS_S3_BUCKET_BASE/ --recursive
       
+      - name: Empty S3 Bucket - management
+        run: aws s3 rm s3://$AWS_S3_BUCKET_MANAGEMENT/ --recursive
+
       - name: Upload to S3 - management
         run: aws s3 cp ./src/frontend/apps/cloud-wiz-management/.output/public s3://$AWS_S3_BUCKET_MANAGEMENT/ --recursive
 
