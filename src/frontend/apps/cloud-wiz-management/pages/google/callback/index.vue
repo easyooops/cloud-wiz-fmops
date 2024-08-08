@@ -7,45 +7,24 @@
 
 <script>
 import { useProviderStore } from '@/store/provider';
-import restApi from "~/utils/axios";
 
 export default {
   name: 'GoogleDriveCallback',
   async mounted() {
     const providerStore = useProviderStore();
-    const urlParams = new URLSearchParams(window.location.search);
-
-    console.log('== GoogleDriveCallback ===========================');
-    console.log(urlParams);
-
-    const code = urlParams.get('code');
-
-    console.log(code);
-
-    console.log('== GoogleDriveCallback ===========================');
-    if (!code) {
-      console.error('Authorization code not found');
-      this.$router.push('/provider/list');
-      return;
-    }
 
     try {
-      const { get } = restApi();
-      const response = await get(`/auth/google/callback?code=${code}`);
-      const tokens = await response.data;
-
-      const userId = sessionStorage.getItem('userId');
-      const selectedProvider = sessionStorage.getItem('selectedProvider');
-      const providerName = sessionStorage.getItem('providerName');
+      const headers = useRequestHeaders(['cookie'])
+      const { data: token } = await useFetch('/api/token', { headers })
 
       const credentialData = {
-        user_id: userId,
-        provider_id: selectedProvider,
-        credential_name: providerName,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        creator_id: userId,
-        updater_id: userId,
+        user_id: sessionStorage.getItem('userId'),
+        provider_id: sessionStorage.getItem('selectedProvider'),
+        credential_name: sessionStorage.getItem('providerName'),
+        access_token: token.value.access_token,
+        refresh_token: token.value.refresh_token,
+        creator_id: sessionStorage.getItem('userId'),
+        updater_id: sessionStorage.getItem('userId'),
       };
 
       await providerStore.createCredential(credentialData);

@@ -260,9 +260,9 @@ export default {
         sessionStorage.setItem('userId', userId.value);
         sessionStorage.setItem('selectedProvider', selectedProvider.value);
         sessionStorage.setItem('providerName', providerName.value);
-        redirectToGoogleAuth();
+        // redirectToGoogleAuth();
         // redirectToGoogleAuth_v2();
-        // redirectToGoogleAuth_v3();
+        redirectToGoogleAuth_v3();
       } else {
         await createCredential({
           user_id: userId.value,
