@@ -1,8 +1,11 @@
 import { defineNuxtConfig } from 'nuxt/config';
 
 export default defineNuxtConfig({
-    publicRuntimeConfig: {
-        googleClientId: process.env.VITE_GOOGLE_CLIENT_ID
+    runtimeConfig: {
+        "public": {},
+        "app": {
+          "googleClientId": process.env.VITE_GOOGLE_CLIENT_ID,
+        }
     },
     css: ["@/assets/scss/app.scss"],
     ssr:false,
