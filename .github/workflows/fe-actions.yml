@@ -36,6 +36,10 @@ jobs:
         with:
           node-version: 20.9.0
 
+      - name: Create .env file
+        run: |
+          echo "VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> src/frontend/.env
+
       - name: Install dependencies and build Nuxt 3 app
         working-directory: src/frontend
         run: |

@@ -64,7 +64,7 @@ export default {
     },
     googleInitialize() {
       google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        client_id: this.$config.googleClientId,
         callback: this.handleCallback,
         context: 'use'
       })
