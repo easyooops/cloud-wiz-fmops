@@ -1,6 +1,3 @@
-/* eslint-disable */
-import { useLocalStorage } from '@vueuse/core'
-import { useStorage } from '@vueuse/core';
 import Layout from "@/data/layout.json";
 export const useLayoutStore = defineStore({
   id: "layout",

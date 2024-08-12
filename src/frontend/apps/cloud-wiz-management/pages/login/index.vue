@@ -63,8 +63,11 @@ export default {
       }
     },
     googleInitialize() {
+      const config = useRuntimeConfig()
+      const clientId = config.app.googleClientId;
+      
       google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: this.handleCallback,
         context: 'use'
       })

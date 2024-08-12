@@ -1,4 +1,4 @@
-    export const list=[ {
+export const list=[ {
     id:0,
     title:document.getElementById("text")
 },

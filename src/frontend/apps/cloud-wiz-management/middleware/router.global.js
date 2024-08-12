@@ -5,7 +5,8 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
     const publicPaths = ['/login'];
 
-    if (!authStore.isAuthenticated && !publicPaths.includes(to.path)) {
+    if ((!authStore.isAuthenticated && (to.path === '/' || to.path === '')) || 
+        (!authStore.isAuthenticated && !publicPaths.includes(to.path))) {
       return navigateTo('/login');
     }
 });

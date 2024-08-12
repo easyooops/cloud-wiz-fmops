@@ -161,7 +161,7 @@ export default {
       }
     };
     const redirectToGoogleAuth = () => {
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const clientId = this.$config.googleClientId;
       const environment = import.meta.env.VITE_ENVIRONMENT;
       const scope = 'https://www.googleapis.com/auth/drive';
       const responseType = 'code';
@@ -260,9 +260,9 @@ export default {
         sessionStorage.setItem('userId', userId.value);
         sessionStorage.setItem('selectedProvider', selectedProvider.value);
         sessionStorage.setItem('providerName', providerName.value);
-        // redirectToGoogleAuth();
+        redirectToGoogleAuth();
         // redirectToGoogleAuth_v2();
-        redirectToGoogleAuth_v3();
+        // redirectToGoogleAuth_v3();
       } else {
         await createCredential({
           user_id: userId.value,

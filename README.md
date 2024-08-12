@@ -1,63 +1,34 @@
-# cloud-wiz-fmops
-FMOops platform that can be used in real life through generative AI
+# Cloud Wiz FMOps
 
-# Install & Start
-```
+![Cloud Wiz FMOps Logo](https://management.cloudwiz-ai.com/images/wiz/logo-pink.png)
+
+**Cloud Wiz FMOps** is a powerful platform designed to integrate generative AI into real-life FM (Facilities Management) operations. Streamline your workflow, enhance decision-making, and achieve operational excellence with this cutting-edge solution.
+
+## Features
+- **Generative AI Integration:** Enhance FM operations with AI-driven insights.
+- **Real-Time Monitoring:** Keep track of operations in real time.
+- **User-Friendly Interface:** Easy to navigate, even for non-technical users.
+
+## Installation & Getting Started
+
+To get started with Cloud Wiz FMOps, follow the steps below:
+
+```bash
 sudo npm install && sudo npm start
 ```
-# Fast API Docs
-### local
-http://localhost:8000/docs#/
 
-### prod
-https://be.cloudwiz-ai.com/docs#
+## Fast API Documentation
+Access the Fast API documentation locally:
 
-# GIT
-### connection
-```
-git remote add origin https://github.com/easyooops/cloud-wiz-fmops.git
-
-git remote -v
-```
-### create branch
-```
-# git checkout -b [new branch]
-git checkout -b feature-suyeong
-
-git branch
-```
-### Pull Request
-```
-git add .
-
-# git commit -m "[comment]"
-git commit -m "Save current changes before pulling latest updates"
-
-# git push origin [new branch]
-git push origin feature-suyeong
-```
-### Pull Main
-```
-git status
-
-git add .
-
-git commit -m "Save current changes before pulling latest updates"
-
-git stash
-
-git pull origin main
-
+```bash
+Local: http://localhost:8000/docs
 ```
 
-# alembic
 
-### 마이그레이션 생성
-```
-alembic revision --autogenerate -m "edit agent table"
-```
+## License
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
 
-### 마이그레이션 적용
-```
-alembic upgrade head
-```
+## Contact
+For any inquiries or support, please contact us at:
+
+Email: ssu0416@gmail.com

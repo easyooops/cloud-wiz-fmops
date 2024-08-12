@@ -143,6 +143,9 @@ export default defineNuxtConfig({
         define: {'process.env.DEBUG':false,
         },
     },
-    ssr: false
+    ssr: false,
+    site: {
+        url: 'https://cloudwiz-ai.com'
+    },       
 });
 
