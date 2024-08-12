@@ -8,7 +8,7 @@
           </div>
           <div class="col-6">
             <ol class="breadcrumb">
-              <li class="breadcrumb-item"><router-link :to="{ path: '/dashboard/default' }">
+              <li class="breadcrumb-item"><router-link :to="{ path: '/' }">
 
                   <svg class="stroke-icon">
                     <use href="@/assets/svg/icon-sprite.svg#stroke-home"></use>
