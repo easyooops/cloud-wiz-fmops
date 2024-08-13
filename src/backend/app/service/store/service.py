@@ -28,6 +28,7 @@ from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.service.model.model import Model
 from app.components.DocumentLoader.Snowflake import SnowflakeDocumentLoader
 from app.components.DocumentLoader.DocumentLoader import DocumentLoaderComponent
+from app.components.Embedding.GoogleAI import GoogleEmbeddingComponent
 
 class StoreService():
     def __init__(self, session: Session):
@@ -451,6 +452,8 @@ class StoreService():
                     dimension = 1536
                 elif embedding_credential_type == "BR":
                     dimension = 1024
+                elif embedding_credential_type == "GN":
+                    dimension = 768
 
                 embed_component.build(models.model_name, dimension)
 
@@ -533,6 +536,12 @@ class StoreService():
                 raise ValueError("AWS credentials or region are not set in the provider information.")
             return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
 
+        elif embedding_type == "GN":
+            google_api_key = self._get_credential_info(agent_data.embedding_provider_id, "GOOGLE_API_KEY")
+            if not google_api_key:
+                raise ValueError("GoogleAI API key is not set in the provider information.")
+            return GoogleEmbeddingComponent(google_api_key)
+        
         else:
             raise ValueError(f"Unsupported embedding type: {embedding_type}")
 

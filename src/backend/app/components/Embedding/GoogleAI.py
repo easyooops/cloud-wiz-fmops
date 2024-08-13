@@ -1,44 +1,32 @@
-import boto3
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from app.components.Embedding.Base import AbstractEmbeddingComponent
-# from langchain_community.embeddings import BedrockEmbeddings
-from langchain_aws import BedrockEmbeddings
 
-class BedrockEmbeddingComponent(AbstractEmbeddingComponent):
-    def __init__(self, aws_access_key: str, aws_secret_access_key: str, aws_region: str):
+class GoogleEmbeddingComponent(AbstractEmbeddingComponent):
+    def __init__(self, google_api_key: str):
         """
-        Initialize the BedrockEmbeddingComponent with AWS credentials and region.
+        Initialize the GoogleEmbeddingComponent with a Google API key.
         
         Args:
-            aws_access_key (str): AWS access key ID.
-            aws_secret_access_key (str): AWS secret access key.
-            aws_region (str): AWS region.
+            google_api_key (str): The Google API key to use for authentication.
         """
         super().__init__()
-        self.aws_access_key = aws_access_key
-        self.aws_secret_access_key = aws_secret_access_key
-        self.aws_region = aws_region
-
-        self.boto3_session = boto3.Session(
-            aws_access_key_id=self.aws_access_key,
-            aws_secret_access_key=self.aws_secret_access_key,
-            region_name=self.aws_region
-        )
-
+        self.google_api_key = google_api_key
         self.model_instance = None
 
-    def build(self, model_id: str = "amazon.titan-embed-text-v1", dimension: int = None):
+    def build(self, model_id: str = "embedding-001", dimension: int = None):
         """
         Build and configure the model instance.
         
         Args:
-            model_id (str): The model identifier to use. Defaults to "amazon.titan-embed-text-v1".
+            model_id (str): The model identifier to use. Defaults to "text-embedding-google-v1".
         """
-        self.model_instance = BedrockEmbeddings(
-            model_id=model_id,
-            client=self.boto3_session.client('bedrock-runtime')
+        self.model_instance = GoogleGenerativeAIEmbeddings(
+            google_api_key=self.google_api_key,
+            dimensions=dimension,
+            model="models/"+model_id
         )
 
-    def run_embed_query(self, input_text: str) -> list[float]:
+    async def run_embed_query(self, input_text: str) -> list[float]:
         """
         Embed a single query text into a vector of floats.
         
@@ -80,7 +68,7 @@ class BedrockEmbeddingComponent(AbstractEmbeddingComponent):
             raise ValueError("Model instance is not initialized. Call the build method first.")
         
         try:
-            return await self.model_instance.aembed_documents(documents)
+            return self.model_instance.embed_documents(documents)
         except Exception as e:
             raise RuntimeError(f"An error occurred while embedding the documents: {e}")
 
@@ -101,7 +89,7 @@ class BedrockEmbeddingComponent(AbstractEmbeddingComponent):
             raise ValueError("Model instance is not initialized. Call the build method first.")
         
         try:
-            return await self.model_instance.aembed_documents(documents)
+            return self.model_instance.embed_documents(documents)
         except Exception as e:
             raise RuntimeError(f"An error occurred while embedding the documents: {e}")
         

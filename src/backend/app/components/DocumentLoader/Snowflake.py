@@ -4,7 +4,7 @@ from langchain_community.document_loaders import SnowflakeLoader
 class SnowflakeDocumentLoader(BaseDocumentLoader):
     def __init__(self, config: dict, metadata_columns: list = None):
         super().__init__()
-        self.metadata_columns = metadata_columns if metadata_columns else ["source"]
+        self.metadata_columns = metadata_columns
         self.snowflake_loader = SnowflakeLoader(
             query=config['db_query'],
             user=config['db_user'],
