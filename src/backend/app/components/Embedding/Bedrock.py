@@ -1,6 +1,7 @@
 import boto3
 from app.components.Embedding.Base import AbstractEmbeddingComponent
-from langchain_community.embeddings import BedrockEmbeddings
+# from langchain_community.embeddings import BedrockEmbeddings
+from langchain_aws import BedrockEmbeddings
 
 class BedrockEmbeddingComponent(AbstractEmbeddingComponent):
     def __init__(self, aws_access_key: str, aws_secret_access_key: str, aws_region: str):

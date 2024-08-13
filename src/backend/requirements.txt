@@ -44,6 +44,7 @@ tokencost
 langchain-huggingface
 snowflake-connector-python
 GitPython
+langchain-aws
 
 # chat
 langchain-openai
