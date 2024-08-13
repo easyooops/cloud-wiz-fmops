@@ -5,7 +5,7 @@ class NotionDocumentLoader(BaseDocumentLoader):
     def __init__(self, config: dict):
         super().__init__()
         self.notion_loader = NotionDBLoader(
-            integration_token="Bearer "+config['api_token'],
+            integration_token=config['api_token'],
             database_id=config['db_database'],
             request_timeout_sec=30
         )
