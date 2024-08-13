@@ -85,9 +85,11 @@ class PromptService:
                 # check storage limit
                 store_data = agent_data['Store']
                 user_id = _d_agent.user_id
-                storage_limit_response = self._check_storage_limit(user_id, store_data)
-                if storage_limit_response:
-                    return storage_limit_response
+
+                if store_data:
+                    storage_limit_response = self._check_storage_limit(user_id, store_data)
+                    if storage_limit_response:
+                        return storage_limit_response
                         
                 try:
                     documents = asyncio.run(self._run_embedding_main(agent_data))
@@ -142,7 +144,7 @@ class PromptService:
             .join(Model, Agent.fm_model_id == Model.model_id)
             .join(Credential, Agent.fm_provider_id == Credential.credential_id)
             .join(Provider, Credential.provider_id == Provider.provider_id)
-            .join(Store, Agent.storage_object_id == Store.store_id)
+            .outerjoin(Store, Agent.storage_object_id == Store.store_id)
             .outerjoin(EmbeddingModel, Agent.embedding_model_id == EmbeddingModel.model_id)
         )
         statement = statement.where(Agent.agent_id == agent_id)
@@ -296,12 +298,67 @@ class PromptService:
 
         try:
             agents_store = agent_data['Agent']
-            storage_store = agent_data['Store']
             embedding_model_name = agent_data['EmbeddingModelName']
 
             # Load Object
-            file_metadata_list = store_service.list_files(storage_store.user_id, storage_store.store_id)
-            files = [file_metadata['Key'] for file_metadata in file_metadata_list]
+            storage_store = agent_data['Store']
+            files = None
+            if storage_store:
+                file_metadata_list = store_service.list_files(storage_store.user_id, storage_store.store_id)
+                files = [file_metadata['Key'] for file_metadata in file_metadata_list]
+
+            # Load Document
+            documents = store_service.load_documents_v3(agents_store.storage_provider_id, files)
+
+            # Make Chunks
+            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+            chunks = [chunk for chunk in text_splitter.split_documents(documents) if chunk.page_content]
+
+            # Credential Type
+            embedding_type = store_service.get_provider_info(agents_store.embedding_provider_id)
+            embed_component = self._initialize_embedding_component(embedding_type, agent_data)
+
+            embed_component.build(embedding_model_name)
+            embeddings = await embed_component.run_embed_documents([chunk.page_content for chunk in chunks])
+
+            docs_with_embeddings = [
+                Document(page_content=chunk.page_content, metadata={"embedding": embedding})
+                for chunk, embedding in zip(chunks, embeddings)
+            ]
+
+            engine = await FAISS.afrom_documents(docs_with_embeddings, embed_component.model_instance)
+
+            return engine
+        
+        except IndexError as e:
+            logging.error(f"IndexError occurred during the FAISS embedding process: {e}")
+            return f"IndexError occurred: {e}"
+        except Exception as e:
+            logging.error(f"An unexpected error occurred during the FAISS embedding process: {e}")
+            return f"An unexpected error occurred: {e}"
+
+    async def _run_embedding_faiss_backup(self, agent_data):
+        """
+        Run the embedding process using FAISS.
+        
+        Args:
+            agent_data (Dict[str, Any]): Dictionary containing agent-related data.
+        
+        Returns:
+            Any: The FAISS engine or an error message.
+        """
+        store_service = StoreService(self.session)
+
+        try:
+            agents_store = agent_data['Agent']
+            embedding_model_name = agent_data['EmbeddingModelName']
+
+            # Load Object
+            storage_store = agent_data['Store']
+            files = None
+            if storage_store:
+                file_metadata_list = store_service.list_files(storage_store.user_id, storage_store.store_id)
+                files = [file_metadata['Key'] for file_metadata in file_metadata_list]
 
             # Load Document
             documents = store_service.load_documents_v3(agents_store.storage_provider_id, files)
@@ -326,7 +383,7 @@ class PromptService:
         except Exception as e:
             logging.error(f"An error occurred during the FAISS embedding process: {e}")
             return f"An error occurred: {e}"
-
+        
     async def _run_embedding_chroma(self, agent_data):
         """
         Load the Chroma engine for querying.
@@ -342,20 +399,18 @@ class PromptService:
 
         try:            
             agents_store = agent_data['Agent']
-            storage_store = agent_data['Store']
             embedding_model_name = agent_data['EmbeddingModelName']
 
             embedding_type = store_service.get_provider_info(agents_store.embedding_provider_id)
             embed_component = self._initialize_embedding_component(embedding_type, agent_data)
             embed_component.build(embedding_model_name)
 
-            persist_directory = f"./chroma_db/{storage_store.store_id}"
-            storage_location = f"{storage_store.user_id}/chroma_indexes/{storage_store.store_id}"
+            persist_directory = f"./chroma_db/{agents_store.storage_provider_id}"
+            
             chroma_component = ChromaVectorStoreComponent()
-
-            chroma_component.storage_service = credential_service._set_storage_credential(credential_id=storage_store.credential_id)
             chroma_component.embedding_function = embed_component.model_instance
-            chroma_component.load_index(storage_location, persist_directory)
+
+            chroma_component.load_index(persist_directory)
 
             if chroma_component.db:
                 logging.warning("Database initialized successfully.")
@@ -381,7 +436,6 @@ class PromptService:
 
         try:            
             agents_store = agent_data['Agent']
-            storage_store = agent_data['Store']
             embedding_model_name = agent_data['EmbeddingModelName']
 
             # Get embedding type and initialize embedding component
@@ -392,7 +446,7 @@ class PromptService:
             # Pinecone initialization
             pinecone_api_key = store_service._get_credential_info(agents_store.vector_db_provider_id, "PINECONE_API_KEY")
             pinecone_environment = store_service._get_credential_info(agents_store.embedding_provider_id, "AWS_REGION")
-            index_name = str(storage_store.store_id)
+            index_name = str(agents_store.storage_provider_id)
             pinecone_component = PineconeVectorStoreComponent(api_key=pinecone_api_key, environment=pinecone_environment, index_name=index_name)
             pinecone_component.load_index(embedding_function=embed_component.model_instance)
 

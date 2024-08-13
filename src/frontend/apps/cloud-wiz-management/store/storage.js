@@ -81,7 +81,7 @@ export const useStorageStore = defineStore({
       this.error = null;
       try {
         const { put } = restApi();
-        await put(`/store/${embeddings.user_id}/${embeddings.storage_object_id}/indexing`, embeddings);
+        await put(`/store/${embeddings.user_id}/${embeddings.storage_provider_id}/indexing`, embeddings);
       } catch (error) {
         throw error;
       } finally {
