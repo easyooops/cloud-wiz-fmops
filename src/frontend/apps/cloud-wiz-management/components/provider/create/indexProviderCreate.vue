@@ -22,6 +22,7 @@
                       <select class="form-select" v-model="selectedType">
                         <option value="M">Model</option>
                         <option value="S">Storage</option>
+                        <option value="L">Document Loader</option>
                         <option value="V">VectorDB</option>
                       </select>
                     </div>
@@ -69,14 +70,112 @@
                 </div>
                 <div class="row" v-else-if="isGoogleDrive">
                 </div>
-                <div class="row" v-else-if="isGitOrNotion">
+                <div class="row" v-else-if="isNotion">
                   <div class="col">
                     <div class="mb-3">
                       <label>Access Token</label>
                       <input v-model="accessToken" class="form-control" type="text" placeholder="Access Token *">
                     </div>
                   </div>
+                  <div class="col">
+                      <div class="mb-3">
+                        <label>DB Database</label>
+                        <input v-model="dbDatabase" class="form-control" type="text" placeholder="DB Database *">
+                      </div>
+                    </div>                  
                 </div>
+                <div class="row" v-else-if="isGit">
+                  <div class="row">
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>Clone URL</label>
+                        <input v-model="gitCloneUrl" class="form-control" type="text" placeholder="CLONE URL *">
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>Branch</label>
+                        <input v-model="gitBranch" class="form-control" type="text" placeholder="main *">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>Repo Path</label>
+                        <input v-model="gitRepoPath" class="form-control" type="text" placeholder="/tmp/repo *">
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>File Filter</label>
+                        <input v-model="gitFileFilter" class="form-control" type="text" placeholder=".md *">
+                      </div>
+                    </div>
+                  </div>                 
+                </div>
+
+                <div class="row" v-else-if="isSnowflake">
+                  <div class="row">
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>DB User</label>
+                        <input v-model="dbUser" class="form-control" type="text" placeholder="DB User *">
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>DB Password</label>
+                        <input v-model="dbPassword" class="form-control" type="text" placeholder="DB Password *">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>DB Account</label>
+                        <input v-model="dbAccount" class="form-control" type="text" placeholder="DB Account *">
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>DB Role</label>
+                        <input v-model="dbRole" class="form-control" type="text" placeholder="DB Role *">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>DB Database</label>
+                        <input v-model="dbDatabase" class="form-control" type="text" placeholder="DB Database *">
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>DB Schema</label>
+                        <input v-model="dbSchema" class="form-control" type="text" placeholder="DB Schema *">
+                      </div>
+                    </div>                  
+                  </div> 
+                  <div class="row">
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>DB Warehouse</label>
+                        <input v-model="dbWarehouse" class="form-control" type="text" placeholder="DB Warehouse *">
+                      </div>
+                    </div>
+                  </div> 
+                  <div class="row">
+                    <div class="col">
+                      <div class="mb-3">
+                        <label>Query</label>
+                        <input v-model="dbQuery" class="form-control" type="text" placeholder="Query *">
+                      </div>
+                    </div>
+                  </div>                                        
+                </div>  
+
                 <div class="row" v-else>
                   <div class="col">
                     <div class="mb-3">
@@ -131,6 +230,19 @@ export default {
     const accessToken = ref('');
     const apiKey = ref('');
     const apiEndpoint = ref('');
+    const dbUser = ref('');
+    const dbPassword = ref('');
+    const dbAccount = ref('');
+    const dbRole = ref('');
+    const dbDatabase = ref('');
+    const dbSchema = ref('');
+    const dbWarehouse = ref('');
+    const dbQuery = ref('');
+    const gitCloneUrl = ref('');
+    const gitBranch = ref('');
+    const gitRepoPath = ref('');
+    const gitFileFilter = ref('');
+
     const allProviders = ref([]);
     const providers = ref([]);
     const selectedCompany = ref(null);
@@ -228,13 +340,21 @@ export default {
       return selectedCompany.value && (selectedCompany.value.includes('Amazon') || selectedCompany.value.includes('Bedrock'));
     });
 
-    const isGitOrNotion = computed(() => {
-      return selectedCompany.value && (selectedCompany.value.includes('GIT') || selectedCompany.value.includes('Notion'));
+    const isGit = computed(() => {
+      return selectedCompany.value && (selectedCompany.value.includes('GIT'));
     });
+
+    const isNotion = computed(() => {
+      return selectedCompany.value && (selectedCompany.value.includes('Notion'));
+    });    
 
     const isGoogleDrive = computed(() => {
       return selectedCompany.value && selectedCompany.value.includes('Google');
     });
+
+    const isSnowflake = computed(() => {
+      return selectedCompany.value && selectedCompany.value.includes('Snowflake');
+    });    
 
     const createCredential = async (credentialData) => {
       loading.value = true;
@@ -268,12 +388,26 @@ export default {
           user_id: userId.value,
           provider_id: selectedProvider.value,
           credential_name: providerName.value,
+          
           access_key: accessKey.value,
           secret_key: secretAccessKey.value,
           session_key: sessionKey.value,
           access_token: accessToken.value,
           api_key: apiKey.value,
           api_endpoint: apiEndpoint.value,
+          db_user: dbUser.value,
+          db_password: dbPassword.value,
+          db_account: dbAccount.value,
+          db_role: dbRole.value,
+          db_database: dbDatabase.value,
+          db_schema: dbSchema.value,
+          db_warehouse: dbWarehouse.value,
+          db_query: dbQuery.value,
+          git_clone_url: gitCloneUrl.value,
+          git_branch: gitBranch.value,
+          git_repo_path: gitRepoPath.value,
+          git_file_filter: gitFileFilter.value,
+
           creator_id: userId.value,
           updater_id: userId.value
         });
@@ -322,17 +456,32 @@ export default {
       selectedType,
       selectedProvider,
       providerName,
+
       accessKey,
       secretAccessKey,
       sessionKey,
       accessToken,
       apiKey,
       apiEndpoint,
+      dbUser,
+      dbPassword,
+      dbAccount,
+      dbRole,
+      dbDatabase,
+      dbSchema,
+      dbWarehouse,
+      dbQuery,
+      gitCloneUrl,
+      gitBranch,
+      gitRepoPath,
+      gitFileFilter,
       allProviders,
       providers,
       isAmazonWebServices,
-      isGitOrNotion,
+      isGit,
+      isNotion,
       isGoogleDrive,
+      isSnowflake,
       loading,
       errorMessage,
       successMessage,

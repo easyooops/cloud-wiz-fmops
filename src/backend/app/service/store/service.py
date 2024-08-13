@@ -26,12 +26,15 @@ from app.service.provider.model import Provider
 from app.components.Embedding.Bedrock import BedrockEmbeddingComponent
 from app.components.Embedding.OpenAI import OpenAIEmbeddingComponent
 from app.service.model.model import Model
+from app.components.DocumentLoader.Snowflake import SnowflakeDocumentLoader
+from app.components.DocumentLoader.DocumentLoader import DocumentLoaderComponent
 
 class StoreService():
     def __init__(self, session: Session):
         super().__init__()
         self.session = session
         self.credential_service = CredentialService(session)
+        self.document_loader_component = DocumentLoaderComponent()        
         self.store_bucket = os.getenv("AWS_S3_BUCKET_STORE_NAME")
 
     def get_all_stores(self, user_id: Optional[UUID] = None, store_id: Optional[UUID] = None):
@@ -341,6 +344,62 @@ class StoreService():
             logging.error(f"Error in load_documents: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
+    def load_documents_v3(self, credential_id: UUID, files: List[str]) -> List[Document]:
+        """
+        로컬 파일 또는 Snowflake에서 문서를 로드하는 메서드.
+
+        :param credential_id: 스토리지 서비스의 자격 증명 ID
+        :param files: 로드할 파일의 리스트 (S3, Git, Google Drive 등)
+        :param snowflake_query: Snowflake에서 데이터를 로드하기 위한 쿼리
+        :return: 로드된 문서들의 리스트
+        """
+        try:
+            documents = []
+
+            credential_query = (
+                select(Credential, Provider)
+                .join(Provider, Credential.provider_id == Provider.provider_id)
+                .where(Credential.credential_id == credential_id)
+            )
+            result = self.session.execute(credential_query).first()
+
+            if not result:
+                raise ValueError(f"Credential with id {credential_id} and provider type 'S' not found")
+
+            credential, provider = result
+
+            if provider.type == "L":
+                loader = self.credential_service._set_document_loader_credential(credential_id=credential_id)
+                documents.extend(loader.load())
+
+            elif provider.type == "S":
+                storage_service = self.credential_service._set_storage_credential(credential_id=credential_id)
+
+                if not storage_service:
+                    logging.error("Failed to initialize storage service")
+                    raise HTTPException(status_code=500, detail="Failed to initialize storage service")
+
+                for s3_file_key in files:
+                    local_file_path = f"/tmp/{s3_file_key.split('/')[-1]}"
+                    logging.info(f"Downloading file: {s3_file_key} to {local_file_path}")
+
+                    try:
+                        storage_service.download_file(s3_file_key, local_file_path)
+                    except ClientError as e:
+                        logging.error(f"Error downloading file from S3: {str(e)}")
+                        raise HTTPException(status_code=500, detail=f"Error downloading file from S3: {str(e)}")
+
+                    documents.extend(self.document_loader_component.load_document(local_file_path))
+            else:
+                logging.error("No valid files or Snowflake query provided to load_documents.")
+                raise HTTPException(status_code=400, detail="No valid files or Snowflake query provided")
+
+            logging.info(f"Loaded documents: {documents}")
+            return documents
+        
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
     def create_indexing(self, agent_data: Vector):
 
         try:
@@ -348,7 +407,7 @@ class StoreService():
             files = self.list_files(agent_data.user_id, agent_data.storage_object_id)
             file_keys = [file["Key"] for file in files]
 
-            documents = self.load_documents_v2(agent_data.storage_provider_id, file_keys)
+            documents = self.load_documents_v3(agent_data.storage_provider_id, file_keys)
 
             # 문서를 1000 단위로 청킹
             text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
@@ -363,11 +422,6 @@ class StoreService():
             embedding_credential_type = self.get_provider_info(agent_data.embedding_provider_id)
             embed_component = self._initialize_embedding_component(embedding_credential_type, agent_data)
 
-            storage_service = self.credential_service._set_storage_credential(credential_id=agent_data.storage_provider_id)
-            if not storage_service:
-                logging.error("Failed to initialize storage service")
-                raise HTTPException(status_code=500, detail="Failed to initialize storage service")
-
             vector_store_type = self.get_provider_info(agent_data.vector_db_provider_id)
             if vector_store_type == "FS":
                 # vector_store = FaissVectorStoreComponent(storage_service=storage_service, embedding_function=embedding_function)
@@ -379,20 +433,31 @@ class StoreService():
                 pass
 
             elif vector_store_type == "CM":
+
                 embed_component.build(models.model_name)
 
                 persist_directory = f"./chroma_db/{agent_data.storage_object_id}"
                 storage_location = f"{agent_data.user_id}/chroma_indexes/{agent_data.storage_object_id}"
-                vector_store = ChromaVectorStoreComponent(storage_service=storage_service)
+                vector_store = ChromaVectorStoreComponent()
                 vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(agent_data.storage_object_id), storage_location=storage_location)
+
+                vector_store.storage_service = self.credential_service._set_storage_credential(credential_id=agent_data.storage_provider_id)
                 vector_store.save_index(storage_location)
 
             elif vector_store_type == "PC":
-                embed_component.build(models.model_name, 1536)
+
+                dimension = 1536
+                if embedding_credential_type == "OA":
+                    dimension = 1536
+                elif embedding_credential_type == "BR":
+                    dimension = 1024
+
+                embed_component.build(models.model_name, dimension)
 
                 pinecone_api_key = self._get_credential_info(agent_data.vector_db_provider_id, "PINECONE_API_KEY")
                 environment = self._get_credential_info(agent_data.embedding_provider_id, "AWS_REGION")
                 vector_store = PineconeVectorStoreComponent(pinecone_api_key, environment, index_name=str(agent_data.storage_object_id))
+                vector_store.dimension = dimension
                 vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance)
 
             else:

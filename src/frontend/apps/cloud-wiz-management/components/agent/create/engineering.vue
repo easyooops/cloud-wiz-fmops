@@ -418,7 +418,7 @@ export default {
         return this.models.filter(model => model.model_type === "E" && model.provider_id == provider_id);
       },
       filteredStorageProviders() {
-        return this.credentials.filter(provider => provider.provider_type === "S");
+        return this.credentials.filter(provider => provider.provider_type === "S" || provider.provider_type === "L");
       },
 
       filteredObjects() {

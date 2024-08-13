@@ -53,13 +53,15 @@
                           <div class="col-6 font-primary" v-if="dataItem.access_token">{{ dataItem.access_token }}</div>
                           <div class="col-6" v-if="dataItem.api_key"> <span>API Key</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.api_key">{{ dataItem.api_key }}</div>
+                          <div class="col-6" v-if="dataItem.db_database"> <span>DB Database</span></div>
+                          <div class="col-6 font-primary" v-if="dataItem.db_database">{{ dataItem.db_database }}</div>                          
                           <!-- <div class="col-6" v-if="dataItem.client_id"><span>Google Client ID</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.client_id">{{ dataItem.client_id }}</div>
                           <div class="col-6" v-if="dataItem.auth_secret_key"><span>Auth Secret Key</span></div>
                           <div class="col-6 font-primary" v-if="dataItem.auth_secret_key">{{ dataItem.auth_secret_key }}</div> -->
                       </div>
 
-                      <div class="row details">
+                      <div class="row details" v-if="dataItem.provider_type != 'L'">
                           <div class="col-6"><span>Used </span></div>
                           <div class="col-6 font-primary">{{ formatTokenSize(dataItem.expected_count) }} </div>
                           <div class="col-6" v-if="dataItem.inner_used"> <span>Limit</span></div>
@@ -99,6 +101,7 @@ export default {
         { type: 'all', name: 'All', active: true, icon: 'target', id: 'top-all', label: 'all-tab' },
         { type: 'M', name: 'Model', active: false, icon: 'cpu', id: 'top-model', label: 'model-tab' },
         { type: 'S', name: 'Storage', active: false, icon: 'database', id: 'top-storage', label: 'storage-tab' },
+        { type: 'L', name: 'Document Loader', active: false, icon: 'database', id: 'top-dl', label: 'dl-tab' },
         { type: 'V', name: 'VectorDB', active: false, icon: 'database', id: 'top-vector', label: 'vector-tab' }
       ],
       loading: false,
@@ -142,7 +145,9 @@ export default {
         case 'S':
           return 'badge-secondary';
         case 'V':
-          return 'badge-info';            
+          return 'badge-info';  
+        case 'L':
+          return 'badge-info';                      
         default:
           return '';
       }
@@ -155,6 +160,8 @@ export default {
           return 'storage';
         case 'V':
           return 'vector';
+        case 'L':
+          return 'document loader';          
         default:
           return '';
       }

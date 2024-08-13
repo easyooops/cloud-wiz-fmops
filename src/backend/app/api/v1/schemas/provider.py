@@ -7,6 +7,7 @@ class ProviderCreate(BaseModel):
     company: str
     name: str
     description: str
+    pvd_key: str
     logo: str
     type: str
     sort_order: int
@@ -20,6 +21,7 @@ class ProviderUpdate(BaseModel):
     company: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
+    pvd_key: Optional[str] = None
     logo: Optional[str] = None
     type: Optional[str] = None
     sort_order: Optional[int] = None

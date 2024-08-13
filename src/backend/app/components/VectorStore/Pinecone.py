@@ -11,6 +11,7 @@ class PineconeVectorStoreComponent(AbstractVectorStoreComponent):
         self.index_name = index_name
         self.pinecone_client = Pinecone(api_key=api_key)
         self.environment = environment
+        self.dimension = None
         self.db = None
         self.docs = None
 
@@ -26,7 +27,7 @@ class PineconeVectorStoreComponent(AbstractVectorStoreComponent):
 
         self.pinecone_client.create_index(
             name=self.index_name, 
-            dimension=1536,
+            dimension=self.dimension,
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region=self.environment)
         )
@@ -61,7 +62,7 @@ class PineconeVectorStoreComponent(AbstractVectorStoreComponent):
             self.pinecone_client.delete_index(self.index_name)
             self.pinecone_client.create_index(
                 name=self.index_name, 
-                dimension=1536,
+                dimension=self.dimension,
                 metric="cosine"
             )
 

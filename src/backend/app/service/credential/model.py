@@ -15,6 +15,18 @@ class Credential(SQLModel, table=True):
     access_token: Optional[str] = None
     api_key: Optional[str] = None
     api_endpoint: Optional[str] = None
+    git_clone_url: Optional[str] = None
+    git_branch: Optional[str] = None
+    git_repo_path: Optional[str] = None
+    git_file_filter: Optional[str] = None
+    db_user: Optional[str] = None
+    db_password: Optional[str] = None
+    db_account: Optional[str] = None
+    db_role: Optional[str] = None
+    db_database: Optional[str] = None
+    db_schema: Optional[str] = None
+    db_warehouse: Optional[str] = None
+    db_query: Optional[str] = None       
     refresh_token: Optional[str] = None
     inner_used: bool = Field(default=False)
     limit_cnt: float = Field(default=0.0)
