@@ -45,6 +45,7 @@ langchain-huggingface
 snowflake-connector-python
 GitPython
 langchain-aws
+langchain-google-genai
 
 # chat
 langchain-openai

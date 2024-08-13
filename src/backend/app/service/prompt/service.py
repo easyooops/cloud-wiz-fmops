@@ -42,6 +42,7 @@ from app.components.VectorStore.Pinecone import PineconeVectorStoreComponent
 from app.service.credential.service import CredentialService
 from app.components.Chat.GoogleAI import ChatGoogleAIComponent
 from app.components.LLM.GoogleAI import GoogleAILLMComponent
+from app.components.Embedding.GoogleAI import GoogleEmbeddingComponent
 
 
 class PromptService:
@@ -433,6 +434,12 @@ class PromptService:
                 raise ValueError("AWS credentials or region are not set in the provider information.")
             return BedrockEmbeddingComponent(aws_access_key, aws_secret_access_key, aws_region)
         
+        elif embedding_type == "GN":
+            google_api_key = self._get_credential_info(agent_data, "GOOGLE_API_KEY")
+            if not google_api_key:
+                raise ValueError("GoogleAI API key is not set in the provider information.")
+            return GoogleEmbeddingComponent(google_api_key)
+                
         else:
             raise ValueError(f"Unsupported embedding type: {embedding_type}")
         
