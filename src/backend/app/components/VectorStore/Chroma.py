@@ -7,14 +7,14 @@ from app.components.VectorStore.Base import AbstractVectorStoreComponent
 from langchain_chroma import Chroma
 
 class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
-    def __init__(self, storage_service=None):
+    def __init__(self):
         super().__init__()
         self.embedding_function = None
         self.db = None
         self.persist_directory = None
         self.docs = None
         self.index_name = None
-        self.storage_service = storage_service
+        self.storage_service = None
 
     def initialize(self, docs, embedding_function, persist_directory=None, index_name=None, storage_location=None):
         self.embedding_function = embedding_function
@@ -27,29 +27,6 @@ class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
             embedding=self.embedding_function,
             persist_directory=persist_directory
         )
-
-        # self.db = None
-        # client = chromadb.EphemeralClient()
-
-        # if persist_directory:
-        #     # Load existing index if available
-        #     if self.storage_service:
-        #         self.load_index(storage_location, persist_directory)
-        #     if self.db is None:  # If loading index failed, create a new one
-        #         self.db = Chroma.from_documents(
-        #             docs, 
-        #             self.embedding_function,
-        #             client=client,
-        #             persist_directory=persist_directory, 
-        #             collection_name=index_name
-        #         )
-        # else:
-        #     self.db = Chroma.from_documents(
-        #         docs, 
-        #         self.embedding_function,
-        #         client=client,
-        #         collection_name=index_name
-        #     )
 
     def add_embeddings(self, docs):
         if self.db:

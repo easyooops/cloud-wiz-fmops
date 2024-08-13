@@ -13,6 +13,9 @@ from app.service.agent.model import Agent
 from app.core.interface.service import ServiceType, StorageService
 from app.core.manager import ServiceManager
 from app.service.auth.service import AuthService
+from app.components.DocumentLoader.Notion import NotionDocumentLoader
+from app.components.DocumentLoader.Snowflake import SnowflakeDocumentLoader
+from app.components.DocumentLoader.GIT import GitDocumentLoader
 
 class CredentialService():
     def __init__(self, session: Session):
@@ -69,10 +72,9 @@ class CredentialService():
         return result
         
     def mask_sensitive_data(self, data: Optional[str]) -> Optional[str]:
-        if data is None or len(data) <= 14:
+        if data is None or len(data) <= 4:
             return data
-        half_length = (len(data) - 4) // 2
-        return data[:2] + '*' * half_length + data[-2:]
+        return data[:2] + '*' * 10 + data[-2:]
     
     def _map_to_credential_out(self, credential: Credential, provider: Provider, expected_count: int) -> CredentialProviderJoin:
         return CredentialProviderJoin(
@@ -86,6 +88,18 @@ class CredentialService():
             access_token=self.mask_sensitive_data(credential.access_token),
             api_key=self.mask_sensitive_data(credential.api_key),
             api_endpoint=credential.api_endpoint,
+            git_clone_url=credential.git_clone_url,
+            git_branch=credential.git_branch,
+            git_repo_path=credential.git_repo_path,
+            git_file_filter=credential.git_file_filter,
+            db_user=self.mask_sensitive_data(credential.db_user),
+            db_password="***********",
+            db_account=self.mask_sensitive_data(credential.db_account),
+            db_role=self.mask_sensitive_data(credential.db_role),
+            db_database=self.mask_sensitive_data(credential.db_database),
+            db_schema=self.mask_sensitive_data(credential.db_schema),
+            db_warehouse=self.mask_sensitive_data(credential.db_warehouse),
+            db_query=credential.db_query,
             inner_used=credential.inner_used,
             limit_cnt=credential.limit_cnt,
             provider_name=provider.name,
@@ -134,7 +148,6 @@ class CredentialService():
                 select(Credential, Provider)
                 .join(Provider, Credential.provider_id == Provider.provider_id)
                 .where(Credential.credential_id == credential_id)
-                .where(Provider.type == "S")
             )
             result = self.session.execute(credential_query).first()
 
@@ -186,6 +199,51 @@ class CredentialService():
                 return self.service_manager.get_service(ServiceType.GITHUB, config)
             else:
                 raise ValueError(f"Unsupported provider key: {provider.pvd_key}")
+            
         except Exception as e:
             print(f"Error while setting storage credential: {e}")
             return None
+
+    def _set_document_loader_credential(self, credential_id: UUID):
+        try:
+            credential_query = (
+                select(Credential, Provider)
+                .join(Provider, Credential.provider_id == Provider.provider_id)
+                .where(Credential.credential_id == credential_id)
+                .where(Provider.type == "L")
+            )
+            result = self.session.execute(credential_query).first()
+
+            if not result:
+                raise ValueError(f"Credential with id {credential_id} and provider type 'S' not found")
+
+            credential, provider = result
+
+            config = {
+                'git_clone_url': credential.git_clone_url,
+                'git_branch': credential.git_branch,
+                'git_repo_path': credential.git_repo_path,
+                'git_file_filter': credential.git_file_filter,
+                'api_token': credential.access_token,
+                'db_query': credential.db_query,
+                'db_user': credential.db_user,
+                'db_password': credential.db_password,
+                'db_account': credential.db_account,
+                'db_warehouse': credential.db_warehouse,
+                'db_role': credential.db_role,
+                'db_database': credential.db_database,
+                'db_schema': credential.db_schema
+            }
+
+            if provider.pvd_key == "SF":
+                return SnowflakeDocumentLoader(config=config)
+            elif provider.pvd_key == "NT":
+                return NotionDocumentLoader(config=config)
+            elif provider.pvd_key == "GH":
+                return GitDocumentLoader(config=config)
+            else:
+                raise ValueError(f"Unsupported provider key: {provider.pvd_key}")
+
+        except Exception as e:
+            print(f"Error while setting document loader credential: {e}")
+            raise

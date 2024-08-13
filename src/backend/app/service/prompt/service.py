@@ -267,16 +267,9 @@ class PromptService:
         return chunks
 
     async def _run_embedding_main(self, agent_data):
-        store = agent_data['Store']
         agent = agent_data['Agent']
 
-        credential_service = CredentialService(self.session)
         store_service = StoreService(self.session)
-        
-        storage_service = credential_service._set_storage_credential(credential_id=store.credential_id)
-        if not storage_service:
-            logging.error("Failed to initialize storage service")
-            raise HTTPException(status_code=500, detail="Failed to initialize storage service")
 
         vector_store_type = store_service.get_provider_info(agent.vector_db_provider_id)
         if vector_store_type == "FS":
@@ -310,7 +303,7 @@ class PromptService:
             files = [file_metadata['Key'] for file_metadata in file_metadata_list]
 
             # Load Document
-            documents = store_service.load_documents_v2(storage_store.credential_id, files)
+            documents = store_service.load_documents_v3(agents_store.storage_provider_id, files)
 
             # Make Chunks
             text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
@@ -351,18 +344,15 @@ class PromptService:
             storage_store = agent_data['Store']
             embedding_model_name = agent_data['EmbeddingModelName']
 
-            storage_service = credential_service._set_storage_credential(credential_id=storage_store.credential_id)
-            if not storage_service:
-                logging.error("Failed to initialize storage service")
-                raise HTTPException(status_code=500, detail="Failed to initialize storage service")
-
             embedding_type = store_service.get_provider_info(agents_store.embedding_provider_id)
             embed_component = self._initialize_embedding_component(embedding_type, agent_data)
             embed_component.build(embedding_model_name)
 
             persist_directory = f"./chroma_db/{storage_store.store_id}"
             storage_location = f"{storage_store.user_id}/chroma_indexes/{storage_store.store_id}"
-            chroma_component = ChromaVectorStoreComponent(storage_service=storage_service)
+            chroma_component = ChromaVectorStoreComponent()
+
+            chroma_component.storage_service = credential_service._set_storage_credential(credential_id=storage_store.credential_id)
             chroma_component.embedding_function = embed_component.model_instance
             chroma_component.load_index(storage_location, persist_directory)
 

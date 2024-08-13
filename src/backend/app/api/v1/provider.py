@@ -17,8 +17,7 @@ router = APIRouter()
 def get_provider(
     type: Optional[str] = None,
     name: Optional[str] = None,
-    session: Session = Depends(get_database),
-    token: str = Depends(get_current_user) 
+    session: Session = Depends(get_database)
 ):
     try:
         service = ProviderService(session)
@@ -30,8 +29,7 @@ def get_provider(
 @router.post("/", response_model=Provider)
 def create_provider(
     provider: ProviderCreate, 
-    session: Session = Depends(get_database),
-    token: str = Depends(get_current_user) 
+    session: Session = Depends(get_database)
 ):
     try:
         service = ProviderService(session)
@@ -44,8 +42,7 @@ def create_provider(
 def update_provider(
     provider_id: UUID,
     provider_update: ProviderUpdate,
-    session: Session = Depends(get_database),
-    token: str = Depends(get_current_user) 
+    session: Session = Depends(get_database)
 ):
     try:
         service = ProviderService(session)
@@ -57,8 +54,7 @@ def update_provider(
 @router.delete("/{provider_id}")
 def delete_provider(
     provider_id: UUID,
-    session: Session = Depends(get_database),
-    token: str = Depends(get_current_user) 
+    session: Session = Depends(get_database)
 ):
     try:
         service = ProviderService(session)
