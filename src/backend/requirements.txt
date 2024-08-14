@@ -43,9 +43,9 @@ tiktoken
 tokencost
 langchain-huggingface
 snowflake-connector-python
-GitPython
 langchain-aws
 langchain-google-genai
+GitPython
 
 # chat
 langchain-openai

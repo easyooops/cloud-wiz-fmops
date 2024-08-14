@@ -14,9 +14,8 @@ class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
         self.persist_directory = None
         self.docs = None
         self.index_name = None
-        self.storage_service = None
 
-    def initialize(self, docs, embedding_function, persist_directory=None, index_name=None, storage_location=None):
+    def initialize(self, docs, embedding_function, persist_directory=None, index_name=None):
         self.embedding_function = embedding_function
         self.persist_directory = persist_directory
         self.docs = docs
@@ -50,52 +49,33 @@ class ChromaVectorStoreComponent(AbstractVectorStoreComponent):
                     os.remove(file_path)
         
         # Reinitialize the index with stored documents
-        self.initialize(self.docs, persist_directory=self.persist_directory, index_name=self.index_name)
+        self.initialize(self.docs, self.embedding_function, persist_directory=self.persist_directory, index_name=self.index_name)
 
-    def save_index(self, storage_location):
+    def save_index(self):
         if self.db:
             if not self.persist_directory:
                 raise ValueError("Persist directory is not set.")
             
-            # Upload each file in the persist directory to the storage service
-            if self.storage_service:
-                os.makedirs(self.persist_directory, exist_ok=True)
-                for file_name in os.listdir(self.persist_directory):
-                    file_path = os.path.join(self.persist_directory, file_name)
-                    if os.path.isfile(file_path):  # 파일인지 확인
-                        storage_file_path = os.path.join(storage_location, file_name)
-                        with open(file_path, 'rb') as file:
-                            logging.warning(f"Uploading file: {file_path} to {storage_file_path}")
-                            self.storage_service.upload_file(file, storage_file_path)
+            # 데이터베이스를 디스크에 저장
+            self.db.save(persist_directory=self.persist_directory)
 
-                # Clear the persist directory after upload
-                self.clear_persist_directory()                            
+            logging.info(f"Index saved to {self.persist_directory}")
         else:
             raise ValueError("Database is not initialized. Call the initialize method first.")
 
-    def load_index(self, storage_location, persist_directory):
-        if self.storage_service:
-            os.makedirs(persist_directory, exist_ok=True)
-            files = self.storage_service.list_files(storage_location)
-            for file in files:
-                # 파일 이름만 가져와서 persist_directory에 저장
-                file_name = os.path.basename(file['Key'])
-                file_path = os.path.join(persist_directory, file_name)
-                self.storage_service.download_file(file['Key'], file_path)
+    def load_index(self, persist_directory):
+        if not os.path.exists(persist_directory):
+            raise ValueError(f"Persist directory {persist_directory} does not exist.")
 
-            # client = chromadb.EphemeralClient()
-
-            try:
-                self.db = Chroma(
-                    persist_directory=persist_directory,
-                    embedding_function=self.embedding_function
-                )
-            except Exception as e:
-                logging.warning(f"Failed to load index from {persist_directory}: {e}")
-                return None
-            
-            # Clear the persist directory after loading the index
-            self.clear_persist_directory()            
+        try:
+            self.db = Chroma(
+                persist_directory=persist_directory,
+                embedding_function=self.embedding_function
+            )
+            logging.info(f"Index loaded from {persist_directory}")
+        except Exception as e:
+            logging.warning(f"Failed to load index from {persist_directory}: {e}")
+            return None       
 
     def clear_persist_directory(self):
         """Helper function to clear the persist directory"""

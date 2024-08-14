@@ -405,14 +405,17 @@ class StoreService():
 
         try:
             # 파일 목록을 가져옴
-            files = self.list_files(agent_data.user_id, agent_data.storage_object_id)
-            file_keys = [file["Key"] for file in files]
+            file_keys = []
+            if agent_data.storage_object_id:
+                files = self.list_files(agent_data.user_id, agent_data.storage_object_id)
+                file_keys = [file["Key"] for file in files]
 
             documents = self.load_documents_v3(agent_data.storage_provider_id, file_keys)
 
             # 문서를 1000 단위로 청킹
             text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-            chunked_docs = text_splitter.split_documents(documents)
+            # chunked_docs = text_splitter.split_documents(documents)
+            chunked_docs = [chunk for chunk in text_splitter.split_documents(documents) if chunk.page_content]
 
             # # 임베딩 생성
             # embedding_function = OpenAIEmbeddings()
@@ -437,13 +440,10 @@ class StoreService():
 
                 embed_component.build(models.model_name)
 
-                persist_directory = f"./chroma_db/{agent_data.storage_object_id}"
-                storage_location = f"{agent_data.user_id}/chroma_indexes/{agent_data.storage_object_id}"
+                persist_directory = f"./chroma_db/{agent_data.storage_provider_id}"
                 vector_store = ChromaVectorStoreComponent()
-                vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(agent_data.storage_object_id), storage_location=storage_location)
-
-                vector_store.storage_service = self.credential_service._set_storage_credential(credential_id=agent_data.storage_provider_id)
-                vector_store.save_index(storage_location)
+                vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(agent_data.storage_provider_id))
+                # vector_store.save_index()
 
             elif vector_store_type == "PC":
 
@@ -459,7 +459,7 @@ class StoreService():
 
                 pinecone_api_key = self._get_credential_info(agent_data.vector_db_provider_id, "PINECONE_API_KEY")
                 environment = self._get_credential_info(agent_data.embedding_provider_id, "AWS_REGION")
-                vector_store = PineconeVectorStoreComponent(pinecone_api_key, environment, index_name=str(agent_data.storage_object_id))
+                vector_store = PineconeVectorStoreComponent(pinecone_api_key, environment, index_name=str(agent_data.storage_provider_id))
                 vector_store.dimension = dimension
                 vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance)
 
