@@ -13,10 +13,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # Install the dependencies
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install GitPython separately
-RUN pip install --no-cache-dir GitPython
+RUN pip show GitPython
 
 # Remove build dependencies to keep the image slim
 RUN apt-get remove -y build-essential \
