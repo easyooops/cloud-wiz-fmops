@@ -7,7 +7,12 @@ WORKDIR /app
 # Install build dependencies and clean up
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    git \    
     && rm -rf /var/lib/apt/lists/*
+
+# Set GIT_PYTHON_GIT_EXECUTABLE to ensure GitPython finds Git
+ENV GIT_PYTHON_GIT_EXECUTABLE=/usr/bin/git
+ENV GIT_PYTHON_REFRESH=quiet
 
 # Copy the requirements file
 COPY requirements.txt .
