@@ -443,7 +443,7 @@ class StoreService():
                 persist_directory = f"./chroma_db/{agent_data.storage_provider_id}"
                 vector_store = ChromaVectorStoreComponent()
                 vector_store.initialize(docs=chunked_docs, embedding_function=embed_component.model_instance, persist_directory=persist_directory, index_name=str(agent_data.storage_provider_id))
-                vector_store.save_index()
+                # vector_store.save_index()
 
             elif vector_store_type == "PC":
 

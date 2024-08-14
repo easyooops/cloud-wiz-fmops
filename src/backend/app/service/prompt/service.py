@@ -321,6 +321,11 @@ class PromptService:
             embed_component.build(embedding_model_name)
             embeddings = await embed_component.run_embed_documents([chunk.page_content for chunk in chunks])
 
+            logging.info(f"Number of chunks: {len(chunks)}")
+            logging.info(f"Number of embeddings: {len(embeddings)}")
+            logging.info(f"Sample chunk content: {chunks[0].page_content if chunks else 'No chunks'}")
+            logging.info(f"Sample embedding: {embeddings[0] if embeddings else 'No embeddings'}")
+
             docs_with_embeddings = [
                 Document(page_content=chunk.page_content, metadata={"embedding": embedding})
                 for chunk, embedding in zip(chunks, embeddings)
@@ -332,6 +337,7 @@ class PromptService:
         
         except IndexError as e:
             logging.error(f"IndexError occurred during the FAISS embedding process: {e}")
+            logging.error(f"Chunks: {len(chunks)}, Embeddings: {len(embeddings)}")
             return f"IndexError occurred: {e}"
         except Exception as e:
             logging.error(f"An unexpected error occurred during the FAISS embedding process: {e}")
@@ -406,7 +412,7 @@ class PromptService:
             embed_component.build(embedding_model_name)
 
             persist_directory = f"./chroma_db/{agents_store.storage_provider_id}"
-            
+
             chroma_component = ChromaVectorStoreComponent()
             chroma_component.embedding_function = embed_component.model_instance
 
@@ -579,9 +585,6 @@ class PromptService:
             models_store = agent_data['Model']
             
             matching_docs = db.similarity_search(query, k=top_k)
-
-            if not matching_docs:
-                raise ValueError("No matching documents found")
 
             retriever = db.as_retriever()
 
