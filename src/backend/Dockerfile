@@ -15,6 +15,9 @@ COPY requirements.txt .
 # Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install GitPython separately
+RUN pip install --no-cache-dir GitPython
+
 # Remove build dependencies to keep the image slim
 RUN apt-get remove -y build-essential \
     && apt-get autoremove -y \
