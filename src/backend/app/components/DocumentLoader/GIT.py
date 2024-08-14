@@ -1,4 +1,6 @@
 from app.components.DocumentLoader.Base import BaseDocumentLoader
+import git
+from git import Repo
 from langchain_community.document_loaders import GitLoader
 
 class GitDocumentLoader(BaseDocumentLoader):
@@ -7,7 +9,7 @@ class GitDocumentLoader(BaseDocumentLoader):
         self.git_loader = GitLoader(
             clone_url=config.get('git_clone_url', ''),
             branch=config.get('git_branch', 'main'),
-            repo_path=config.get('git_repo_path', '/tmp/repo'),
+            repo_path="./git/repo/"+config.get('git_repo_path', '/tmp/repo'),
             file_filter=None
             # file_filter=config.get('git_file_filter', lambda x: x.endswith('.md'))
         )
