@@ -450,7 +450,7 @@ class StoreService():
                 dimension = 1536
                 if embedding_credential_type == "OA":
                     dimension = 1536
-                elif embedding_credential_type == "BR":
+                elif embedding_credential_type == "BR" and models.model_name == "amazon.titan-embed-text-v2:0":
                     dimension = 1024
                 elif embedding_credential_type == "GN":
                     dimension = 768
